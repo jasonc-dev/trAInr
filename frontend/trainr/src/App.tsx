@@ -5,7 +5,8 @@ import { theme } from "./styles/theme";
 import { GlobalStyles } from "./styles/GlobalStyles";
 import { useUser } from "./hooks";
 import {
-  Onboarding,
+  Login,
+  Register,
   Dashboard,
   Programmes,
   ProgrammeDetail,
@@ -35,7 +36,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/login" replace />;
   }
 
   return <>{children}</>;
@@ -75,10 +76,18 @@ function App() {
         <Routes>
           {/* Public routes */}
           <Route
-            path="/"
+            path="/login"
             element={
               <PublicRoute>
-                <Onboarding />
+                <Login />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/register"
+            element={
+              <PublicRoute>
+                <Register />
               </PublicRoute>
             }
           />
@@ -125,8 +134,8 @@ function App() {
             }
           />
 
-          {/* Fallback */}
-          <Route path="*" element={<Navigate to="/" replace />} />
+          {/* Fallback - redirect to login */}
+          <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       </BrowserRouter>
     </ThemeProvider>

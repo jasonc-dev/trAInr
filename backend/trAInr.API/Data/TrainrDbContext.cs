@@ -40,10 +40,16 @@ public class TrainrDbContext : DbContext
     modelBuilder.Entity<User>(entity =>
     {
       entity.HasKey(e => e.Id);
+      entity.HasIndex(e => e.Username).IsUnique();
       entity.HasIndex(e => e.Email).IsUnique();
+      entity.Property(e => e.Username).HasMaxLength(100).IsRequired();
+      entity.Property(e => e.PasswordHash).HasMaxLength(256).IsRequired();
       entity.Property(e => e.Email).HasMaxLength(256).IsRequired();
       entity.Property(e => e.FirstName).HasMaxLength(100).IsRequired();
       entity.Property(e => e.LastName).HasMaxLength(100).IsRequired();
+      
+      // DateOnly maps to PostgreSQL 'date' type
+      entity.Property(e => e.DateOfBirth).HasColumnType("date");
 
       entity.HasMany(e => e.Programmes)
               .WithOne(p => p.User)
@@ -61,6 +67,10 @@ public class TrainrDbContext : DbContext
       entity.Property(e => e.Description).HasMaxLength(1000);
       entity.HasIndex(e => e.UserId);
       entity.HasIndex(e => e.IsActive);
+      
+      // DateOnly maps to PostgreSQL 'date' type
+      entity.Property(e => e.StartDate).HasColumnType("date");
+      entity.Property(e => e.EndDate).HasColumnType("date");
 
       entity.HasMany(e => e.Weeks)
               .WithOne(w => w.Programme)
@@ -93,6 +103,11 @@ public class TrainrDbContext : DbContext
       entity.Property(e => e.Description).HasMaxLength(500);
       entity.HasIndex(e => e.ProgrammeWeekId);
       entity.HasIndex(e => e.ScheduledDate);
+      
+      // DateOnly maps to PostgreSQL 'date' type
+      entity.Property(e => e.ScheduledDate).HasColumnType("date");
+      // CompletedDate is timestamp with time zone (UTC)
+      entity.Property(e => e.CompletedDate).HasColumnType("timestamp with time zone");
 
       entity.HasMany(e => e.Exercises)
               .WithOne(e => e.WorkoutDay)
@@ -148,50 +163,53 @@ public class TrainrDbContext : DbContext
 
   private static void SeedExercises(ModelBuilder modelBuilder)
   {
+    // Use a fixed static date for seed data to avoid PendingModelChangesWarning
+    var seedDate = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+
     var exercises = new List<Exercise>
         {
             // Chest exercises
-            new() { Id = Guid.Parse("11111111-1111-1111-1111-111111111101"), Name = "Bench Press", Description = "Barbell bench press for chest development", Type = ExerciseType.WeightTraining, PrimaryMuscleGroup = MuscleGroup.Chest, SecondaryMuscleGroup = MuscleGroup.Triceps },
-            new() { Id = Guid.Parse("11111111-1111-1111-1111-111111111102"), Name = "Incline Dumbbell Press", Description = "Incline press targeting upper chest", Type = ExerciseType.WeightTraining, PrimaryMuscleGroup = MuscleGroup.Chest, SecondaryMuscleGroup = MuscleGroup.Shoulders },
-            new() { Id = Guid.Parse("11111111-1111-1111-1111-111111111103"), Name = "Cable Fly", Description = "Cable chest fly for isolation", Type = ExerciseType.WeightTraining, PrimaryMuscleGroup = MuscleGroup.Chest },
-            new() { Id = Guid.Parse("11111111-1111-1111-1111-111111111104"), Name = "Push-ups", Description = "Bodyweight chest exercise", Type = ExerciseType.Bodyweight, PrimaryMuscleGroup = MuscleGroup.Chest, SecondaryMuscleGroup = MuscleGroup.Triceps },
+            new() { Id = Guid.Parse("11111111-1111-1111-1111-111111111101"), Name = "Bench Press", Description = "Barbell bench press for chest development", Type = ExerciseType.WeightTraining, PrimaryMuscleGroup = MuscleGroup.Chest, SecondaryMuscleGroup = MuscleGroup.Triceps, CreatedAt = seedDate },
+            new() { Id = Guid.Parse("11111111-1111-1111-1111-111111111102"), Name = "Incline Dumbbell Press", Description = "Incline press targeting upper chest", Type = ExerciseType.WeightTraining, PrimaryMuscleGroup = MuscleGroup.Chest, SecondaryMuscleGroup = MuscleGroup.Shoulders, CreatedAt = seedDate },
+            new() { Id = Guid.Parse("11111111-1111-1111-1111-111111111103"), Name = "Cable Fly", Description = "Cable chest fly for isolation", Type = ExerciseType.WeightTraining, PrimaryMuscleGroup = MuscleGroup.Chest, CreatedAt = seedDate },
+            new() { Id = Guid.Parse("11111111-1111-1111-1111-111111111104"), Name = "Push-ups", Description = "Bodyweight chest exercise", Type = ExerciseType.Bodyweight, PrimaryMuscleGroup = MuscleGroup.Chest, SecondaryMuscleGroup = MuscleGroup.Triceps, CreatedAt = seedDate },
             
             // Back exercises
-            new() { Id = Guid.Parse("11111111-1111-1111-1111-111111111201"), Name = "Deadlift", Description = "Conventional deadlift for overall back development", Type = ExerciseType.WeightTraining, PrimaryMuscleGroup = MuscleGroup.Back, SecondaryMuscleGroup = MuscleGroup.Hamstrings },
-            new() { Id = Guid.Parse("11111111-1111-1111-1111-111111111202"), Name = "Pull-ups", Description = "Bodyweight back exercise", Type = ExerciseType.Bodyweight, PrimaryMuscleGroup = MuscleGroup.Back, SecondaryMuscleGroup = MuscleGroup.Biceps },
-            new() { Id = Guid.Parse("11111111-1111-1111-1111-111111111203"), Name = "Barbell Row", Description = "Bent-over barbell row", Type = ExerciseType.WeightTraining, PrimaryMuscleGroup = MuscleGroup.Back, SecondaryMuscleGroup = MuscleGroup.Biceps },
-            new() { Id = Guid.Parse("11111111-1111-1111-1111-111111111204"), Name = "Lat Pulldown", Description = "Cable lat pulldown", Type = ExerciseType.WeightTraining, PrimaryMuscleGroup = MuscleGroup.Back },
+            new() { Id = Guid.Parse("11111111-1111-1111-1111-111111111201"), Name = "Deadlift", Description = "Conventional deadlift for overall back development", Type = ExerciseType.WeightTraining, PrimaryMuscleGroup = MuscleGroup.Back, SecondaryMuscleGroup = MuscleGroup.Hamstrings, CreatedAt = seedDate },
+            new() { Id = Guid.Parse("11111111-1111-1111-1111-111111111202"), Name = "Pull-ups", Description = "Bodyweight back exercise", Type = ExerciseType.Bodyweight, PrimaryMuscleGroup = MuscleGroup.Back, SecondaryMuscleGroup = MuscleGroup.Biceps, CreatedAt = seedDate },
+            new() { Id = Guid.Parse("11111111-1111-1111-1111-111111111203"), Name = "Barbell Row", Description = "Bent-over barbell row", Type = ExerciseType.WeightTraining, PrimaryMuscleGroup = MuscleGroup.Back, SecondaryMuscleGroup = MuscleGroup.Biceps, CreatedAt = seedDate },
+            new() { Id = Guid.Parse("11111111-1111-1111-1111-111111111204"), Name = "Lat Pulldown", Description = "Cable lat pulldown", Type = ExerciseType.WeightTraining, PrimaryMuscleGroup = MuscleGroup.Back, CreatedAt = seedDate },
             
             // Shoulder exercises
-            new() { Id = Guid.Parse("11111111-1111-1111-1111-111111111301"), Name = "Overhead Press", Description = "Standing barbell overhead press", Type = ExerciseType.WeightTraining, PrimaryMuscleGroup = MuscleGroup.Shoulders, SecondaryMuscleGroup = MuscleGroup.Triceps },
-            new() { Id = Guid.Parse("11111111-1111-1111-1111-111111111302"), Name = "Lateral Raise", Description = "Dumbbell lateral raise", Type = ExerciseType.WeightTraining, PrimaryMuscleGroup = MuscleGroup.Shoulders },
-            new() { Id = Guid.Parse("11111111-1111-1111-1111-111111111303"), Name = "Face Pull", Description = "Cable face pull for rear delts", Type = ExerciseType.WeightTraining, PrimaryMuscleGroup = MuscleGroup.Shoulders },
+            new() { Id = Guid.Parse("11111111-1111-1111-1111-111111111301"), Name = "Overhead Press", Description = "Standing barbell overhead press", Type = ExerciseType.WeightTraining, PrimaryMuscleGroup = MuscleGroup.Shoulders, SecondaryMuscleGroup = MuscleGroup.Triceps, CreatedAt = seedDate },
+            new() { Id = Guid.Parse("11111111-1111-1111-1111-111111111302"), Name = "Lateral Raise", Description = "Dumbbell lateral raise", Type = ExerciseType.WeightTraining, PrimaryMuscleGroup = MuscleGroup.Shoulders, CreatedAt = seedDate },
+            new() { Id = Guid.Parse("11111111-1111-1111-1111-111111111303"), Name = "Face Pull", Description = "Cable face pull for rear delts", Type = ExerciseType.WeightTraining, PrimaryMuscleGroup = MuscleGroup.Shoulders, CreatedAt = seedDate },
             
             // Arm exercises
-            new() { Id = Guid.Parse("11111111-1111-1111-1111-111111111401"), Name = "Barbell Curl", Description = "Standing barbell bicep curl", Type = ExerciseType.WeightTraining, PrimaryMuscleGroup = MuscleGroup.Biceps },
-            new() { Id = Guid.Parse("11111111-1111-1111-1111-111111111402"), Name = "Tricep Pushdown", Description = "Cable tricep pushdown", Type = ExerciseType.WeightTraining, PrimaryMuscleGroup = MuscleGroup.Triceps },
-            new() { Id = Guid.Parse("11111111-1111-1111-1111-111111111403"), Name = "Hammer Curl", Description = "Dumbbell hammer curl", Type = ExerciseType.WeightTraining, PrimaryMuscleGroup = MuscleGroup.Biceps, SecondaryMuscleGroup = MuscleGroup.Forearms },
-            new() { Id = Guid.Parse("11111111-1111-1111-1111-111111111404"), Name = "Skull Crushers", Description = "Lying tricep extension", Type = ExerciseType.WeightTraining, PrimaryMuscleGroup = MuscleGroup.Triceps },
+            new() { Id = Guid.Parse("11111111-1111-1111-1111-111111111401"), Name = "Barbell Curl", Description = "Standing barbell bicep curl", Type = ExerciseType.WeightTraining, PrimaryMuscleGroup = MuscleGroup.Biceps, CreatedAt = seedDate },
+            new() { Id = Guid.Parse("11111111-1111-1111-1111-111111111402"), Name = "Tricep Pushdown", Description = "Cable tricep pushdown", Type = ExerciseType.WeightTraining, PrimaryMuscleGroup = MuscleGroup.Triceps, CreatedAt = seedDate },
+            new() { Id = Guid.Parse("11111111-1111-1111-1111-111111111403"), Name = "Hammer Curl", Description = "Dumbbell hammer curl", Type = ExerciseType.WeightTraining, PrimaryMuscleGroup = MuscleGroup.Biceps, SecondaryMuscleGroup = MuscleGroup.Forearms, CreatedAt = seedDate },
+            new() { Id = Guid.Parse("11111111-1111-1111-1111-111111111404"), Name = "Skull Crushers", Description = "Lying tricep extension", Type = ExerciseType.WeightTraining, PrimaryMuscleGroup = MuscleGroup.Triceps, CreatedAt = seedDate },
             
             // Leg exercises
-            new() { Id = Guid.Parse("11111111-1111-1111-1111-111111111501"), Name = "Barbell Squat", Description = "Back squat for leg development", Type = ExerciseType.WeightTraining, PrimaryMuscleGroup = MuscleGroup.Quadriceps, SecondaryMuscleGroup = MuscleGroup.Glutes },
-            new() { Id = Guid.Parse("11111111-1111-1111-1111-111111111502"), Name = "Romanian Deadlift", Description = "RDL for hamstring development", Type = ExerciseType.WeightTraining, PrimaryMuscleGroup = MuscleGroup.Hamstrings, SecondaryMuscleGroup = MuscleGroup.Glutes },
-            new() { Id = Guid.Parse("11111111-1111-1111-1111-111111111503"), Name = "Leg Press", Description = "Machine leg press", Type = ExerciseType.WeightTraining, PrimaryMuscleGroup = MuscleGroup.Quadriceps },
-            new() { Id = Guid.Parse("11111111-1111-1111-1111-111111111504"), Name = "Leg Curl", Description = "Lying leg curl", Type = ExerciseType.WeightTraining, PrimaryMuscleGroup = MuscleGroup.Hamstrings },
-            new() { Id = Guid.Parse("11111111-1111-1111-1111-111111111505"), Name = "Calf Raise", Description = "Standing calf raise", Type = ExerciseType.WeightTraining, PrimaryMuscleGroup = MuscleGroup.Calves },
-            new() { Id = Guid.Parse("11111111-1111-1111-1111-111111111506"), Name = "Lunges", Description = "Walking or stationary lunges", Type = ExerciseType.WeightTraining, PrimaryMuscleGroup = MuscleGroup.Quadriceps, SecondaryMuscleGroup = MuscleGroup.Glutes },
+            new() { Id = Guid.Parse("11111111-1111-1111-1111-111111111501"), Name = "Barbell Squat", Description = "Back squat for leg development", Type = ExerciseType.WeightTraining, PrimaryMuscleGroup = MuscleGroup.Quadriceps, SecondaryMuscleGroup = MuscleGroup.Glutes, CreatedAt = seedDate },
+            new() { Id = Guid.Parse("11111111-1111-1111-1111-111111111502"), Name = "Romanian Deadlift", Description = "RDL for hamstring development", Type = ExerciseType.WeightTraining, PrimaryMuscleGroup = MuscleGroup.Hamstrings, SecondaryMuscleGroup = MuscleGroup.Glutes, CreatedAt = seedDate },
+            new() { Id = Guid.Parse("11111111-1111-1111-1111-111111111503"), Name = "Leg Press", Description = "Machine leg press", Type = ExerciseType.WeightTraining, PrimaryMuscleGroup = MuscleGroup.Quadriceps, CreatedAt = seedDate },
+            new() { Id = Guid.Parse("11111111-1111-1111-1111-111111111504"), Name = "Leg Curl", Description = "Lying leg curl", Type = ExerciseType.WeightTraining, PrimaryMuscleGroup = MuscleGroup.Hamstrings, CreatedAt = seedDate },
+            new() { Id = Guid.Parse("11111111-1111-1111-1111-111111111505"), Name = "Calf Raise", Description = "Standing calf raise", Type = ExerciseType.WeightTraining, PrimaryMuscleGroup = MuscleGroup.Calves, CreatedAt = seedDate },
+            new() { Id = Guid.Parse("11111111-1111-1111-1111-111111111506"), Name = "Lunges", Description = "Walking or stationary lunges", Type = ExerciseType.WeightTraining, PrimaryMuscleGroup = MuscleGroup.Quadriceps, SecondaryMuscleGroup = MuscleGroup.Glutes, CreatedAt = seedDate },
             
             // Core exercises
-            new() { Id = Guid.Parse("11111111-1111-1111-1111-111111111601"), Name = "Plank", Description = "Isometric core exercise", Type = ExerciseType.Bodyweight, PrimaryMuscleGroup = MuscleGroup.Core },
-            new() { Id = Guid.Parse("11111111-1111-1111-1111-111111111602"), Name = "Cable Crunch", Description = "Weighted cable crunch", Type = ExerciseType.WeightTraining, PrimaryMuscleGroup = MuscleGroup.Core },
-            new() { Id = Guid.Parse("11111111-1111-1111-1111-111111111603"), Name = "Hanging Leg Raise", Description = "Core exercise for lower abs", Type = ExerciseType.Bodyweight, PrimaryMuscleGroup = MuscleGroup.Core },
+            new() { Id = Guid.Parse("11111111-1111-1111-1111-111111111601"), Name = "Plank", Description = "Isometric core exercise", Type = ExerciseType.Bodyweight, PrimaryMuscleGroup = MuscleGroup.Core, CreatedAt = seedDate },
+            new() { Id = Guid.Parse("11111111-1111-1111-1111-111111111602"), Name = "Cable Crunch", Description = "Weighted cable crunch", Type = ExerciseType.WeightTraining, PrimaryMuscleGroup = MuscleGroup.Core, CreatedAt = seedDate },
+            new() { Id = Guid.Parse("11111111-1111-1111-1111-111111111603"), Name = "Hanging Leg Raise", Description = "Core exercise for lower abs", Type = ExerciseType.Bodyweight, PrimaryMuscleGroup = MuscleGroup.Core, CreatedAt = seedDate },
             
             // Cardio exercises
-            new() { Id = Guid.Parse("11111111-1111-1111-1111-111111111701"), Name = "Running", Description = "Outdoor or treadmill running", Type = ExerciseType.Cardio, PrimaryMuscleGroup = MuscleGroup.Cardio },
-            new() { Id = Guid.Parse("11111111-1111-1111-1111-111111111702"), Name = "Cycling", Description = "Stationary or outdoor cycling", Type = ExerciseType.Cardio, PrimaryMuscleGroup = MuscleGroup.Cardio },
-            new() { Id = Guid.Parse("11111111-1111-1111-1111-111111111703"), Name = "Rowing", Description = "Rowing machine", Type = ExerciseType.Cardio, PrimaryMuscleGroup = MuscleGroup.Cardio, SecondaryMuscleGroup = MuscleGroup.Back },
-            new() { Id = Guid.Parse("11111111-1111-1111-1111-111111111704"), Name = "Swimming", Description = "Swimming laps", Type = ExerciseType.Cardio, PrimaryMuscleGroup = MuscleGroup.FullBody },
-            new() { Id = Guid.Parse("11111111-1111-1111-1111-111111111705"), Name = "Jump Rope", Description = "Skipping rope for cardio", Type = ExerciseType.Cardio, PrimaryMuscleGroup = MuscleGroup.Cardio },
+            new() { Id = Guid.Parse("11111111-1111-1111-1111-111111111701"), Name = "Running", Description = "Outdoor or treadmill running", Type = ExerciseType.Cardio, PrimaryMuscleGroup = MuscleGroup.Cardio, CreatedAt = seedDate },
+            new() { Id = Guid.Parse("11111111-1111-1111-1111-111111111702"), Name = "Cycling", Description = "Stationary or outdoor cycling", Type = ExerciseType.Cardio, PrimaryMuscleGroup = MuscleGroup.Cardio, CreatedAt = seedDate },
+            new() { Id = Guid.Parse("11111111-1111-1111-1111-111111111703"), Name = "Rowing", Description = "Rowing machine", Type = ExerciseType.Cardio, PrimaryMuscleGroup = MuscleGroup.Cardio, SecondaryMuscleGroup = MuscleGroup.Back, CreatedAt = seedDate },
+            new() { Id = Guid.Parse("11111111-1111-1111-1111-111111111704"), Name = "Swimming", Description = "Swimming laps", Type = ExerciseType.Cardio, PrimaryMuscleGroup = MuscleGroup.FullBody, CreatedAt = seedDate },
+            new() { Id = Guid.Parse("11111111-1111-1111-1111-111111111705"), Name = "Jump Rope", Description = "Skipping rope for cardio", Type = ExerciseType.Cardio, PrimaryMuscleGroup = MuscleGroup.Cardio, CreatedAt = seedDate },
         };
 
     modelBuilder.Entity<Exercise>().HasData(exercises);

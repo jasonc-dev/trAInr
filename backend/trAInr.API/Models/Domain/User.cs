@@ -6,10 +6,15 @@ namespace trAInr.API.Models.Domain;
 public class User
 {
     public Guid Id { get; set; }
+    public string Username { get; set; } = string.Empty;
+    public string PasswordHash { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public string FirstName { get; set; } = string.Empty;
     public string LastName { get; set; } = string.Empty;
-    public DateTime DateOfBirth { get; set; }
+    /// <summary>
+    /// User's date of birth (date only, no time component)
+    /// </summary>
+    public DateOnly DateOfBirth { get; set; }
     public FitnessLevel FitnessLevel { get; set; }
     public FitnessGoal PrimaryGoal { get; set; }
     public int WorkoutDaysPerWeek { get; set; }

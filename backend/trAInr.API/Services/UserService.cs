@@ -31,6 +31,7 @@ public class UserService : IUserService
     return await _context.Users
         .Select(u => new UserSummaryResponse(
             u.Id,
+            u.Username,
             u.Email,
             $"{u.FirstName} {u.LastName}",
             u.FitnessLevel,
@@ -43,6 +44,8 @@ public class UserService : IUserService
     var user = new User
     {
       Id = Guid.NewGuid(),
+      Username = request.Username,
+      PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password, BCrypt.Net.BCrypt.GenerateSalt(12)),
       Email = request.Email,
       FirstName = request.FirstName,
       LastName = request.LastName,
@@ -94,6 +97,7 @@ public class UserService : IUserService
   private static UserResponse MapToResponse(User user) =>
       new(
           user.Id,
+          user.Username,
           user.Email,
           user.FirstName,
           user.LastName,

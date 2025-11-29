@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import styled, { keyframes } from "styled-components";
 import {
   Container,
@@ -10,8 +10,8 @@ import {
   Stack,
   Flex,
 } from "../components/styled";
-import { FitnessLevel, FitnessGoal, CreateUserRequest } from "../types";
-import { useUser } from "../hooks";
+import { FitnessLevel, FitnessGoal, RegisterRequest } from "../types";
+import { useAuth } from "../hooks/useAuth";
 
 const fadeIn = keyframes`
   from { opacity: 0; transform: translateY(20px); }
@@ -37,7 +37,7 @@ const PageWrapper = styled.div`
     ${({ theme }) => theme.colors.background};
 `;
 
-const OnboardingCard = styled(Card)`
+const RegisterCard = styled(Card)`
   max-width: 600px;
   width: 100%;
   animation: ${fadeIn} 0.5s ease-out;
@@ -141,6 +141,41 @@ const OptionCard = styled.button<{ $selected: boolean }>`
   }
 `;
 
+const ErrorMessage = styled.div`
+  background: ${({ theme }) => theme.colors.errorLight};
+  color: ${({ theme }) => theme.colors.error};
+  padding: ${({ theme }) => theme.spacing.md};
+  border-radius: ${({ theme }) => theme.radii.md};
+  margin-bottom: ${({ theme }) => theme.spacing.lg};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  text-align: center;
+`;
+
+const LoginLink = styled.div`
+  text-align: center;
+  margin-top: ${({ theme }) => theme.spacing.lg};
+  color: ${({ theme }) => theme.colors.textSecondary};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+
+  a {
+    color: ${({ theme }) => theme.colors.primary};
+    text-decoration: none;
+    font-weight: ${({ theme }) => theme.fontWeights.semibold};
+    margin-left: ${({ theme }) => theme.spacing.xs};
+    transition: color ${({ theme }) => theme.transitions.fast};
+
+    &:hover {
+      color: ${({ theme }) => theme.colors.primaryLight};
+    }
+  }
+`;
+
+const PasswordHint = styled.span`
+  font-size: ${({ theme }) => theme.fontSizes.xs};
+  color: ${({ theme }) => theme.colors.textMuted};
+  margin-top: 4px;
+`;
+
 const fitnessLevelOptions = [
   {
     value: FitnessLevel.Beginner,
@@ -209,20 +244,22 @@ const daysOptions = [
   { value: "6", label: "6 days per week" },
 ];
 
-export const Onboarding: React.FC = () => {
+export const Register: React.FC = () => {
   const navigate = useNavigate();
-  const { createUser } = useUser();
+  const { register, loading, error, clearError } = useAuth();
   const [step, setStep] = useState(1);
-  const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState<CreateUserRequest>({
+  const [formData, setFormData] = useState<RegisterRequest>({
+    username: "",
+    password: "",
     email: "",
     firstName: "",
     lastName: "",
-    dateOfBirth: new Date(),
+    dateOfBirth: "", // ISO date string (YYYY-MM-DD)
     fitnessLevel: FitnessLevel.Beginner,
     primaryGoal: FitnessGoal.GeneralFitness,
     workoutDaysPerWeek: 3,
   });
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   const handleNext = () => {
     if (step < 3) setStep(step + 1);
@@ -234,24 +271,37 @@ export const Onboarding: React.FC = () => {
 
   const handleSubmit = async () => {
     try {
-      setLoading(true);
-      await createUser(formData);
+      await register(formData);
       navigate("/dashboard");
-    } catch (err) {
-      console.error("Failed to create user:", err);
-    } finally {
-      setLoading(false);
+    } catch {
+      // Error is handled by the hook
     }
   };
+
+  const handleInputChange = (field: keyof RegisterRequest) => (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    clearError();
+    // dateOfBirth is stored as ISO string (YYYY-MM-DD)
+    setFormData({ ...formData, [field]: e.target.value });
+  };
+
+  const passwordsMatch = formData.password === confirmPassword;
+  const passwordLongEnough = formData.password.length >= 6;
 
   const isStepValid = () => {
     switch (step) {
       case 1:
         return (
-          formData.email &&
-          formData.firstName &&
-          formData.lastName &&
-          formData.dateOfBirth
+          formData.username.trim() &&
+          formData.password.trim() &&
+          confirmPassword.trim() &&
+          passwordsMatch &&
+          passwordLongEnough &&
+          formData.email.trim() &&
+          formData.firstName.trim() &&
+          formData.lastName.trim() &&
+          formData.dateOfBirth.trim() // Ensure date is selected
         );
       case 2:
         return formData.fitnessLevel && formData.primaryGoal;
@@ -267,11 +317,11 @@ export const Onboarding: React.FC = () => {
   return (
     <PageWrapper>
       <Container>
-        <OnboardingCard $padding="2rem">
+        <RegisterCard $padding="2rem">
           <Title>
-            Welcome to <span>trAInr</span>
+            Join <span>trAInr</span>
           </Title>
-          <Subtitle>Let's set up your personalized fitness journey</Subtitle>
+          <Subtitle>Create your account and start your fitness journey</Subtitle>
 
           <StepIndicator>
             <Step $active={step === 1} $completed={step > 1}>
@@ -287,45 +337,71 @@ export const Onboarding: React.FC = () => {
             </Step>
           </StepIndicator>
 
+          {error && <ErrorMessage>{error}</ErrorMessage>}
+
           {step === 1 && (
             <Stack gap="1.25rem">
-              <Flex gap="1rem">
+              <Input
+                label="Username"
+                placeholder="Choose a username"
+                value={formData.username}
+                onChange={handleInputChange("username")}
+                autoComplete="username"
+                autoFocus
+              />
+              <div>
                 <Input
-                  label="First Name"
-                  placeholder="John"
-                  value={formData.firstName}
-                  onChange={(e) =>
-                    setFormData({ ...formData, firstName: e.target.value })
-                  }
+                  label="Password"
+                  type="password"
+                  placeholder="Create a password"
+                  value={formData.password}
+                  onChange={handleInputChange("password")}
+                  autoComplete="new-password"
+                  error={formData.password && !passwordLongEnough ? "Password must be at least 6 characters" : undefined}
                 />
-                <Input
-                  label="Last Name"
-                  placeholder="Doe"
-                  value={formData.lastName}
-                  onChange={(e) =>
-                    setFormData({ ...formData, lastName: e.target.value })
-                  }
-                />
-              </Flex>
+                <PasswordHint>Minimum 6 characters</PasswordHint>
+              </div>
+              <Input
+                label="Confirm Password"
+                type="password"
+                placeholder="Confirm your password"
+                value={confirmPassword}
+                onChange={(e) => {
+                  clearError();
+                  setConfirmPassword(e.target.value);
+                }}
+                autoComplete="new-password"
+                error={confirmPassword && !passwordsMatch ? "Passwords do not match" : undefined}
+              />
               <Input
                 label="Email"
                 type="email"
                 placeholder="john@example.com"
                 value={formData.email}
-                onChange={(e) =>
-                  setFormData({ ...formData, email: e.target.value })
-                }
+                onChange={handleInputChange("email")}
+                autoComplete="email"
               />
+              <Flex gap="1rem">
+                <Input
+                  label="First Name"
+                  placeholder="John"
+                  value={formData.firstName}
+                  onChange={handleInputChange("firstName")}
+                  autoComplete="given-name"
+                />
+                <Input
+                  label="Last Name"
+                  placeholder="Doe"
+                  value={formData.lastName}
+                  onChange={handleInputChange("lastName")}
+                  autoComplete="family-name"
+                />
+              </Flex>
               <Input
                 label="Date of Birth"
                 type="date"
-                value={formData.dateOfBirth.toISOString().split("T")[0]}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    dateOfBirth: new Date(e.target.value),
-                  })
-                }
+                value={formData.dateOfBirth}
+                onChange={handleInputChange("dateOfBirth")}
               />
             </Stack>
           )}
@@ -340,6 +416,7 @@ export const Onboarding: React.FC = () => {
                   {fitnessLevelOptions.map((option) => (
                     <OptionCard
                       key={option.value}
+                      type="button"
                       $selected={formData.fitnessLevel === option.value}
                       onClick={() =>
                         setFormData({ ...formData, fitnessLevel: option.value })
@@ -360,6 +437,7 @@ export const Onboarding: React.FC = () => {
                   {fitnessGoalOptions.map((option) => (
                     <OptionCard
                       key={option.value}
+                      type="button"
                       $selected={formData.primaryGoal === option.value}
                       onClick={() =>
                         setFormData({ ...formData, primaryGoal: option.value })
@@ -403,8 +481,9 @@ export const Onboarding: React.FC = () => {
                   Your Profile Summary
                 </h4>
                 <p style={{ color: "#A0AEC0", fontSize: "0.875rem" }}>
-                  <strong>Name:</strong> {formData.firstName}{" "}
-                  {formData.lastName}
+                  <strong>Username:</strong> {formData.username}
+                  <br />
+                  <strong>Name:</strong> {formData.firstName} {formData.lastName}
                   <br />
                   <strong>Level:</strong>{" "}
                   {
@@ -428,7 +507,11 @@ export const Onboarding: React.FC = () => {
           )}
 
           <Flex justify="space-between" style={{ marginTop: "2rem" }}>
-            <Button variant="ghost" onClick={handleBack} disabled={step === 1}>
+            <Button
+              variant="ghost"
+              onClick={handleBack}
+              disabled={step === 1}
+            >
               Back
             </Button>
             {step < 3 ? (
@@ -440,12 +523,18 @@ export const Onboarding: React.FC = () => {
                 onClick={handleSubmit}
                 disabled={!isStepValid() || loading}
               >
-                {loading ? "Creating..." : "Start Training"}
+                {loading ? "Creating Account..." : "Create Account"}
               </Button>
             )}
           </Flex>
-        </OnboardingCard>
+
+          <LoginLink>
+            Already have an account?
+            <Link to="/login">Sign in</Link>
+          </LoginLink>
+        </RegisterCard>
       </Container>
     </PageWrapper>
   );
 };
+

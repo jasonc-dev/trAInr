@@ -4,7 +4,7 @@ public record CreateProgrammeRequest(
     string Name,
     string Description,
     int DurationWeeks,
-    DateTime StartDate);
+    DateOnly StartDate);
 
 public record UpdateProgrammeRequest(
     string Name,
@@ -19,8 +19,8 @@ public record ProgrammeResponse(
     int DurationWeeks,
     bool IsPreMade,
     bool IsActive,
-    DateTime StartDate,
-    DateTime? EndDate,
+    DateOnly StartDate,
+    DateOnly? EndDate,
     DateTime CreatedAt,
     IEnumerable<ProgrammeWeekResponse> Weeks);
 
@@ -30,7 +30,7 @@ public record ProgrammeSummaryResponse(
     string Description,
     int DurationWeeks,
     bool IsActive,
-    DateTime StartDate,
+    DateOnly StartDate,
     int CompletedWeeks,
     double ProgressPercentage);
 

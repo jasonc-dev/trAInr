@@ -6,16 +6,10 @@ namespace trAInr.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class ProgrammesController : ControllerBase
+public class ProgrammesController(IProgrammeService programmeService, IUserService userService) : ControllerBase
 {
-    private readonly IProgrammeService _programmeService;
-    private readonly IUserService _userService;
-
-    public ProgrammesController(IProgrammeService programmeService, IUserService userService)
-    {
-        _programmeService = programmeService;
-        _userService = userService;
-    }
+    private readonly IProgrammeService _programmeService = programmeService;
+    private readonly IUserService _userService = userService;
 
     /// <summary>
     /// Get all pre-made programmes
@@ -128,7 +122,7 @@ public class ProgrammesController : ControllerBase
     /// </summary>
     [HttpPost("{programmeId:guid}/weeks")]
     public async Task<ActionResult<ProgrammeWeekResponse>> AddWeek(
-        Guid programmeId, 
+        Guid programmeId,
         [FromBody] CreateProgrammeWeekRequest request)
     {
         var week = await _programmeService.AddWeekAsync(programmeId, request);
@@ -141,7 +135,7 @@ public class ProgrammesController : ControllerBase
     /// </summary>
     [HttpPut("weeks/{weekId:guid}")]
     public async Task<ActionResult<ProgrammeWeekResponse>> UpdateWeek(
-        Guid weekId, 
+        Guid weekId,
         [FromBody] UpdateProgrammeWeekRequest request)
     {
         var week = await _programmeService.UpdateWeekAsync(weekId, request);

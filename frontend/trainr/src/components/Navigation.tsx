@@ -1,6 +1,7 @@
-import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import styled from 'styled-components';
+import React from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import styled from "styled-components";
+import { useAuth } from "../hooks/useAuth";
 
 const Nav = styled.nav`
   position: fixed;
@@ -29,13 +30,17 @@ const Logo = styled(Link)`
   align-items: center;
   gap: ${({ theme }) => theme.spacing.sm};
   font-family: ${({ theme }) => theme.fonts.heading};
-  font-size: ${({ theme }) => theme.fontSizes['2xl']};
+  font-size: ${({ theme }) => theme.fontSizes["2xl"]};
   font-weight: ${({ theme }) => theme.fontWeights.extrabold};
   color: ${({ theme }) => theme.colors.text};
   text-decoration: none;
-  
+
   span {
-    background: linear-gradient(135deg, ${({ theme }) => theme.colors.primary} 0%, ${({ theme }) => theme.colors.secondary} 100%);
+    background: linear-gradient(
+      135deg,
+      ${({ theme }) => theme.colors.primary} 0%,
+      ${({ theme }) => theme.colors.secondary} 100%
+    );
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -52,30 +57,30 @@ const NavLink = styled(Link)<{ $active?: boolean }>`
   padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.md};
   font-size: ${({ theme }) => theme.fontSizes.md};
   font-weight: ${({ theme }) => theme.fontWeights.medium};
-  color: ${({ theme, $active }) => 
+  color: ${({ theme, $active }) =>
     $active ? theme.colors.primary : theme.colors.textSecondary};
   text-decoration: none;
   border-radius: ${({ theme }) => theme.radii.lg};
   transition: all ${({ theme }) => theme.transitions.fast};
   position: relative;
-  
+
   &::after {
-    content: '';
+    content: "";
     position: absolute;
     bottom: -2px;
     left: 50%;
-    transform: translateX(-50%) scaleX(${({ $active }) => $active ? 1 : 0});
+    transform: translateX(-50%) scaleX(${({ $active }) => ($active ? 1 : 0)});
     width: 60%;
     height: 2px;
     background: ${({ theme }) => theme.colors.primary};
     border-radius: ${({ theme }) => theme.radii.full};
     transition: transform ${({ theme }) => theme.transitions.fast};
   }
-  
+
   &:hover {
     color: ${({ theme }) => theme.colors.text};
     background: ${({ theme }) => theme.colors.surface};
-    
+
     &::after {
       transform: translateX(-50%) scaleX(1);
     }
@@ -87,38 +92,66 @@ const IconWrapper = styled.span`
   margin-right: ${({ theme }) => theme.spacing.xs};
 `;
 
+const LogoutButton = styled.button`
+  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.md};
+  font-size: ${({ theme }) => theme.fontSizes.md};
+  font-weight: ${({ theme }) => theme.fontWeights.medium};
+  color: ${({ theme }) => theme.colors.textSecondary};
+  background: none;
+  border: none;
+  border-radius: ${({ theme }) => theme.radii.lg};
+  transition: all ${({ theme }) => theme.transitions.fast};
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+
+  &:hover {
+    color: ${({ theme }) => theme.colors.error};
+    background: ${({ theme }) => theme.colors.errorLight};
+  }
+`;
+
 export const Navigation: React.FC = () => {
   const location = useLocation();
-  
+  const navigate = useNavigate();
+  const { logout } = useAuth();
   const isActive = (path: string) => location.pathname === path;
-  
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
+
   return (
     <Nav>
       <NavContainer>
-        <Logo to="/">
+        <Logo to="/dashboard">
           <span>trAInr</span>
         </Logo>
-        
+
         <NavLinks>
-          <NavLink to="/dashboard" $active={isActive('/dashboard')}>
+          <NavLink to="/dashboard" $active={isActive("/dashboard")}>
             <IconWrapper>📊</IconWrapper>
             Dashboard
           </NavLink>
-          <NavLink to="/programmes" $active={isActive('/programmes')}>
+          <NavLink to="/programmes" $active={isActive("/programmes")}>
             <IconWrapper>📋</IconWrapper>
             Programmes
           </NavLink>
-          <NavLink to="/workout" $active={isActive('/workout')}>
+          <NavLink to="/workout" $active={isActive("/workout")}>
             <IconWrapper>🏋️</IconWrapper>
             Workout
           </NavLink>
-          <NavLink to="/exercises" $active={isActive('/exercises')}>
+          <NavLink to="/exercises" $active={isActive("/exercises")}>
             <IconWrapper>💪</IconWrapper>
             Exercises
           </NavLink>
+          <LogoutButton onClick={handleLogout}>
+            <IconWrapper>🚪</IconWrapper>
+            Logout
+          </LogoutButton>
         </NavLinks>
       </NavContainer>
     </Nav>
   );
 };
-

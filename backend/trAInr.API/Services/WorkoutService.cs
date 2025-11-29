@@ -84,8 +84,13 @@ public class WorkoutService : IWorkoutService
 
         if (workoutDay is null) return null;
 
+        // Ensure the completed timestamp is in UTC
+        var completedAtUtc = request.CompletedAt.Kind == DateTimeKind.Utc 
+            ? request.CompletedAt 
+            : DateTime.SpecifyKind(request.CompletedAt, DateTimeKind.Utc);
+
         workoutDay.IsCompleted = true;
-        workoutDay.CompletedDate = request.CompletedDate;
+        workoutDay.CompletedDate = completedAtUtc;
 
         // Mark all incomplete sets as completed
         foreach (var exercise in workoutDay.Exercises)
@@ -93,7 +98,7 @@ public class WorkoutService : IWorkoutService
             foreach (var set in exercise.Sets.Where(s => !s.IsCompleted))
             {
                 set.IsCompleted = true;
-                set.CompletedAt = request.CompletedDate;
+                set.CompletedAt = completedAtUtc;
             }
         }
 

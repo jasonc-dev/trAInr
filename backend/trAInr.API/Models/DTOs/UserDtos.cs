@@ -3,10 +3,12 @@ using trAInr.API.Models.Domain;
 namespace trAInr.API.Models.DTOs;
 
 public record CreateUserRequest(
+    string Username,
+    string Password,
     string Email,
     string FirstName,
     string LastName,
-    DateTime DateOfBirth,
+    DateOnly DateOfBirth,
     FitnessLevel FitnessLevel,
     FitnessGoal PrimaryGoal,
     int WorkoutDaysPerWeek);
@@ -20,10 +22,11 @@ public record UpdateUserRequest(
 
 public record UserResponse(
     Guid Id,
+    string Username,
     string Email,
     string FirstName,
     string LastName,
-    DateTime DateOfBirth,
+    DateOnly DateOfBirth,
     FitnessLevel FitnessLevel,
     FitnessGoal PrimaryGoal,
     int WorkoutDaysPerWeek,
@@ -31,6 +34,7 @@ public record UserResponse(
 
 public record UserSummaryResponse(
     Guid Id,
+    string Username,
     string Email,
     string FullName,
     FitnessLevel FitnessLevel,

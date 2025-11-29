@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using trAInr.API.Data;
 
 #nullable disable
@@ -15,49 +16,53 @@ namespace trAInr.API.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "10.0.0-preview.5.25277.114");
+            modelBuilder
+                .HasAnnotation("ProductVersion", "10.0.0-preview.5.25277.114")
+                .HasAnnotation("Relational:MaxIdentifierLength", 63);
+
+            NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
             modelBuilder.Entity("trAInr.API.Models.Domain.Exercise", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid?>("CreatedByUserId")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(1000)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("character varying(1000)");
 
                     b.Property<string>("Instructions")
                         .HasMaxLength(2000)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("character varying(2000)");
 
                     b.Property<bool>("IsSystemExercise")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("boolean");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("character varying(200)");
 
                     b.Property<int>("PrimaryMuscleGroup")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
 
                     b.Property<int?>("SecondaryMuscleGroup")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
 
                     b.Property<int>("Type")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
 
                     b.Property<string>("VideoUrl")
                         .HasMaxLength(500)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("character varying(500)");
 
                     b.HasKey("Id");
 
@@ -73,7 +78,7 @@ namespace trAInr.API.Migrations
                         new
                         {
                             Id = new Guid("11111111-1111-1111-1111-111111111101"),
-                            CreatedAt = new DateTime(2025, 11, 27, 22, 53, 15, 468, DateTimeKind.Utc).AddTicks(1800),
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Barbell bench press for chest development",
                             IsSystemExercise = true,
                             Name = "Bench Press",
@@ -84,7 +89,7 @@ namespace trAInr.API.Migrations
                         new
                         {
                             Id = new Guid("11111111-1111-1111-1111-111111111102"),
-                            CreatedAt = new DateTime(2025, 11, 27, 22, 53, 15, 468, DateTimeKind.Utc).AddTicks(5630),
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Incline press targeting upper chest",
                             IsSystemExercise = true,
                             Name = "Incline Dumbbell Press",
@@ -95,7 +100,7 @@ namespace trAInr.API.Migrations
                         new
                         {
                             Id = new Guid("11111111-1111-1111-1111-111111111103"),
-                            CreatedAt = new DateTime(2025, 11, 27, 22, 53, 15, 468, DateTimeKind.Utc).AddTicks(5660),
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Cable chest fly for isolation",
                             IsSystemExercise = true,
                             Name = "Cable Fly",
@@ -105,7 +110,7 @@ namespace trAInr.API.Migrations
                         new
                         {
                             Id = new Guid("11111111-1111-1111-1111-111111111104"),
-                            CreatedAt = new DateTime(2025, 11, 27, 22, 53, 15, 468, DateTimeKind.Utc).AddTicks(5660),
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Bodyweight chest exercise",
                             IsSystemExercise = true,
                             Name = "Push-ups",
@@ -116,7 +121,7 @@ namespace trAInr.API.Migrations
                         new
                         {
                             Id = new Guid("11111111-1111-1111-1111-111111111201"),
-                            CreatedAt = new DateTime(2025, 11, 27, 22, 53, 15, 468, DateTimeKind.Utc).AddTicks(5660),
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Conventional deadlift for overall back development",
                             IsSystemExercise = true,
                             Name = "Deadlift",
@@ -127,7 +132,7 @@ namespace trAInr.API.Migrations
                         new
                         {
                             Id = new Guid("11111111-1111-1111-1111-111111111202"),
-                            CreatedAt = new DateTime(2025, 11, 27, 22, 53, 15, 468, DateTimeKind.Utc).AddTicks(5680),
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Bodyweight back exercise",
                             IsSystemExercise = true,
                             Name = "Pull-ups",
@@ -138,7 +143,7 @@ namespace trAInr.API.Migrations
                         new
                         {
                             Id = new Guid("11111111-1111-1111-1111-111111111203"),
-                            CreatedAt = new DateTime(2025, 11, 27, 22, 53, 15, 468, DateTimeKind.Utc).AddTicks(5680),
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Bent-over barbell row",
                             IsSystemExercise = true,
                             Name = "Barbell Row",
@@ -149,7 +154,7 @@ namespace trAInr.API.Migrations
                         new
                         {
                             Id = new Guid("11111111-1111-1111-1111-111111111204"),
-                            CreatedAt = new DateTime(2025, 11, 27, 22, 53, 15, 468, DateTimeKind.Utc).AddTicks(5680),
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Cable lat pulldown",
                             IsSystemExercise = true,
                             Name = "Lat Pulldown",
@@ -159,7 +164,7 @@ namespace trAInr.API.Migrations
                         new
                         {
                             Id = new Guid("11111111-1111-1111-1111-111111111301"),
-                            CreatedAt = new DateTime(2025, 11, 27, 22, 53, 15, 468, DateTimeKind.Utc).AddTicks(5680),
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Standing barbell overhead press",
                             IsSystemExercise = true,
                             Name = "Overhead Press",
@@ -170,7 +175,7 @@ namespace trAInr.API.Migrations
                         new
                         {
                             Id = new Guid("11111111-1111-1111-1111-111111111302"),
-                            CreatedAt = new DateTime(2025, 11, 27, 22, 53, 15, 468, DateTimeKind.Utc).AddTicks(5730),
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Dumbbell lateral raise",
                             IsSystemExercise = true,
                             Name = "Lateral Raise",
@@ -180,7 +185,7 @@ namespace trAInr.API.Migrations
                         new
                         {
                             Id = new Guid("11111111-1111-1111-1111-111111111303"),
-                            CreatedAt = new DateTime(2025, 11, 27, 22, 53, 15, 468, DateTimeKind.Utc).AddTicks(5740),
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Cable face pull for rear delts",
                             IsSystemExercise = true,
                             Name = "Face Pull",
@@ -190,7 +195,7 @@ namespace trAInr.API.Migrations
                         new
                         {
                             Id = new Guid("11111111-1111-1111-1111-111111111401"),
-                            CreatedAt = new DateTime(2025, 11, 27, 22, 53, 15, 468, DateTimeKind.Utc).AddTicks(5740),
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Standing barbell bicep curl",
                             IsSystemExercise = true,
                             Name = "Barbell Curl",
@@ -200,7 +205,7 @@ namespace trAInr.API.Migrations
                         new
                         {
                             Id = new Guid("11111111-1111-1111-1111-111111111402"),
-                            CreatedAt = new DateTime(2025, 11, 27, 22, 53, 15, 468, DateTimeKind.Utc).AddTicks(5740),
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Cable tricep pushdown",
                             IsSystemExercise = true,
                             Name = "Tricep Pushdown",
@@ -210,7 +215,7 @@ namespace trAInr.API.Migrations
                         new
                         {
                             Id = new Guid("11111111-1111-1111-1111-111111111403"),
-                            CreatedAt = new DateTime(2025, 11, 27, 22, 53, 15, 468, DateTimeKind.Utc).AddTicks(5740),
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Dumbbell hammer curl",
                             IsSystemExercise = true,
                             Name = "Hammer Curl",
@@ -221,7 +226,7 @@ namespace trAInr.API.Migrations
                         new
                         {
                             Id = new Guid("11111111-1111-1111-1111-111111111404"),
-                            CreatedAt = new DateTime(2025, 11, 27, 22, 53, 15, 468, DateTimeKind.Utc).AddTicks(5750),
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Lying tricep extension",
                             IsSystemExercise = true,
                             Name = "Skull Crushers",
@@ -231,7 +236,7 @@ namespace trAInr.API.Migrations
                         new
                         {
                             Id = new Guid("11111111-1111-1111-1111-111111111501"),
-                            CreatedAt = new DateTime(2025, 11, 27, 22, 53, 15, 468, DateTimeKind.Utc).AddTicks(5750),
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Back squat for leg development",
                             IsSystemExercise = true,
                             Name = "Barbell Squat",
@@ -242,7 +247,7 @@ namespace trAInr.API.Migrations
                         new
                         {
                             Id = new Guid("11111111-1111-1111-1111-111111111502"),
-                            CreatedAt = new DateTime(2025, 11, 27, 22, 53, 15, 468, DateTimeKind.Utc).AddTicks(5750),
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "RDL for hamstring development",
                             IsSystemExercise = true,
                             Name = "Romanian Deadlift",
@@ -253,7 +258,7 @@ namespace trAInr.API.Migrations
                         new
                         {
                             Id = new Guid("11111111-1111-1111-1111-111111111503"),
-                            CreatedAt = new DateTime(2025, 11, 27, 22, 53, 15, 468, DateTimeKind.Utc).AddTicks(5750),
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Machine leg press",
                             IsSystemExercise = true,
                             Name = "Leg Press",
@@ -263,7 +268,7 @@ namespace trAInr.API.Migrations
                         new
                         {
                             Id = new Guid("11111111-1111-1111-1111-111111111504"),
-                            CreatedAt = new DateTime(2025, 11, 27, 22, 53, 15, 468, DateTimeKind.Utc).AddTicks(5750),
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Lying leg curl",
                             IsSystemExercise = true,
                             Name = "Leg Curl",
@@ -273,7 +278,7 @@ namespace trAInr.API.Migrations
                         new
                         {
                             Id = new Guid("11111111-1111-1111-1111-111111111505"),
-                            CreatedAt = new DateTime(2025, 11, 27, 22, 53, 15, 468, DateTimeKind.Utc).AddTicks(5760),
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Standing calf raise",
                             IsSystemExercise = true,
                             Name = "Calf Raise",
@@ -283,7 +288,7 @@ namespace trAInr.API.Migrations
                         new
                         {
                             Id = new Guid("11111111-1111-1111-1111-111111111506"),
-                            CreatedAt = new DateTime(2025, 11, 27, 22, 53, 15, 468, DateTimeKind.Utc).AddTicks(5760),
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Walking or stationary lunges",
                             IsSystemExercise = true,
                             Name = "Lunges",
@@ -294,7 +299,7 @@ namespace trAInr.API.Migrations
                         new
                         {
                             Id = new Guid("11111111-1111-1111-1111-111111111601"),
-                            CreatedAt = new DateTime(2025, 11, 27, 22, 53, 15, 468, DateTimeKind.Utc).AddTicks(5760),
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Isometric core exercise",
                             IsSystemExercise = true,
                             Name = "Plank",
@@ -304,7 +309,7 @@ namespace trAInr.API.Migrations
                         new
                         {
                             Id = new Guid("11111111-1111-1111-1111-111111111602"),
-                            CreatedAt = new DateTime(2025, 11, 27, 22, 53, 15, 468, DateTimeKind.Utc).AddTicks(5760),
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Weighted cable crunch",
                             IsSystemExercise = true,
                             Name = "Cable Crunch",
@@ -314,7 +319,7 @@ namespace trAInr.API.Migrations
                         new
                         {
                             Id = new Guid("11111111-1111-1111-1111-111111111603"),
-                            CreatedAt = new DateTime(2025, 11, 27, 22, 53, 15, 468, DateTimeKind.Utc).AddTicks(5760),
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Core exercise for lower abs",
                             IsSystemExercise = true,
                             Name = "Hanging Leg Raise",
@@ -324,7 +329,7 @@ namespace trAInr.API.Migrations
                         new
                         {
                             Id = new Guid("11111111-1111-1111-1111-111111111701"),
-                            CreatedAt = new DateTime(2025, 11, 27, 22, 53, 15, 468, DateTimeKind.Utc).AddTicks(5760),
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Outdoor or treadmill running",
                             IsSystemExercise = true,
                             Name = "Running",
@@ -334,7 +339,7 @@ namespace trAInr.API.Migrations
                         new
                         {
                             Id = new Guid("11111111-1111-1111-1111-111111111702"),
-                            CreatedAt = new DateTime(2025, 11, 27, 22, 53, 15, 468, DateTimeKind.Utc).AddTicks(5770),
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Stationary or outdoor cycling",
                             IsSystemExercise = true,
                             Name = "Cycling",
@@ -344,7 +349,7 @@ namespace trAInr.API.Migrations
                         new
                         {
                             Id = new Guid("11111111-1111-1111-1111-111111111703"),
-                            CreatedAt = new DateTime(2025, 11, 27, 22, 53, 15, 468, DateTimeKind.Utc).AddTicks(5770),
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Rowing machine",
                             IsSystemExercise = true,
                             Name = "Rowing",
@@ -355,7 +360,7 @@ namespace trAInr.API.Migrations
                         new
                         {
                             Id = new Guid("11111111-1111-1111-1111-111111111704"),
-                            CreatedAt = new DateTime(2025, 11, 27, 22, 53, 15, 468, DateTimeKind.Utc).AddTicks(5770),
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Swimming laps",
                             IsSystemExercise = true,
                             Name = "Swimming",
@@ -365,7 +370,7 @@ namespace trAInr.API.Migrations
                         new
                         {
                             Id = new Guid("11111111-1111-1111-1111-111111111705"),
-                            CreatedAt = new DateTime(2025, 11, 27, 22, 53, 15, 468, DateTimeKind.Utc).AddTicks(5770),
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Skipping rope for cardio",
                             IsSystemExercise = true,
                             Name = "Jump Rope",
@@ -378,49 +383,49 @@ namespace trAInr.API.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime?>("CompletedAt")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int?>("Difficulty")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
 
                     b.Property<decimal?>("Distance")
                         .HasPrecision(10, 2)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("numeric(10,2)");
 
                     b.Property<int?>("DurationSeconds")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
 
                     b.Property<int?>("Intensity")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
 
                     b.Property<bool>("IsCompleted")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("boolean");
 
                     b.Property<bool>("IsWarmup")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("boolean");
 
                     b.Property<string>("Notes")
                         .HasMaxLength(500)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("character varying(500)");
 
                     b.Property<int?>("Reps")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
 
                     b.Property<int>("SetNumber")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
 
                     b.Property<decimal?>("Weight")
                         .HasPrecision(10, 2)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("numeric(10,2)");
 
                     b.Property<Guid>("WorkoutExerciseId")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
@@ -435,41 +440,41 @@ namespace trAInr.API.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(1000)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("character varying(1000)");
 
                     b.Property<int>("DurationWeeks")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
 
-                    b.Property<DateTime?>("EndDate")
-                        .HasColumnType("TEXT");
+                    b.Property<DateOnly?>("EndDate")
+                        .HasColumnType("date");
 
                     b.Property<bool>("IsActive")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("boolean");
 
                     b.Property<bool>("IsPreMade")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("boolean");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("character varying(200)");
 
-                    b.Property<DateTime>("StartDate")
-                        .HasColumnType("TEXT");
+                    b.Property<DateOnly>("StartDate")
+                        .HasColumnType("date");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("UserId")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
@@ -484,23 +489,23 @@ namespace trAInr.API.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<bool>("IsCompleted")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("boolean");
 
                     b.Property<string>("Notes")
                         .HasMaxLength(500)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("character varying(500)");
 
                     b.Property<Guid>("ProgrammeId")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("uuid");
 
                     b.Property<int>("WeekNumber")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -514,44 +519,57 @@ namespace trAInr.API.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime>("DateOfBirth")
-                        .HasColumnType("TEXT");
+                    b.Property<DateOnly>("DateOfBirth")
+                        .HasColumnType("date");
 
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(256)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("character varying(256)");
 
                     b.Property<string>("FirstName")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("character varying(100)");
 
                     b.Property<int>("FitnessLevel")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
 
                     b.Property<string>("LastName")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
 
                     b.Property<int>("PrimaryGoal")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<int>("WorkoutDaysPerWeek")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
                     b.HasIndex("Email")
+                        .IsUnique();
+
+                    b.HasIndex("Username")
                         .IsUnique();
 
                     b.ToTable("Users");
@@ -561,37 +579,37 @@ namespace trAInr.API.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime?>("CompletedDate")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("DayOfWeek")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
 
                     b.Property<string>("Description")
                         .HasMaxLength(500)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("character varying(500)");
 
                     b.Property<bool>("IsCompleted")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("boolean");
 
                     b.Property<bool>("IsRestDay")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("boolean");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("character varying(100)");
 
                     b.Property<Guid>("ProgrammeWeekId")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("uuid");
 
-                    b.Property<DateTime?>("ScheduledDate")
-                        .HasColumnType("TEXT");
+                    b.Property<DateOnly?>("ScheduledDate")
+                        .HasColumnType("date");
 
                     b.HasKey("Id");
 
@@ -606,40 +624,40 @@ namespace trAInr.API.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("ExerciseId")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Notes")
                         .HasMaxLength(500)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("character varying(500)");
 
                     b.Property<int>("OrderIndex")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
 
                     b.Property<decimal?>("TargetDistance")
                         .HasPrecision(10, 2)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("numeric(10,2)");
 
                     b.Property<int?>("TargetDurationSeconds")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
 
                     b.Property<int>("TargetReps")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
 
                     b.Property<int>("TargetSets")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
 
                     b.Property<decimal?>("TargetWeight")
                         .HasPrecision(10, 2)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("numeric(10,2)");
 
                     b.Property<Guid>("WorkoutDayId")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 

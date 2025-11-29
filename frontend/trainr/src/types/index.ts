@@ -54,24 +54,60 @@ export enum Intensity {
   Maximum = 5,
 }
 
-// User types
-export interface User {
-  id: string;
+// Auth types
+export interface LoginRequest {
+  username: string;
+  password: string;
+}
+
+export interface RegisterRequest {
+  username: string;
+  password: string;
   email: string;
   firstName: string;
   lastName: string;
+  /** Date of birth in ISO format (YYYY-MM-DD) */
   dateOfBirth: string;
   fitnessLevel: FitnessLevel;
   primaryGoal: FitnessGoal;
   workoutDaysPerWeek: number;
+}
+
+export interface AuthResponse {
+  id: string;
+  username: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  token: string;
+  /** Token expiration in ISO 8601 format */
+  expiresAt: string;
+}
+
+// User types
+export interface User {
+  id: string;
+  username: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  /** Date of birth in ISO format (YYYY-MM-DD) */
+  dateOfBirth: string;
+  fitnessLevel: FitnessLevel;
+  primaryGoal: FitnessGoal;
+  workoutDaysPerWeek: number;
+  /** Created timestamp in ISO 8601 format */
   createdAt: string;
 }
 
 export interface CreateUserRequest {
+  username: string;
+  password: string;
   email: string;
   firstName: string;
   lastName: string;
-  dateOfBirth: Date;
+  /** Date of birth in ISO format (YYYY-MM-DD) */
+  dateOfBirth: string;
   fitnessLevel: FitnessLevel;
   primaryGoal: FitnessGoal;
   workoutDaysPerWeek: number;
@@ -94,8 +130,11 @@ export interface Programme {
   durationWeeks: number;
   isPreMade: boolean;
   isActive: boolean;
+  /** Start date in ISO format (YYYY-MM-DD) */
   startDate: string;
+  /** End date in ISO format (YYYY-MM-DD), optional */
   endDate?: string;
+  /** Created timestamp in ISO 8601 format */
   createdAt: string;
   weeks: ProgrammeWeek[];
 }
@@ -106,6 +145,7 @@ export interface ProgrammeSummary {
   description: string;
   durationWeeks: number;
   isActive: boolean;
+  /** Start date in ISO format (YYYY-MM-DD) */
   startDate: string;
   completedWeeks: number;
   progressPercentage: number;
@@ -123,6 +163,7 @@ export interface CreateProgrammeRequest {
   name: string;
   description: string;
   durationWeeks: number;
+  /** Start date in ISO format (YYYY-MM-DD) */
   startDate: string;
 }
 
@@ -133,7 +174,9 @@ export interface WorkoutDay {
   dayOfWeek: number;
   name: string;
   description?: string;
+  /** Scheduled date in ISO format (YYYY-MM-DD), optional */
   scheduledDate?: string;
+  /** Completed timestamp in ISO 8601 format, optional */
   completedDate?: string;
   isCompleted: boolean;
   isRestDay: boolean;
@@ -144,6 +187,7 @@ export interface CreateWorkoutDayRequest {
   dayOfWeek: number;
   name: string;
   description?: string;
+  /** Scheduled date in ISO format (YYYY-MM-DD), optional */
   scheduledDate?: string;
   isRestDay: boolean;
 }

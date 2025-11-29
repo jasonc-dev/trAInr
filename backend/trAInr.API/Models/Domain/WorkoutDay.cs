@@ -10,7 +10,13 @@ public class WorkoutDay
     public DayOfWeek DayOfWeek { get; set; }
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
-    public DateTime? ScheduledDate { get; set; }
+    /// <summary>
+    /// Scheduled date for this workout (date only, no time component)
+    /// </summary>
+    public DateOnly? ScheduledDate { get; set; }
+    /// <summary>
+    /// When the workout was completed (UTC timestamp)
+    /// </summary>
     public DateTime? CompletedDate { get; set; }
     public bool IsCompleted { get; set; }
     public bool IsRestDay { get; set; }

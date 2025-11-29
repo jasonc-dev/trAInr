@@ -12,8 +12,14 @@ public class Programme
   public int DurationWeeks { get; set; }
   public bool IsPreMade { get; set; }
   public bool IsActive { get; set; }
-  public DateTime StartDate { get; set; }
-  public DateTime? EndDate { get; set; }
+  /// <summary>
+  /// Programme start date (date only, no time component)
+  /// </summary>
+  public DateOnly StartDate { get; set; }
+  /// <summary>
+  /// Programme end date (date only, no time component)
+  /// </summary>
+  public DateOnly? EndDate { get; set; }
   public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
   public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 

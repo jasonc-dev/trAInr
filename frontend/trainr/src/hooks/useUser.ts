@@ -1,30 +1,49 @@
-import { useState, useEffect, useCallback } from 'react';
-import { User, CreateUserRequest } from '../types';
-import { usersApi } from '../api';
+import { useState, useEffect, useCallback } from "react";
+import { getAuthToken } from "../api/client";
 
-const USER_STORAGE_KEY = 'trainr_user_id';
+const USER_STORAGE_KEY = "trainr_user";
+
+interface StoredUser {
+  id: string;
+  username: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  expiresAt: string;
+}
 
 export const useUser = () => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<StoredUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const loadUser = useCallback(async () => {
-    const storedUserId = localStorage.getItem(USER_STORAGE_KEY);
-    if (!storedUserId) {
+  const loadUser = useCallback(() => {
+    const token = getAuthToken();
+    const storedUser = localStorage.getItem(USER_STORAGE_KEY);
+    
+    if (!token || !storedUser) {
+      setUser(null);
       setLoading(false);
       return;
     }
 
     try {
-      setLoading(true);
-      const response = await usersApi.getById(storedUserId);
-      setUser(response.data);
-      setError(null);
+      const parsed = JSON.parse(storedUser) as StoredUser;
+      const expiresAt = new Date(parsed.expiresAt);
+      
+      if (expiresAt > new Date()) {
+        setUser(parsed);
+        setError(null);
+      } else {
+        // Token expired
+        localStorage.removeItem(USER_STORAGE_KEY);
+        setUser(null);
+      }
     } catch (err) {
-      console.error('Failed to load user:', err);
+      console.error("Failed to parse stored user:", err);
       localStorage.removeItem(USER_STORAGE_KEY);
-      setError('Failed to load user');
+      setUser(null);
+      setError("Failed to load user");
     } finally {
       setLoading(false);
     }
@@ -34,35 +53,23 @@ export const useUser = () => {
     loadUser();
   }, [loadUser]);
 
-  const createUser = async (request: CreateUserRequest): Promise<User> => {
-    try {
-      setLoading(true);
-      const response = await usersApi.create(request);
-      setUser(response.data);
-      localStorage.setItem(USER_STORAGE_KEY, response.data.id);
-      setError(null);
-      return response.data;
-    } catch (err: any) {
-      const message = err.response?.data || 'Failed to create user';
-      setError(message);
-      throw new Error(message);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Listen for storage changes (e.g., logout in another tab)
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === USER_STORAGE_KEY || e.key === "trainr_auth_token") {
+        loadUser();
+      }
+    };
 
-  const logout = () => {
-    localStorage.removeItem(USER_STORAGE_KEY);
-    setUser(null);
-  };
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, [loadUser]);
 
   return {
     user,
     loading,
     error,
-    createUser,
-    logout,
     isAuthenticated: !!user,
+    userId: user?.id ?? null,
   };
 };
-

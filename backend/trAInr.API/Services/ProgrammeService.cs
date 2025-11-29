@@ -214,7 +214,7 @@ public class ProgrammeService : IProgrammeService
             DurationWeeks = source.DurationWeeks,
             IsPreMade = false,
             IsActive = true,
-            StartDate = DateTime.UtcNow.Date,
+            StartDate = DateOnly.FromDateTime(DateTime.UtcNow),
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };

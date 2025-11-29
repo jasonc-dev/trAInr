@@ -4,13 +4,13 @@ public record CreateWorkoutDayRequest(
     DayOfWeek DayOfWeek,
     string Name,
     string? Description,
-    DateTime? ScheduledDate,
+    DateOnly? ScheduledDate,
     bool IsRestDay);
 
 public record UpdateWorkoutDayRequest(
     string Name,
     string? Description,
-    DateTime? ScheduledDate,
+    DateOnly? ScheduledDate,
     bool IsCompleted,
     bool IsRestDay);
 
@@ -20,7 +20,7 @@ public record WorkoutDayResponse(
     DayOfWeek DayOfWeek,
     string Name,
     string? Description,
-    DateTime? ScheduledDate,
+    DateOnly? ScheduledDate,
     DateTime? CompletedDate,
     bool IsCompleted,
     bool IsRestDay,
@@ -35,6 +35,9 @@ public record WorkoutDaySummaryResponse(
     int ExerciseCount,
     int CompletedExerciseCount);
 
+/// <summary>
+/// Request to complete a workout. CompletedAt is expected in UTC.
+/// </summary>
 public record CompleteWorkoutRequest(
-    DateTime CompletedDate);
+    DateTime CompletedAt);
 
