@@ -14,6 +14,7 @@ A full-stack workout tracking application built with React/TypeScript frontend a
 ## Tech Stack
 
 ### Frontend
+
 - React 19 with TypeScript
 - Styled Components for styling
 - React Router for navigation
@@ -21,6 +22,7 @@ A full-stack workout tracking application built with React/TypeScript frontend a
 - Axios for API communication
 
 ### Backend
+
 - .NET 10 Web API
 - Entity Framework Core with SQLite (dev) / PostgreSQL (Docker)
 - RESTful API design
@@ -43,12 +45,14 @@ docker-compose up -d --build
 ```
 
 The application will be available at:
+
 - **Frontend**: http://localhost:3000
 - **Backend API**: http://localhost:8080
 - **Swagger UI**: http://localhost:8080/swagger
 - **Database**: PostgreSQL on port 5432
 
 To stop the services:
+
 ```bash
 docker-compose down
 
@@ -67,11 +71,13 @@ docker-compose down -v
 ### Backend Setup
 
 1. Navigate to the backend directory:
+
    ```bash
    cd backend/trAInr.API
    ```
 
 2. Restore packages:
+
    ```bash
    dotnet restore
    ```
@@ -86,16 +92,19 @@ The API will be available at `http://localhost:8080` with Swagger UI at `http://
 ### Frontend Setup
 
 1. Navigate to the frontend directory:
+
    ```bash
    cd frontend/trainr
    ```
 
 2. Install dependencies:
+
    ```bash
    npm install
    ```
 
 3. Create environment file:
+
    ```bash
    cp .env.example .env
    ```
@@ -112,6 +121,7 @@ The app will be available at `http://localhost:3000`.
 If you want to use PostgreSQL locally instead of SQLite:
 
 1. Start just the database:
+
    ```bash
    docker-compose -f docker-compose.dev.yml up -d
    ```
@@ -119,7 +129,6 @@ If you want to use PostgreSQL locally instead of SQLite:
 2. Update `appsettings.Development.json`:
    ```json
    {
-     "UsePostgres": true,
      "ConnectionStrings": {
        "DefaultConnection": "Host=localhost;Database=trainr;Username=trainr;Password=trainr_password"
      }
@@ -159,6 +168,7 @@ trAInr/
 ## API Endpoints
 
 ### Users
+
 - `GET /api/users` - Get all users
 - `GET /api/users/{id}` - Get user by ID
 - `POST /api/users` - Create user
@@ -166,6 +176,7 @@ trAInr/
 - `DELETE /api/users/{id}` - Delete user
 
 ### Programmes
+
 - `GET /api/programmes/user/{userId}` - Get user's programmes
 - `GET /api/programmes/{id}` - Get programme details
 - `POST /api/programmes/user/{userId}` - Create programme
@@ -173,6 +184,7 @@ trAInr/
 - `DELETE /api/programmes/{id}` - Delete programme
 
 ### Workouts
+
 - `GET /api/workouts/days/{id}` - Get workout day
 - `POST /api/workouts/weeks/{weekId}/days` - Create workout day
 - `POST /api/workouts/days/{id}/complete` - Complete workout
@@ -181,11 +193,13 @@ trAInr/
 - `POST /api/workouts/sets/{id}/complete` - Complete set
 
 ### Exercises
+
 - `GET /api/exercises` - Get all exercises
 - `GET /api/exercises/search` - Search exercises
 - `GET /api/exercises/{id}` - Get exercise details
 
 ### Dashboard
+
 - `GET /api/dashboard/user/{userId}` - Get dashboard data
 - `GET /api/dashboard/programme/{programmeId}/weekly-progress` - Weekly metrics
 - `GET /api/dashboard/user/{userId}/exercises` - Exercise metrics
@@ -193,21 +207,25 @@ trAInr/
 ## Data Models
 
 ### User
+
 - Personal information (name, email, DOB)
 - Fitness level (Beginner/Intermediate/Advanced/Elite)
 - Primary goal (Build Muscle/Lose Weight/Improve Endurance/Increase Strength/General Fitness)
 - Workout days per week
 
 ### Programme
+
 - Name and description
 - Duration (4-10 weeks)
 - Collection of weeks with workout days
 
 ### WorkoutDay
+
 - Day of week assignment
 - Collection of exercises with target sets/reps/weight
 
 ### ExerciseSet
+
 - Tracked metrics (reps, weight, duration, distance)
 - Difficulty and intensity ratings
 - Completion status
@@ -215,16 +233,17 @@ trAInr/
 ## Environment Variables
 
 ### Backend
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `ASPNETCORE_ENVIRONMENT` | Environment (Development/Docker) | Development |
-| `ConnectionStrings__DefaultConnection` | Database connection string | SQLite file |
-| `UsePostgres` | Use PostgreSQL instead of SQLite | false |
-| `AllowedOrigins__0` | CORS allowed origin | http://localhost:3000 |
+
+| Variable                               | Description                      | Default               |
+| -------------------------------------- | -------------------------------- | --------------------- |
+| `ASPNETCORE_ENVIRONMENT`               | Environment (Development/Docker) | Development           |
+| `ConnectionStrings__DefaultConnection` | Database connection string       | SQLite file           |
+| `AllowedOrigins__0`                    | CORS allowed origin              | http://localhost:3000 |
 
 ### Frontend
-| Variable | Description | Default |
-|----------|-------------|---------|
+
+| Variable            | Description     | Default                   |
+| ------------------- | --------------- | ------------------------- |
 | `REACT_APP_API_URL` | Backend API URL | http://localhost:8080/api |
 
 ## License

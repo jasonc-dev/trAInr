@@ -30,7 +30,6 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Docker
       - ConnectionStrings__DefaultConnection=Host=db;Database=trainr;Username=trainr;Password=trainr_password
-      - UsePostgres=true
       - AllowedOrigins__0=http://localhost:3000
       - AllowedOrigins__1=http://localhost
     ports:
