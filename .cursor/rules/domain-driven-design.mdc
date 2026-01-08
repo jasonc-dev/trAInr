@@ -1,0 +1,278 @@
+# Domain-Driven Design Model Definition (.mdc)
+
+## 1. Domain Overview
+
+A workout/exercise programme tracking application requires strong separation of core business logic into well-defined bounded contexts. The domains below represent the core, supporting, and generic subdomains for a fitness training platform.
+
+---
+
+## 2. Bounded Contexts
+
+### **TrainingProgram (Core Domain)**
+
+- Entities/Aggregates:
+
+  - ProgramTemplate
+  - Block/Phase
+  - WeekTemplate
+  - ProgressionScheme
+  - AssignedProgram
+
+- Responsibilities:
+
+  - Manage program templates, periodisation, and phase progression
+  - Apply progression rules and constraints
+  - Maintain intentions of training structure
+
+- Key Domain Events:
+
+  - `ProgramAssigned`
+  - `ProgramPhaseCompleted`
+
+---
+
+### **WorkoutSession (Core Domain)**
+
+- Entities/Aggregates:
+
+  - WorkoutSession
+  - ExerciseInstance
+  - SetLog
+  - CompletedSet
+
+- Responsibilities:
+
+  - Handle execution of workouts
+  - Record actual performance (sets, reps, RPE, tempo)
+  - Support autoregulation and session-level constraints
+
+- Domain Events:
+
+  - `SessionCompleted`
+  - `SetLogged`
+
+---
+
+### **ExerciseCatalog (Core Domain)**
+
+- Entities/Aggregates:
+
+  - ExerciseDefinition
+  - MovementPattern
+  - MuscleGroup
+  - EquipmentRequirement
+
+- Responsibilities:
+
+  - Define legal movements and constraints
+  - Provide canonical exercise definitions
+  - Support safe instantiation in sessions/programs
+
+---
+
+### **AthleteProfile (Supporting Domain)**
+
+- Entities/Aggregates:
+
+  - Athlete
+  - TrainingLevel
+  - Constraints
+  - EquipmentPreferences
+  - Readiness
+
+- Responsibilities:
+
+  - Maintain athlete capabilities, equipment availability, restrictions
+  - Feed personalised data into program creation & progression
+
+- Domain Events:
+
+  - `TrainingLevelAdjusted`
+  - `ReadinessUpdated`
+
+---
+
+### **ProgressionEngine (Supporting Domain)**
+
+- Entities/Value Objects:
+
+  - AutoProgressionRule
+  - LoadPrescription
+  - FatigueIndex
+  - DeloadRule
+
+- Responsibilities:
+
+  - Apply progression/adaptation logic
+  - Calculate load adjustments based on performance
+  - Trigger deloads, plateaus, and fatigue responses
+
+---
+
+### **Analytics (Generic Domain)**
+
+- Services:
+
+  - VolumeLoadCalculator
+  - PRCalculator
+  - TrendMetrics
+
+- Responsibilities:
+
+  - Compute derived metrics from logged sessions
+  - Support insights and reporting
+
+---
+
+## 3. Clean Architecture Layer Mapping
+
+### **Domain Layer**
+
+- All aggregates, value objects, domain services, and domain events
+- Must contain only pure business rules (no EF Core, no controllers, no DTOs)
+
+### **Application Layer**
+
+- Use cases / Interactors
+- Orchestrates domain objects to fulfil commands
+- Handles transactions, repository usage, event dispatch
+- No business logic inside this layer
+
+### **Infrastructure Layer**
+
+- EF Core entity configurations, repositories, migrations
+- External integrations (APIs, wearable data, email, Stripe)
+- Serialization, persistence, logging
+
+### **Presentation Layer**
+
+- Controllers / Minimal APIs / GraphQL / Blazor components
+- Only receives input, forwards commands, and emits DTO responses
+
+---
+
+## 4. Aggregate Boundary Definitions
+
+### **1. Athlete (Aggregate Root)**
+
+- TrainingLevel
+- Constraints
+- EquipmentPreferences
+- Methods:
+
+  - AdjustTrainingLevel()
+  - UpdateReadiness()
+
+### **2. AssignedProgram (Aggregate Root)**
+
+- AthleteId
+- ProgramTemplateId
+- CurrentPhase
+- Methods:
+
+  - AdvancePhase()
+  - Reset()
+  - ValidateProgression()
+
+### **3. WorkoutSession (Aggregate Root)**
+
+- AthleteId
+- Date
+- ExerciseInstances[]
+- Methods:
+
+  - AddCompletedSet()
+  - FinalizeSession()
+
+### **4. ExerciseDefinition (Aggregate Root)**
+
+- MovementPattern
+- MuscleGroups
+- EquipmentRequirements
+- Methods:
+
+  - ValidateUsage()
+
+---
+
+## 5. Value Objects
+
+- Load
+- Reps
+- RPE
+- Tempo
+- FatigueIndex
+- EquipmentRequirement
+
+Value objects enforce invariants and prevent invalid states.
+
+---
+
+## 6. Domain Services
+
+- AutoProgressionRule
+- DeloadRule
+- FatigueIndexCalculator
+- VolumeLoadCalculator
+- TrendMetrics
+
+Domain services encapsulate behaviour that does not belong to a single aggregate.
+
+---
+
+## 7. Key Invariants
+
+- A WorkoutSession cannot contain exercises not defined in ExerciseCatalog
+- AssignedProgram cannot advance phases without satisfying progression rules
+- CompletedSet must validate against target sets and exercise constraints
+- Athlete constraints must be respected by program templates and session creation
+
+---
+
+## 8. High-Level Domain Diagram (Text UML)
+
+```
+Athlete (AGG)
+  ├── TrainingLevel
+  ├── Constraints
+  └── EquipmentPreferences
+        │
+        ▼
+AssignedProgram (AGG)
+  ├── ProgramTemplateId
+  ├── CurrentPhase
+  └── Methods: AdvancePhase(), Reset()
+        │
+        ▼
+ProgramTemplate (AGG)
+  ├── Blocks[]
+  └── ProgressionScheme
+        │
+        ▼
+WorkoutSession (AGG)
+  ├── ExerciseInstances[]
+  └── CompletedSets[]
+        │
+        ▼
+ExerciseDefinition (AGG)
+  ├── MovementPattern
+  ├── MuscleGroups
+  └── EquipmentRequirements
+```
+
+---
+
+## 9. Implementation Priorities
+
+1. Define aggregate boundaries
+2. Extract domain behaviour into entity methods
+3. Create value objects for all domain concepts
+4. Move persistence logic into Infrastructure
+5. Convert progression logic into domain services
+6. Introduce application-level use cases
+
+---
+
+## 10. Notes
+
+This `.mdc` file is designed for IDE usage (Cursor) to enforce strict DDD implementation discipline. It contains boundaries, aggregate definitions, and rules required to maintain clean architecture and a fully domain-driven structure.

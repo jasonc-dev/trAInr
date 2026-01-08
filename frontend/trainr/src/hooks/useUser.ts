@@ -1,16 +1,12 @@
-import { useState, useEffect, useCallback } from "react";
-import { getAuthToken } from "../api/client";
+/**
+ * useUser Hook
+ * Manages current user state
+ */
 
-const USER_STORAGE_KEY = "trainr_user";
-
-interface StoredUser {
-  id: string;
-  username: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  expiresAt: string;
-}
+import { useState, useEffect, useCallback } from 'react';
+import { getAuthToken } from '../services';
+import { StoredUser } from '../types';
+import { STORAGE_KEYS } from '../config';
 
 export const useUser = () => {
   const [user, setUser] = useState<StoredUser | null>(null);
@@ -19,8 +15,8 @@ export const useUser = () => {
 
   const loadUser = useCallback(() => {
     const token = getAuthToken();
-    const storedUser = localStorage.getItem(USER_STORAGE_KEY);
-    
+    const storedUser = localStorage.getItem(STORAGE_KEYS.user);
+
     if (!token || !storedUser) {
       setUser(null);
       setLoading(false);
@@ -30,20 +26,19 @@ export const useUser = () => {
     try {
       const parsed = JSON.parse(storedUser) as StoredUser;
       const expiresAt = new Date(parsed.expiresAt);
-      
+
       if (expiresAt > new Date()) {
         setUser(parsed);
         setError(null);
       } else {
-        // Token expired
-        localStorage.removeItem(USER_STORAGE_KEY);
+        localStorage.removeItem(STORAGE_KEYS.user);
         setUser(null);
       }
     } catch (err) {
-      console.error("Failed to parse stored user:", err);
-      localStorage.removeItem(USER_STORAGE_KEY);
+      console.error('Failed to parse stored user:', err);
+      localStorage.removeItem(STORAGE_KEYS.user);
       setUser(null);
-      setError("Failed to load user");
+      setError('Failed to load user');
     } finally {
       setLoading(false);
     }
@@ -56,13 +51,13 @@ export const useUser = () => {
   // Listen for storage changes (e.g., logout in another tab)
   useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === USER_STORAGE_KEY || e.key === "trainr_auth_token") {
+      if (e.key === STORAGE_KEYS.user || e.key === STORAGE_KEYS.authToken) {
         loadUser();
       }
     };
 
-    window.addEventListener("storage", handleStorageChange);
-    return () => window.removeEventListener("storage", handleStorageChange);
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, [loadUser]);
 
   return {
