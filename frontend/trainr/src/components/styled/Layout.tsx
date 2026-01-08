@@ -12,7 +12,7 @@ export const Container = styled.div`
 
 export const PageWrapper = styled.main`
   min-height: 100vh;
-  padding-top: 80px;
+  padding-top: 20px;
   padding-bottom: ${({ theme }) => theme.spacing["2xl"]};
 `;
 

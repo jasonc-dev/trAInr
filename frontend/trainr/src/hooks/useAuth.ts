@@ -1,18 +1,12 @@
-import { useState, useEffect, useCallback } from "react";
-import { authApi } from "../api/auth";
-import { setAuthToken, removeAuthToken, getAuthToken } from "../api/client";
-import { AuthResponse, LoginRequest, RegisterRequest } from "../types";
+/**
+ * useAuth Hook
+ * Manages authentication state and operations
+ */
 
-const USER_STORAGE_KEY = "trainr_user";
-
-interface StoredUser {
-  id: string;
-  username: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  expiresAt: string;
-}
+import { useState, useEffect, useCallback } from 'react';
+import { authApi, setAuthToken, removeAuthToken, getAuthToken } from '../services';
+import { AuthResponse, LoginRequest, RegisterRequest, StoredUser } from '../types';
+import { STORAGE_KEYS } from '../config';
 
 export const useAuth = () => {
   const [user, setUser] = useState<StoredUser | null>(null);
@@ -22,7 +16,7 @@ export const useAuth = () => {
 
   const logout = useCallback(() => {
     removeAuthToken();
-    localStorage.removeItem(USER_STORAGE_KEY);
+    localStorage.removeItem(STORAGE_KEYS.user);
     setUser(null);
     setIsAuthenticated(false);
     setError(null);
@@ -30,7 +24,7 @@ export const useAuth = () => {
 
   // Check for existing auth on mount
   useEffect(() => {
-    const storedUser = localStorage.getItem(USER_STORAGE_KEY);
+    const storedUser = localStorage.getItem(STORAGE_KEYS.user);
     const token = getAuthToken();
 
     if (storedUser && token) {
@@ -42,7 +36,6 @@ export const useAuth = () => {
           setUser(parsed);
           setIsAuthenticated(true);
         } else {
-          // Token expired, clear storage
           logout();
         }
       } catch {
@@ -62,7 +55,7 @@ export const useAuth = () => {
     };
 
     setAuthToken(response.token);
-    localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(storedUser));
+    localStorage.setItem(STORAGE_KEYS.user, JSON.stringify(storedUser));
     setUser(storedUser);
     setIsAuthenticated(true);
     setError(null);
@@ -76,8 +69,7 @@ export const useAuth = () => {
       handleAuthSuccess(response.data);
       return response.data;
     } catch (err: any) {
-      const message =
-        err.response?.data?.message || "Invalid username or password";
+      const message = err.response?.data?.message || 'Invalid username or password';
       setError(message);
       throw new Error(message);
     } finally {
@@ -93,7 +85,7 @@ export const useAuth = () => {
       handleAuthSuccess(response.data);
       return response.data;
     } catch (err: any) {
-      const message = err.response?.data?.message || "Registration failed";
+      const message = err.response?.data?.message || 'Registration failed';
       setError(message);
       throw new Error(message);
     } finally {

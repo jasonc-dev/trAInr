@@ -1,10 +1,16 @@
+using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
-using trAInr.API.Data;
 using trAInr.API.Middleware;
-using trAInr.API.Services;
+using trAInr.Application.Interfaces;
+using trAInr.Application.Interfaces.Repositories;
+using trAInr.Application.Interfaces.Services;
+using trAInr.Application.Services;
+using trAInr.Infrastructure.Data;
+using trAInr.Infrastructure.Repositories;
+using trAInr.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,17 +38,27 @@ builder.Services.AddDbContext<TrainrDbContext>(options =>
     });
 });
 
-// Register services
+// Register Infrastructure services
+builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
+builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+// Register DDD Aggregate Repositories
+builder.Services.AddScoped<IAthleteRepository, AthleteRepository>();
+builder.Services.AddScoped<IExerciseDefinitionRepository, ExerciseDefinitionRepository>();
+builder.Services.AddScoped<IAssignedProgramRepository, AssignedProgramRepository>();
+builder.Services.AddScoped<IWorkoutSessionRepository, WorkoutSessionRepository>();
+
+// Register Application services
 builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<IProgrammeService, ProgrammeService>();
-builder.Services.AddScoped<IExerciseService, ExerciseService>();
-builder.Services.AddScoped<IWorkoutService, WorkoutService>();
+builder.Services.AddScoped<IAthleteService, AthleteService>();
+builder.Services.AddScoped<IAssignedProgrammeService, AssignedProgrammeService>();
+builder.Services.AddScoped<IExerciseDefinitionService, ExerciseDefinitionService>();
+builder.Services.AddScoped<IWorkoutSessionService, WorkoutSessionService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 
 // Configure CORS for frontend
-var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>()
-                     ?? new[] { "http://localhost:3000" };
+var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ?? new[] { "http://localhost:3000" };
 
 builder.Services.AddCors(options =>
 {
@@ -69,11 +85,12 @@ app.MapScalarApiReference(options =>
 
 app.UseCors("AllowFrontend");
 
+// Global exception handler - must be registered early to catch all exceptions
+// Placed after CORS to ensure CORS headers are available for error responses
+app.UseGlobalExceptionHandler();
+
 // Only use HTTPS redirection in production
-if (!app.Environment.IsDevelopment())
-{
-    app.UseHttpsRedirection();
-}
+if (!app.Environment.IsDevelopment()) app.UseHttpsRedirection();
 
 // Add JWT authentication middleware
 app.UseJwtAuthentication();
@@ -91,7 +108,7 @@ using (var scope = app.Services.CreateScope())
     {
         // First, ensure the database exists
         dbContext.Database.EnsureCreated();
-        
+
         // Check if date columns need to be converted from timestamp to date
         // This handles databases created before the DateOnly migration
         var needsDateConversion = false;
@@ -107,11 +124,11 @@ using (var scope = app.Services.CreateScope())
             var result = command.ExecuteScalar();
             needsDateConversion = Convert.ToInt32(result) > 0;
         }
-        
+
         if (needsDateConversion)
         {
             logger.LogInformation("Converting date columns from timestamp to date type...");
-            
+
             // Convert timestamp columns to date columns
             dbContext.Database.ExecuteSqlRaw(@"
                 ALTER TABLE ""Users"" ALTER COLUMN ""DateOfBirth"" TYPE date USING ""DateOfBirth""::date;
@@ -119,7 +136,7 @@ using (var scope = app.Services.CreateScope())
                 ALTER TABLE ""Programmes"" ALTER COLUMN ""EndDate"" TYPE date USING ""EndDate""::date;
                 ALTER TABLE ""WorkoutDays"" ALTER COLUMN ""ScheduledDate"" TYPE date USING ""ScheduledDate""::date;
             ");
-            
+
             logger.LogInformation("Date columns converted successfully.");
         }
         else
@@ -137,7 +154,7 @@ using (var scope = app.Services.CreateScope())
 app.Run();
 
 /// <summary>
-/// JSON converter for DateOnly type to/from ISO 8601 date string (yyyy-MM-dd)
+///     JSON converter for DateOnly type to/from ISO 8601 date string (yyyy-MM-dd)
 /// </summary>
 public class DateOnlyJsonConverter : JsonConverter<DateOnly>
 {
@@ -146,15 +163,12 @@ public class DateOnlyJsonConverter : JsonConverter<DateOnly>
     public override DateOnly Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         var dateString = reader.GetString();
-        if (string.IsNullOrEmpty(dateString))
-        {
-            return default;
-        }
-        return DateOnly.ParseExact(dateString, DateFormat, System.Globalization.CultureInfo.InvariantCulture);
+        if (string.IsNullOrEmpty(dateString)) return default;
+        return DateOnly.ParseExact(dateString, DateFormat, CultureInfo.InvariantCulture);
     }
 
     public override void Write(Utf8JsonWriter writer, DateOnly value, JsonSerializerOptions options)
     {
-        writer.WriteStringValue(value.ToString(DateFormat, System.Globalization.CultureInfo.InvariantCulture));
+        writer.WriteStringValue(value.ToString(DateFormat, CultureInfo.InvariantCulture));
     }
 }

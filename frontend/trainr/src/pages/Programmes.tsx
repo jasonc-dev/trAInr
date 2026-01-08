@@ -18,9 +18,13 @@ import {
   Stack,
   ProgressBar,
 } from "../components/styled";
-import { Navigation } from "../components/Navigation";
+import { Navigation } from "../components/styled/Navigation";
 import { useUser, useProgrammes } from "../hooks";
-import { CreateProgrammeRequest } from "../types";
+import {
+  CreateProgrammeRequest,
+  ProgrammeSummary,
+  UpdateProgrammeRequest,
+} from "../types";
 
 const PageTitle = styled.h1`
   font-size: ${({ theme }) => theme.fontSizes["3xl"]};
@@ -67,6 +71,25 @@ const ProgrammeCard = styled(Card)<{ $isActive?: boolean }>`
   `}
 `;
 
+const TemplateCard = styled(Card)`
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(
+      90deg,
+      ${({ theme }) => theme.colors.primary} 0%,
+      ${({ theme }) => theme.colors.accent} 100%
+    );
+  }
+`;
+
 const Modal = styled.div`
   position: fixed;
   inset: 0;
@@ -90,6 +113,34 @@ const ModalTitle = styled.h2`
   margin-bottom: ${({ theme }) => theme.spacing.lg};
 `;
 
+const EmptyState = styled.div`
+  text-align: center;
+  padding: ${({ theme }) => theme.spacing["3xl"]};
+
+  .icon {
+    font-size: 4rem;
+    margin-bottom: ${({ theme }) => theme.spacing.lg};
+  }
+
+  h3 {
+    font-size: ${({ theme }) => theme.fontSizes.xl};
+    margin-bottom: ${({ theme }) => theme.spacing.sm};
+  }
+
+  p {
+    color: ${({ theme }) => theme.colors.textSecondary};
+    margin-bottom: ${({ theme }) => theme.spacing.xl};
+  }
+`;
+
+// const CheckboxLabel = styled.label`
+//   display: block;
+//   font-size: ${({ theme }) => theme.fontSizes.sm};
+//   font-weight: ${({ theme }) => theme.fontWeights.medium};
+//   color: ${({ theme }) => theme.colors.textSecondary};
+//   cursor: pointer;
+// `;
+
 const durationOptions = [
   { value: "4", label: "4 weeks" },
   { value: "5", label: "5 weeks" },
@@ -105,28 +156,51 @@ export const Programmes: React.FC = () => {
   const { user } = useUser();
   const {
     programmes,
+    preMadeProgrammes,
     activeProgramme,
     createProgramme,
+    updateProgramme,
     deleteProgramme,
+    cloneProgramme,
     loading,
   } = useProgrammes(user?.id);
 
-  const [activeTab, setActiveTab] = useState<"my" | "create">("my");
+  const [activeTab, setActiveTab] = useState<"my" | "templates">("my");
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showCloneModal, setShowCloneModal] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] =
+    useState<ProgrammeSummary | null>(null);
+  const [selectedProgramme, setSelectedProgramme] =
+    useState<ProgrammeSummary | null>(null);
   const [formData, setFormData] = useState<CreateProgrammeRequest>({
     name: "",
     description: "",
     durationWeeks: 6,
     startDate: "",
   });
+  const [editFormData, setEditFormData] = useState<UpdateProgrammeRequest>({
+    name: "",
+    description: "",
+    isActive: false,
+  });
   const [creating, setCreating] = useState(false);
+  const [updating, setUpdating] = useState(false);
+  const [cloning, setCloning] = useState(false);
 
   const handleCreateProgramme = async () => {
     try {
       setCreating(true);
       const programme = await createProgramme(formData);
       setShowCreateModal(false);
-      navigate(`/programmes/${programme.id}`);
+      setFormData({
+        name: "",
+        description: "",
+        durationWeeks: 6,
+        startDate: "",
+      });
+      // Navigate to programme detail with flag to open the exercise builder
+      navigate(`/programmes/${programme.id}`, { state: { openBuilder: true } });
     } catch (err) {
       console.error("Failed to create programme:", err);
     } finally {
@@ -137,6 +211,53 @@ export const Programmes: React.FC = () => {
   const handleDeleteProgramme = async (id: string) => {
     if (window.confirm("Are you sure you want to delete this programme?")) {
       await deleteProgramme(id);
+    }
+  };
+
+  const handleEditProgramme = (programme: ProgrammeSummary) => {
+    setSelectedProgramme(programme);
+    setEditFormData({
+      name: programme.name,
+      description: programme.description || "",
+      isActive: programme.isActive,
+    });
+    setShowEditModal(true);
+  };
+
+  const handleUpdateProgramme = async () => {
+    if (!selectedProgramme) return;
+
+    try {
+      setUpdating(true);
+      await updateProgramme(selectedProgramme.id, editFormData);
+      setShowEditModal(false);
+      setSelectedProgramme(null);
+      setEditFormData({ name: "", description: "", isActive: false });
+    } catch (err) {
+      console.error("Failed to update programme:", err);
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const handleCloneTemplate = (template: ProgrammeSummary) => {
+    setSelectedTemplate(template);
+    setShowCloneModal(true);
+  };
+
+  const handleConfirmClone = async () => {
+    if (!selectedTemplate) return;
+
+    try {
+      setCloning(true);
+      const programme = await cloneProgramme(selectedTemplate.id);
+      setShowCloneModal(false);
+      setSelectedTemplate(null);
+      navigate(`/programmes/${programme.id}`);
+    } catch (err) {
+      console.error("Failed to clone programme:", err);
+    } finally {
+      setCloning(false);
     }
   };
 
@@ -169,32 +290,44 @@ export const Programmes: React.FC = () => {
               My Programmes
             </Tab>
             <Tab
-              $active={activeTab === "create"}
-              onClick={() => setActiveTab("create")}
+              $active={activeTab === "templates"}
+              onClick={() => setActiveTab("templates")}
             >
               Templates
+              {preMadeProgrammes.length > 0 && (
+                <Badge $variant="primary" style={{ marginLeft: "0.5rem" }}>
+                  {preMadeProgrammes.length}
+                </Badge>
+              )}
             </Tab>
           </TabContainer>
 
+          {/* My Programmes Tab */}
           {activeTab === "my" && (
             <>
               {programmes.length === 0 ? (
                 <Card>
-                  <div style={{ textAlign: "center", padding: "4rem" }}>
-                    <div style={{ fontSize: "4rem", marginBottom: "1rem" }}>
-                      📋
-                    </div>
-                    <h3 style={{ marginBottom: "0.5rem" }}>
-                      No Programmes Yet
-                    </h3>
-                    <p style={{ color: "#A0AEC0", marginBottom: "1.5rem" }}>
+                  <EmptyState>
+                    <div className="icon">📋</div>
+                    <h3>No Programmes Yet</h3>
+                    <p>
                       Create your first programme to start tracking your
                       workouts
                     </p>
-                    <Button onClick={() => setShowCreateModal(true)}>
-                      Create Programme
-                    </Button>
-                  </div>
+                    <Flex gap="1rem" justify="center">
+                      <Button onClick={() => setShowCreateModal(true)}>
+                        Create Programme
+                      </Button>
+                      {preMadeProgrammes.length > 0 && (
+                        <Button
+                          variant="secondary"
+                          onClick={() => setActiveTab("templates")}
+                        >
+                          Browse Templates
+                        </Button>
+                      )}
+                    </Flex>
+                  </EmptyState>
                 </Card>
               ) : (
                 <Grid columns={3} gap="1.5rem">
@@ -269,6 +402,16 @@ export const Programmes: React.FC = () => {
                           Delete
                         </Button>
                         <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleEditProgramme(programme);
+                          }}
+                        >
+                          Edit
+                        </Button>
+                        <Button
                           variant="primary"
                           size="sm"
                           onClick={(e) => {
@@ -286,16 +429,70 @@ export const Programmes: React.FC = () => {
             </>
           )}
 
-          {activeTab === "create" && (
-            <Card>
-              <div style={{ textAlign: "center", padding: "4rem" }}>
-                <div style={{ fontSize: "4rem", marginBottom: "1rem" }}>🏗️</div>
-                <h3 style={{ marginBottom: "0.5rem" }}>Coming Soon</h3>
-                <p style={{ color: "#A0AEC0" }}>
-                  Pre-made programme templates will be available soon!
-                </p>
-              </div>
-            </Card>
+          {/* Templates Tab */}
+          {activeTab === "templates" && (
+            <>
+              {preMadeProgrammes.length === 0 ? (
+                <Card>
+                  <EmptyState>
+                    <div className="icon">📚</div>
+                    <h3>No Templates Available</h3>
+                    <p>
+                      Pre-made programme templates will appear here when
+                      available
+                    </p>
+                  </EmptyState>
+                </Card>
+              ) : (
+                <Grid columns={3} gap="1.5rem">
+                  {preMadeProgrammes.map((template) => (
+                    <TemplateCard key={template.id} $interactive>
+                      <CardHeader>
+                        <div>
+                          <CardTitle>{template.name}</CardTitle>
+                          <Badge
+                            $variant="info"
+                            style={{ marginTop: "0.5rem" }}
+                          >
+                            Template
+                          </Badge>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <p
+                          style={{
+                            color: "#A0AEC0",
+                            fontSize: "0.875rem",
+                            marginBottom: "1rem",
+                            minHeight: "2.5rem",
+                          }}
+                        >
+                          {template.description || "No description"}
+                        </p>
+                        <Stack gap="0.5rem">
+                          <Flex
+                            justify="space-between"
+                            style={{ fontSize: "0.875rem" }}
+                          >
+                            <span style={{ color: "#64748B" }}>Duration</span>
+                            <span>{template.durationWeeks} weeks</span>
+                          </Flex>
+                        </Stack>
+                      </CardContent>
+                      <CardFooter>
+                        <Button
+                          variant="primary"
+                          fullWidth
+                          onClick={() => handleCloneTemplate(template)}
+                        >
+                          Use This Template
+                        </Button>
+                      </CardFooter>
+                    </TemplateCard>
+                  ))}
+                </Grid>
+              )}
+            </>
           )}
         </Container>
 
@@ -359,6 +556,131 @@ export const Programmes: React.FC = () => {
                     disabled={!formData.name || creating}
                   >
                     {creating ? "Creating..." : "Create Programme"}
+                  </Button>
+                </Flex>
+              </Stack>
+            </ModalContent>
+          </Modal>
+        )}
+
+        {/* Edit Programme Modal */}
+        {showEditModal && selectedProgramme && (
+          <Modal onClick={() => setShowEditModal(false)}>
+            <ModalContent onClick={(e) => e.stopPropagation()}>
+              <ModalTitle>Edit Programme</ModalTitle>
+              <Stack gap="1.25rem">
+                <Input
+                  label="Programme Name"
+                  placeholder="e.g., Strength Building Phase"
+                  value={editFormData.name}
+                  onChange={(e) =>
+                    setEditFormData({ ...editFormData, name: e.target.value })
+                  }
+                />
+                <Input
+                  label="Description"
+                  placeholder="What are the goals of this programme?"
+                  value={editFormData.description}
+                  onChange={(e) =>
+                    setEditFormData({
+                      ...editFormData,
+                      description: e.target.value,
+                    })
+                  }
+                />
+                <Flex gap="1rem" align="center">
+                  <label
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.5rem",
+                      cursor: "pointer",
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={editFormData.isActive}
+                      onChange={(e) =>
+                        setEditFormData({
+                          ...editFormData,
+                          isActive: e.target.checked,
+                        })
+                      }
+                    />
+                    Set as Active Programme
+                  </label>
+                </Flex>
+                <Flex
+                  justify="flex-end"
+                  gap="1rem"
+                  style={{ marginTop: "1rem" }}
+                >
+                  <Button
+                    variant="ghost"
+                    onClick={() => {
+                      setShowEditModal(false);
+                      setSelectedProgramme(null);
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleUpdateProgramme}
+                    disabled={!editFormData.name || updating}
+                  >
+                    {updating ? "Saving..." : "Save Changes"}
+                  </Button>
+                </Flex>
+              </Stack>
+            </ModalContent>
+          </Modal>
+        )}
+
+        {/* Clone Template Modal */}
+        {showCloneModal && selectedTemplate && (
+          <Modal onClick={() => setShowCloneModal(false)}>
+            <ModalContent onClick={(e) => e.stopPropagation()}>
+              <ModalTitle>Start Programme</ModalTitle>
+              <Stack gap="1.25rem">
+                <Card style={{ background: "rgba(0, 207, 193, 0.1)" }}>
+                  <CardContent>
+                    <h4 style={{ marginBottom: "0.5rem" }}>
+                      {selectedTemplate.name}
+                    </h4>
+                    <p style={{ color: "#A0AEC0", fontSize: "0.875rem" }}>
+                      {selectedTemplate.description}
+                    </p>
+                    <Flex
+                      justify="space-between"
+                      style={{ marginTop: "1rem", fontSize: "0.875rem" }}
+                    >
+                      <span style={{ color: "#64748B" }}>Duration</span>
+                      <span>{selectedTemplate.durationWeeks} weeks</span>
+                    </Flex>
+                  </CardContent>
+                </Card>
+
+                <p style={{ color: "#A0AEC0", fontSize: "0.875rem" }}>
+                  This will create a copy of the template programme for you to
+                  customize and track your progress.
+                </p>
+
+                <Flex
+                  justify="flex-end"
+                  gap="1rem"
+                  style={{ marginTop: "1rem" }}
+                >
+                  <Button
+                    variant="ghost"
+                    onClick={() => {
+                      setShowCloneModal(false);
+                      setSelectedTemplate(null);
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button onClick={handleConfirmClone} disabled={cloning}>
+                    {cloning ? "Starting..." : "Start Programme"}
                   </Button>
                 </Flex>
               </Stack>

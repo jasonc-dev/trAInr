@@ -1,97 +1,68 @@
 using Microsoft.AspNetCore.Mvc;
-using trAInr.API.Models.DTOs;
-using trAInr.API.Services;
+using trAInr.Application.DTOs;
+using trAInr.Application.Interfaces.Services;
 
 namespace trAInr.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class DashboardController : ControllerBase
+public class DashboardController(IDashboardService dashboardService, IAthleteService athleteService)
+    : ControllerBase
 {
-    private readonly IDashboardService _dashboardService;
-    private readonly IUserService _userService;
-
-    public DashboardController(IDashboardService dashboardService, IUserService userService)
-    {
-        _dashboardService = dashboardService;
-        _userService = userService;
-    }
-
     /// <summary>
-    /// Get the dashboard for a user
+    ///     Get the dashboard for an athlete
     /// </summary>
-    [HttpGet("user/{userId:guid}")]
-    public async Task<ActionResult<DashboardResponse>> GetDashboard(Guid userId)
+    [HttpGet("athlete/{athleteId:guid}")]
+    public async Task<ActionResult<DashboardResponse>> GetDashboard(Guid athleteId)
     {
-        if (!await _userService.ExistsAsync(userId))
-        {
-            return NotFound("User not found");
-        }
+        if (!await athleteService.ExistsAsync(athleteId)) return NotFound("Athlete not found");
 
-        var dashboard = await _dashboardService.GetDashboardAsync(userId);
+        var dashboard = await dashboardService.GetDashboardAsync(athleteId);
         return Ok(dashboard);
     }
 
     /// <summary>
-    /// Get weekly progress for a programme
+    ///     Get weekly progress for an assigned programme
     /// </summary>
     [HttpGet("programme/{programmeId:guid}/weekly-progress")]
     public async Task<ActionResult<IEnumerable<WeeklyMetrics>>> GetWeeklyProgress(Guid programmeId)
     {
-        var metrics = await _dashboardService.GetWeeklyProgressAsync(programmeId);
+        var metrics = await dashboardService.GetWeeklyProgressAsync(programmeId);
         return Ok(metrics);
     }
 
     /// <summary>
-    /// Get exercise metrics for a user
+    ///     Get exercise metrics for an athlete
     /// </summary>
-    [HttpGet("user/{userId:guid}/exercises")]
+    [HttpGet("athlete/{athleteId:guid}/exercises")]
     public async Task<ActionResult<IEnumerable<ExerciseMetrics>>> GetExerciseMetrics(
-        Guid userId,
+        Guid athleteId,
         [FromQuery] Guid? exerciseId = null)
     {
-        if (!await _userService.ExistsAsync(userId))
-        {
-            return NotFound("User not found");
-        }
+        if (!await athleteService.ExistsAsync(athleteId)) return NotFound("Athlete not found");
 
-        var metrics = await _dashboardService.GetExerciseMetricsAsync(userId, exerciseId);
+        var metrics = await dashboardService.GetExerciseMetricsAsync(athleteId, exerciseId);
         return Ok(metrics);
     }
 
-    /// <summary>
-    /// Get overall stats for a user
-    /// </summary>
-    [HttpGet("user/{userId:guid}/stats")]
-    public async Task<ActionResult<OverallStats>> GetOverallStats(Guid userId)
-    {
-        if (!await _userService.ExistsAsync(userId))
-        {
-            return NotFound("User not found");
-        }
-
-        var stats = await _dashboardService.GetOverallStatsAsync(userId);
-        return Ok(stats);
-    }
 
     /// <summary>
-    /// Get intensity trends for a programme
+    ///     Get intensity trends for an assigned programme
     /// </summary>
     [HttpGet("programme/{programmeId:guid}/intensity-trends")]
     public async Task<ActionResult<IEnumerable<IntensityTrend>>> GetIntensityTrends(Guid programmeId)
     {
-        var trends = await _dashboardService.GetIntensityTrendsAsync(programmeId);
+        var trends = await dashboardService.GetIntensityTrendsAsync(programmeId);
         return Ok(trends);
     }
 
     /// <summary>
-    /// Get volume comparison for a programme
+    ///     Get volume comparison for an assigned programme
     /// </summary>
     [HttpGet("programme/{programmeId:guid}/volume-comparison")]
     public async Task<ActionResult<IEnumerable<VolumeComparison>>> GetVolumeComparison(Guid programmeId)
     {
-        var comparison = await _dashboardService.GetVolumeComparisonAsync(programmeId);
+        var comparison = await dashboardService.GetVolumeComparisonAsync(programmeId);
         return Ok(comparison);
     }
 }
-

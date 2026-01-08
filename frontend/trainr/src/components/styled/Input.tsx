@@ -67,7 +67,7 @@ export const StyledSelect = styled.select<InputWrapperProps>`
   padding-right: 2.5rem;
 `;
 
-export const ErrorMessage = styled.span`
+const FieldError = styled.span`
   display: block;
   font-size: ${({ theme }) => theme.fontSizes.sm};
   color: ${({ theme }) => theme.colors.error};
@@ -98,7 +98,7 @@ export const Input: React.FC<InputProps> = ({
     <InputWrapper $hasError={!!error}>
       {label && <Label htmlFor={id}>{label}</Label>}
       <StyledInput id={id} $hasError={!!error} {...props} />
-      {error && <ErrorMessage>{error}</ErrorMessage>}
+      {error && <FieldError>{error}</FieldError>}
       {helperText && !error && <HelperText>{helperText}</HelperText>}
     </InputWrapper>
   );
@@ -127,7 +127,7 @@ export const Select: React.FC<SelectProps> = ({
           </option>
         ))}
       </StyledSelect>
-      {error && <ErrorMessage>{error}</ErrorMessage>}
+      {error && <FieldError>{error}</FieldError>}
     </InputWrapper>
   );
 };
