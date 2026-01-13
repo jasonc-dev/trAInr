@@ -264,7 +264,6 @@ export const WorkoutDetail: React.FC = () => {
         setNumber,
         reps: exercise.targetReps,
         weight: exercise.targetWeight,
-        isWarmup: false,
       });
     } catch (err) {
       console.error("Failed to add set:", err);
@@ -387,16 +386,18 @@ export const WorkoutDetail: React.FC = () => {
             ← Back to Timeline
           </BackButton>
 
-          <Flex justify="space-between" align="flex-start">
+          <Flex $justify="space-between" $align="flex-start">
             <div>
               <PageTitle>{currentWorkout.name}</PageTitle>
               <PageSubtitle>
                 {completedSets} / {totalSets} sets completed
-                {currentWorkout.completedAt && (
+                {currentWorkout.completedDate && (
                   <span>
                     {" "}
                     • Completed on{" "}
-                    {new Date(currentWorkout.completedAt).toLocaleDateString()}
+                    {new Date(
+                      currentWorkout.completedDate
+                    ).toLocaleDateString()}
                   </span>
                 )}
               </PageSubtitle>
@@ -475,7 +476,7 @@ export const WorkoutDetail: React.FC = () => {
                     >
                       <div>
                         <CardTitle style={{ fontSize: "1.125rem" }}>
-                          <Flex align="center" gap="0.5rem">
+                          <Flex $align="center" $gap="0.5rem">
                             <span>{exercise.exerciseName}</span>
                             {exercise.supersetGroupId && (
                               <Badge $variant="primary">
@@ -491,7 +492,7 @@ export const WorkoutDetail: React.FC = () => {
                             ` @ ${exercise.targetWeight}kg`}
                         </p>
                       </div>
-                      <Flex gap="0.5rem" align="center">
+                      <Flex $gap="0.5rem" $align="center">
                         <Badge
                           $variant={
                             exercise.sets.filter((s) => s.isCompleted)
@@ -535,9 +536,7 @@ export const WorkoutDetail: React.FC = () => {
                           .sort((a, b) => a.setNumber - b.setNumber)
                           .map((set) => (
                             <SetRow key={set.id} $completed={set.isCompleted}>
-                              <SetNumber>
-                                {set.isWarmup ? "W" : set.setNumber}
-                              </SetNumber>
+                              <SetNumber>{set.setNumber}</SetNumber>
                               <SetInput
                                 type="number"
                                 value={

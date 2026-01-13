@@ -1,0 +1,26 @@
+<Project>
+  <PropertyGroup>
+    <!-- Enable all analyzer warnings -->
+    <AnalysisMode>AllEnabledByDefault</AnalysisMode>
+    <!-- Treat analyzer warnings as errors during build -->
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!-- Enable specific unused code warnings -->
+    <WarningsNotAsErrors>
+      IDE0051; <!-- Remove unused private members -->
+      IDE0052; <!-- Remove unread private members -->
+      IDE0059; <!-- Remove unnecessary value assignment -->
+      IDE0060; <!-- Remove unused parameter -->
+      CS0168;  <!-- Variable is declared but never used -->
+      CS0219;  <!-- Variable is assigned but its value is never used -->
+      IDE0079  <!-- Remove unnecessary import -->
+    </WarningsNotAsErrors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Add Roslyn analyzers for code quality analysis -->
+    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+</Project>

@@ -18,12 +18,18 @@ import {
   CompleteSetRequest,
   GroupSupersetRequest,
   CreateDropSetRequest,
+  ProgrammeWeek,
 } from "../../types";
 
 export const workoutApi = {
   // Workout Day operations
   getWorkoutDay: (id: string) =>
     apiClient.get<WorkoutDay>(`/workoutsession/days/${id}`),
+
+  getWorkoutWeeks: (programmeId: string) =>
+    apiClient.get<ProgrammeWeek[]>(
+      `/workoutsession/programme/${programmeId}/weeks`
+    ),
 
   getWorkoutDays: (weekId: string) =>
     apiClient.get<WorkoutDay[]>(`/workoutsession/weeks/${weekId}/days`),

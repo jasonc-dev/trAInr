@@ -21,14 +21,6 @@ public class WorkoutSessionController(IWorkoutSessionService workoutSessionServi
         return Ok(workoutDay);
     }
 
-    [HttpGet("weeks/{weekId:guid}/days")]
-    public async Task<ActionResult<IEnumerable<WorkoutDayResponse>>> GetWorkoutDays(Guid weekId)
-    {
-        var workoutDays = await workoutSessionService.GetWorkoutDaysAsync(weekId);
-        if (workoutDays is null) return NotFound();
-        return Ok(workoutDays);
-    }
-
     /// <summary>
     ///     Create a workout day in a programme week
     /// </summary>

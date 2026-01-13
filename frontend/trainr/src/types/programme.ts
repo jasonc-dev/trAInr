@@ -38,6 +38,7 @@ export interface ProgrammeWeek {
   id: string;
   programmeId: string;
   weekNumber: number;
+  weekStartDate: string;
   notes?: string;
   isCompleted: boolean;
   workoutDays: WorkoutDay[];

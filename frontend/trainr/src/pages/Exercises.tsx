@@ -188,7 +188,7 @@ export const Exercises: React.FC = () => {
               </div>
             </Card>
           ) : (
-            <Grid columns={3} gap="1.5rem">
+            <Grid $columns={3} $gap="1.5rem">
               {filteredExercises.map((exercise) => (
                 <ExerciseCard
                   key={exercise.id}
@@ -203,7 +203,7 @@ export const Exercises: React.FC = () => {
                   >
                     {exercise.name}
                   </CardTitle>
-                  <Flex gap="0.5rem" wrap>
+                  <Flex $gap="0.5rem" $wrap>
                     <Badge $variant="primary">
                       {getExerciseTypeLabel(exercise.type)}
                     </Badge>
@@ -237,8 +237,8 @@ export const Exercises: React.FC = () => {
           <Modal onClick={() => setSelectedExercise(null)}>
             <ModalContent onClick={(e) => e.stopPropagation()}>
               <Flex
-                gap="1rem"
-                align="flex-start"
+                $gap="1rem"
+                $align="flex-start"
                 style={{ marginBottom: "1.5rem" }}
               >
                 <ExerciseIcon
@@ -251,7 +251,7 @@ export const Exercises: React.FC = () => {
                   <h2 style={{ marginBottom: "0.5rem" }}>
                     {selectedExercise.name}
                   </h2>
-                  <Flex gap="0.5rem" wrap>
+                  <Flex $gap="0.5rem" $wrap>
                     <Badge $variant="primary">
                       {getExerciseTypeLabel(selectedExercise.type)}
                     </Badge>
@@ -287,7 +287,7 @@ export const Exercises: React.FC = () => {
                 </div>
               )}
 
-              <Flex justify="flex-end">
+              <Flex $justify="flex-end">
                 <Button
                   variant="ghost"
                   onClick={() => setSelectedExercise(null)}

@@ -23,13 +23,18 @@
     "@testing-library/react": "^16.1.0",
     "@testing-library/user-event": "^14.5.2",
     "@types/jest": "^29.5.14",
-    "react-scripts": "5.0.1"
+    "react-scripts": "5.0.1",
+    "ts-unused-exports": "^11.0.1"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
+    "build:check": "tsc --noEmit && eslint src --ext .ts,.tsx && ts-unused-exports .ts-unused-exports.json",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "lint": "eslint src --ext .ts,.tsx",
+    "lint:fix": "eslint src --ext .ts,.tsx --fix",
+    "unused-exports": "ts-unused-exports .ts-unused-exports.json"
   },
   "eslintConfig": {
     "extends": [

@@ -3,8 +3,6 @@
  * Helper functions for formatting data
  */
 
-import { DAY_NAMES } from "./constants";
-
 // Re-export exercise helpers from constants for backwards compatibility
 export {
   getExerciseTypeLabel,
@@ -39,13 +37,6 @@ export const formatWeight = (weight: number, unit: string = "kg"): string => {
  */
 export const capitalizeFirstLetter = (str: string): string => {
   return str.charAt(0).toUpperCase() + str.slice(1);
-};
-
-/**
- * Get day name from day of week number
- */
-export const getDayName = (dayOfWeek: number): string => {
-  return DAY_NAMES[dayOfWeek] || "";
 };
 
 /**

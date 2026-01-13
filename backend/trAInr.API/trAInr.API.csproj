@@ -5,7 +5,7 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
-        <NoWarn>$(NoWarn);NU1605</NoWarn>
+        <!-- Removed NoWarn for NU1605 to show all warnings including package version issues -->
     </PropertyGroup>
 
     <ItemGroup>

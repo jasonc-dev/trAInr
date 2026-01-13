@@ -14,7 +14,7 @@ export const DAY_NAMES = [
   "Thursday",
   "Friday",
   "Saturday",
-] as const;
+];
 
 // Programme duration options
 export const DURATION_OPTIONS = [

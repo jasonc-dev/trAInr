@@ -22,6 +22,8 @@ public class AssignedProgramRepository(TrainrDbContext context) : IAssignedProgr
             .ThenInclude(w => w.WorkoutDays)
             .ThenInclude(d => d.Exercises)
             .ThenInclude(e => e.Sets)
+            .AsSplitQuery()
+            .AsNoTracking()
             .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
     }
 

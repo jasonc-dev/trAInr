@@ -41,12 +41,8 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
 }) => {
   return (
     <div style={{ marginBottom: "2rem" }}>
-      {backTo && (
-        <BackLink to={backTo}>
-          ← {backLabel || "Back"}
-        </BackLink>
-      )}
-      <Flex justify="space-between" align="flex-start">
+      {backTo && <BackLink to={backTo}>← {backLabel || "Back"}</BackLink>}
+      <Flex $justify="space-between" $align="flex-start">
         <PageHeaderWrapper>
           <Title>{title}</Title>
           {subtitle && <Subtitle>{subtitle}</Subtitle>}

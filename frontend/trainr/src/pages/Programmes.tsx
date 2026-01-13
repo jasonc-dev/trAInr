@@ -157,12 +157,10 @@ export const Programmes: React.FC = () => {
   const {
     programmes,
     preMadeProgrammes,
-    activeProgramme,
     createProgramme,
     updateProgramme,
     deleteProgramme,
     cloneProgramme,
-    loading,
   } = useProgrammes(user?.id);
 
   const [activeTab, setActiveTab] = useState<"my" | "templates">("my");
@@ -267,8 +265,8 @@ export const Programmes: React.FC = () => {
       <PageWrapper>
         <Container>
           <Flex
-            justify="space-between"
-            align="center"
+            $justify="space-between"
+            $align="center"
             style={{ marginBottom: "2rem" }}
           >
             <div>
@@ -314,7 +312,7 @@ export const Programmes: React.FC = () => {
                       Create your first programme to start tracking your
                       workouts
                     </p>
-                    <Flex gap="1rem" justify="center">
+                    <Flex $gap="1rem" $justify="center">
                       <Button onClick={() => setShowCreateModal(true)}>
                         Create Programme
                       </Button>
@@ -330,7 +328,7 @@ export const Programmes: React.FC = () => {
                   </EmptyState>
                 </Card>
               ) : (
-                <Grid columns={3} gap="1.5rem">
+                <Grid $columns={3} $gap="1.5rem">
                   {programmes.map((programme) => (
                     <ProgrammeCard
                       key={programme.id}
@@ -362,16 +360,16 @@ export const Programmes: React.FC = () => {
                         >
                           {programme.description || "No description"}
                         </p>
-                        <Stack gap="0.5rem">
+                        <Stack $gap="0.5rem">
                           <Flex
-                            justify="space-between"
+                            $justify="space-between"
                             style={{ fontSize: "0.875rem" }}
                           >
                             <span style={{ color: "#64748B" }}>Duration</span>
                             <span>{programme.durationWeeks} weeks</span>
                           </Flex>
                           <Flex
-                            justify="space-between"
+                            $justify="space-between"
                             style={{ fontSize: "0.875rem" }}
                           >
                             <span style={{ color: "#64748B" }}>Progress</span>
@@ -444,7 +442,7 @@ export const Programmes: React.FC = () => {
                   </EmptyState>
                 </Card>
               ) : (
-                <Grid columns={3} gap="1.5rem">
+                <Grid $columns={3} $gap="1.5rem">
                   {preMadeProgrammes.map((template) => (
                     <TemplateCard key={template.id} $interactive>
                       <CardHeader>
@@ -469,9 +467,9 @@ export const Programmes: React.FC = () => {
                         >
                           {template.description || "No description"}
                         </p>
-                        <Stack gap="0.5rem">
+                        <Stack $gap="0.5rem">
                           <Flex
-                            justify="space-between"
+                            $justify="space-between"
                             style={{ fontSize: "0.875rem" }}
                           >
                             <span style={{ color: "#64748B" }}>Duration</span>
@@ -501,7 +499,7 @@ export const Programmes: React.FC = () => {
           <Modal onClick={() => setShowCreateModal(false)}>
             <ModalContent onClick={(e) => e.stopPropagation()}>
               <ModalTitle>Create New Programme</ModalTitle>
-              <Stack gap="1.25rem">
+              <Stack $gap="1.25rem">
                 <Input
                   label="Programme Name"
                   placeholder="e.g., Strength Building Phase"
@@ -541,8 +539,8 @@ export const Programmes: React.FC = () => {
                   }
                 />
                 <Flex
-                  justify="flex-end"
-                  gap="1rem"
+                  $justify="flex-end"
+                  $gap="1rem"
                   style={{ marginTop: "1rem" }}
                 >
                   <Button
@@ -568,7 +566,7 @@ export const Programmes: React.FC = () => {
           <Modal onClick={() => setShowEditModal(false)}>
             <ModalContent onClick={(e) => e.stopPropagation()}>
               <ModalTitle>Edit Programme</ModalTitle>
-              <Stack gap="1.25rem">
+              <Stack $gap="1.25rem">
                 <Input
                   label="Programme Name"
                   placeholder="e.g., Strength Building Phase"
@@ -588,7 +586,7 @@ export const Programmes: React.FC = () => {
                     })
                   }
                 />
-                <Flex gap="1rem" align="center">
+                <Flex $gap="1rem" $align="center">
                   <label
                     style={{
                       display: "flex",
@@ -611,8 +609,8 @@ export const Programmes: React.FC = () => {
                   </label>
                 </Flex>
                 <Flex
-                  justify="flex-end"
-                  gap="1rem"
+                  $justify="flex-end"
+                  $gap="1rem"
                   style={{ marginTop: "1rem" }}
                 >
                   <Button
@@ -641,7 +639,7 @@ export const Programmes: React.FC = () => {
           <Modal onClick={() => setShowCloneModal(false)}>
             <ModalContent onClick={(e) => e.stopPropagation()}>
               <ModalTitle>Start Programme</ModalTitle>
-              <Stack gap="1.25rem">
+              <Stack $gap="1.25rem">
                 <Card style={{ background: "rgba(0, 207, 193, 0.1)" }}>
                   <CardContent>
                     <h4 style={{ marginBottom: "0.5rem" }}>
@@ -651,7 +649,7 @@ export const Programmes: React.FC = () => {
                       {selectedTemplate.description}
                     </p>
                     <Flex
-                      justify="space-between"
+                      $justify="space-between"
                       style={{ marginTop: "1rem", fontSize: "0.875rem" }}
                     >
                       <span style={{ color: "#64748B" }}>Duration</span>
@@ -666,8 +664,8 @@ export const Programmes: React.FC = () => {
                 </p>
 
                 <Flex
-                  justify="flex-end"
-                  gap="1rem"
+                  $justify="flex-end"
+                  $gap="1rem"
                   style={{ marginTop: "1rem" }}
                 >
                   <Button

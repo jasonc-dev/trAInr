@@ -1,0 +1,7 @@
+{
+  "project": "tsconfig.json",
+  "entryFiles": ["src/index.tsx"],
+  "ignoreFiles": ["src/setupTests.ts", "src/reportWebVitals.ts"],
+  "ignoreExportsUsedInFile": true,
+  "treatDefaultAsExport": true
+}

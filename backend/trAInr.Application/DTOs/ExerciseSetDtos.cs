@@ -10,7 +10,6 @@ public record CreateExerciseSetRequest(
     decimal? Distance,
     Difficulty? Difficulty,
     Intensity? Intensity,
-    bool IsWarmup,
     SetType SetType,
     decimal? DropPercentage,
     string? Notes);
@@ -37,7 +36,6 @@ public record ExerciseSetResponse(
     Difficulty? Difficulty,
     Intensity? Intensity,
     bool IsCompleted,
-    bool IsWarmup,
     SetType SetType,
     decimal? DropPercentage,
     string? Notes,

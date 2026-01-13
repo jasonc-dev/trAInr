@@ -2,6 +2,7 @@ using trAInr.Application.DTOs;
 using trAInr.Application.Interfaces;
 using trAInr.Application.Interfaces.Repositories;
 using trAInr.Application.Interfaces.Services;
+using trAInr.Domain.Aggregates;
 using trAInr.Domain.Entities;
 
 namespace trAInr.Application.Services;
@@ -30,13 +31,6 @@ public class WorkoutSessionService(
         return workoutDay is null ? null : MapWorkoutDayToResponse(workoutDay);
     }
 
-    public async Task<IEnumerable<WorkoutDayResponse>?> GetWorkoutDaysAsync(Guid weekId)
-    {
-        var assignedProgram = await assignedProgramRepository.GetByWeekIdAsync(weekId);
-        if (assignedProgram is null) return null;
-        return assignedProgram.Weeks.SelectMany(w => w.WorkoutDays.Select(MapWorkoutDayToResponse)).ToList() ?? [];
-    }
-
     public async Task<WorkoutDayResponse?> CreateWorkoutDayAsync(Guid weekId, CreateWorkoutDayRequest request)
     {
         var assignedProgram = await assignedProgramRepository.GetByWeekIdAsync(weekId);
@@ -50,7 +44,6 @@ public class WorkoutSessionService(
             DayOfWeek = request.DayOfWeek,
             Name = request.Name,
             Description = request.Description,
-            ScheduledDate = request.ScheduledDate,
             IsRestDay = request.IsRestDay,
         };
 
@@ -75,10 +68,15 @@ public class WorkoutSessionService(
             .FirstOrDefault(d => d.Id == workoutDayId);
 
         if (workoutDay is null) return null;
+        
+        DateOnly? ScheduledDate = workoutDay.ScheduledDate?.AddDays(request.DayOfWeek.HasValue
+            ? (request.DayOfWeek.Value - workoutDay.DayOfWeek)
+            : 0);
 
         workoutDay.Name = request.Name;
         workoutDay.Description = request.Description;
         workoutDay.DayOfWeek = request.DayOfWeek ?? workoutDay.DayOfWeek;
+        workoutDay.ScheduledDate = ScheduledDate;
         workoutDay.IsCompleted = request.IsCompleted;
         workoutDay.IsRestDay = request.IsRestDay;
 
@@ -266,9 +264,6 @@ public class WorkoutSessionService(
             Distance = request.Distance,
             Difficulty = request.Difficulty,
             Intensity = request.Intensity,
-#pragma warning disable CS0618 // Type or member is obsolete
-            IsWarmup = request.IsWarmup, // Keep for backward compatibility
-#pragma warning restore CS0618 // Type or member is obsolete
             SetType = request.SetType,
             DropPercentage = request.DropPercentage,
             Notes = request.Notes,
@@ -323,7 +318,7 @@ public class WorkoutSessionService(
 
     public async Task<ExerciseSetResponse?> CompleteSetAsync(Guid setId, CompleteSetRequest request)
     {
-        var assignedProgram = await assignedProgramRepository.GetByExerciseSetIdAsync(setId);
+        AssignedProgram? assignedProgram = await assignedProgramRepository.GetByExerciseSetIdAsync(setId);
         if (assignedProgram is null) return null;
 
         var exerciseSet = assignedProgram.Weeks
@@ -489,9 +484,6 @@ public class WorkoutSessionService(
                 SetType = i == 0 ? SetType.Normal : SetType.DropSet,
                 DropPercentage = i == 0 ? null : request.DropPercentage,
                 IsCompleted = false,
-#pragma warning disable CS0618 // Type or member is obsolete
-                IsWarmup = false, // Keep for backward compatibility
-#pragma warning restore CS0618 // Type or member is obsolete
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -554,9 +546,6 @@ public class WorkoutSessionService(
 
     private static ExerciseSetResponse MapExerciseSetToResponse(ExerciseSet set)
     {
-#pragma warning disable CS0618 // Type or member is obsolete
-        var isWarmup = set.IsWarmup; // Keep for backward compatibility
-#pragma warning restore CS0618 // Type or member is obsolete
         return new ExerciseSetResponse(
             set.Id,
             set.SetNumber,
@@ -567,7 +556,6 @@ public class WorkoutSessionService(
             set.Difficulty,
             set.Intensity,
             set.IsCompleted,
-            isWarmup,
             set.SetType,
             set.DropPercentage,
             set.Notes,

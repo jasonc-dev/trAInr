@@ -4,7 +4,6 @@ public record CreateWorkoutDayRequest(
     DayOfWeek DayOfWeek,
     string Name,
     string? Description,
-    DateOnly? ScheduledDate,
     bool IsRestDay);
 
 public record UpdateWorkoutDayRequest(

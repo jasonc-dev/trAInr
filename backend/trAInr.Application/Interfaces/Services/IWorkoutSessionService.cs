@@ -6,8 +6,6 @@ public interface IWorkoutSessionService
 {
     Task<WorkoutDayResponse?> GetWorkoutDayAsync(Guid workoutDayId);
 
-    Task<IEnumerable<WorkoutDayResponse>?> GetWorkoutDaysAsync(Guid weekId);
-
     Task<WorkoutDayResponse?> CreateWorkoutDayAsync(Guid weekId, CreateWorkoutDayRequest request);
 
     Task<WorkoutDayResponse?> UpdateWorkoutDayAsync(Guid workoutDayId, UpdateWorkoutDayRequest request);

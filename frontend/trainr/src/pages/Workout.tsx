@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import styled from "styled-components";
 import { Link, useNavigate } from "react-router-dom";
 import {
@@ -11,6 +11,7 @@ import {
 import { Navigation } from "../components/styled/Navigation";
 import { useUser, useProgrammes, useWorkouts } from "../hooks";
 import { WorkoutDay } from "../types";
+import { DAY_NAMES } from "../utils";
 
 const PageTitle = styled.h1`
   font-size: ${({ theme }) => theme.fontSizes["3xl"]};
@@ -78,6 +79,7 @@ const SectionHeader = styled.h2`
   position: sticky;
   top: 0;
   background: ${({ theme }) => theme.colors.background};
+  border-bottom: 2px solid ${({ theme }) => theme.colors.border};
   padding: ${({ theme }) => theme.spacing.sm} 0;
   z-index: 10;
 `;
@@ -183,30 +185,15 @@ const RestDayCard = styled(Card)`
   }
 `;
 
-interface WorkoutWithDate extends WorkoutDay {
-  scheduledDate: Date;
+interface WorkoutDayWithWeekNumber extends WorkoutDay {
   weekNumber: number;
 }
 
 interface GroupedWorkouts {
-  past: Map<string, WorkoutWithDate[]>;
-  today: WorkoutWithDate[];
-  future: Map<string, WorkoutWithDate[]>;
+  past: Map<string, WorkoutDayWithWeekNumber[]>;
+  today: WorkoutDayWithWeekNumber[];
+  future: Map<string, WorkoutDayWithWeekNumber[]>;
 }
-
-// Helper functions for date calculations
-const getDayName = (dayOfWeek: number): string => {
-  const days = [
-    "Sunday",
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
-  ];
-  return days[dayOfWeek];
-};
 
 const formatDate = (date: Date): string => {
   return date.toLocaleDateString("en-GB", {
@@ -215,24 +202,6 @@ const formatDate = (date: Date): string => {
     month: "short",
     day: "numeric",
   });
-};
-
-const calculateScheduledDate = (
-  programmeStartDate: string,
-  weekNumber: number,
-  dayOfWeek: number
-): Date => {
-  const startDate = new Date(programmeStartDate);
-  const daysFromStart = (weekNumber - 1) * 7;
-  const scheduledDate = new Date(startDate);
-  scheduledDate.setDate(startDate.getDate() + daysFromStart);
-
-  // Adjust to the correct day of week
-  const currentDay = scheduledDate.getDay();
-  const daysToAdd = dayOfWeek - currentDay;
-  scheduledDate.setDate(scheduledDate.getDate() + daysToAdd);
-
-  return scheduledDate;
 };
 
 const isSameDay = (date1: Date, date2: Date): boolean => {
@@ -254,17 +223,16 @@ export const Workout: React.FC = () => {
   const { user } = useUser();
   const { activeProgramme } = useProgrammes(user?.id);
 
-  const {
-    completeWorkout,
-    loadWorkoutDays,
-    loading: workoutLoading,
-  } = useWorkouts();
+  const { completeWorkout, loading: workoutLoading } = useWorkouts();
 
-  const [allWorkoutDays, setAllWorkoutDays] = useState<WorkoutWithDate[]>([]);
+  const [allWorkoutDays, setAllWorkoutDays] = useState<
+    WorkoutDayWithWeekNumber[]
+  >([]);
   const [loading, setLoading] = useState(true);
   const [completingWorkout, setCompletingWorkout] = useState<string | null>(
     null
   );
+  const todaysWorkoutsRef = useRef<HTMLDivElement>(null);
 
   // Load all workout days from all weeks with their scheduled dates
   useEffect(() => {
@@ -276,32 +244,19 @@ export const Workout: React.FC = () => {
 
       try {
         setLoading(true);
-        const allWorkouts: WorkoutWithDate[] = [];
-
-        // Load workouts from all weeks
-        for (const week of activeProgramme.weeks) {
-          const workoutDays = await loadWorkoutDays(week.id);
-
-          // Calculate scheduled dates for each workout
-          const workoutsWithDates = workoutDays.map((day) => ({
-            ...day,
-            scheduledDate: calculateScheduledDate(
-              activeProgramme.startDate!,
-              week.weekNumber,
-              day.dayOfWeek
-            ),
-            weekNumber: week.weekNumber,
-          }));
-
-          allWorkouts.push(...workoutsWithDates);
-        }
-
-        // Sort by scheduled date
-        allWorkouts.sort(
-          (a, b) => a.scheduledDate.getTime() - b.scheduledDate.getTime()
+        const workoutDays: WorkoutDayWithWeekNumber[] = [];
+        activeProgramme.weeks.forEach((week) => {
+          week.workoutDays.forEach((day) => {
+            workoutDays.push({ ...day, weekNumber: week.weekNumber });
+          });
+        });
+        workoutDays.sort(
+          (a, b) =>
+            new Date(a.scheduledDate).getTime() -
+            new Date(b.scheduledDate).getTime()
         );
 
-        setAllWorkoutDays(allWorkouts);
+        setAllWorkoutDays(workoutDays);
       } catch (err) {
         console.error("Failed to load workouts:", err);
       } finally {
@@ -310,21 +265,21 @@ export const Workout: React.FC = () => {
     };
 
     loadAllWorkouts();
-  }, [activeProgramme, loadWorkoutDays]);
+  }, [activeProgramme]);
 
   // Group workouts by past, today, and future
   const groupedWorkouts = useMemo((): GroupedWorkouts => {
     const today = new Date();
-    const past = new Map<string, WorkoutWithDate[]>();
-    const todayWorkouts: WorkoutWithDate[] = [];
-    const future = new Map<string, WorkoutWithDate[]>();
+    const past = new Map<string, WorkoutDayWithWeekNumber[]>();
+    const todayWorkouts: WorkoutDayWithWeekNumber[] = [];
+    const future = new Map<string, WorkoutDayWithWeekNumber[]>();
 
     allWorkoutDays.forEach((workout) => {
-      const dateKey = formatDate(workout.scheduledDate);
+      const dateKey = formatDate(new Date(workout.scheduledDate));
 
-      if (isSameDay(workout.scheduledDate, today)) {
+      if (isSameDay(new Date(workout.scheduledDate), today)) {
         todayWorkouts.push(workout);
-      } else if (isBeforeDay(workout.scheduledDate, today)) {
+      } else if (isBeforeDay(new Date(workout.scheduledDate), today)) {
         if (!past.has(dateKey)) {
           past.set(dateKey, []);
         }
@@ -339,6 +294,16 @@ export const Workout: React.FC = () => {
 
     return { past, today: todayWorkouts, future };
   }, [allWorkoutDays]);
+
+  // Scroll to today's workouts when they load
+  useEffect(() => {
+    if (groupedWorkouts.today.length > 0 && todaysWorkoutsRef.current) {
+      todaysWorkoutsRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }
+  }, [groupedWorkouts.today]);
 
   const handleCompleteWorkout = async (workoutId: string) => {
     try {
@@ -445,7 +410,10 @@ export const Workout: React.FC = () => {
     );
   }
 
-  const renderWorkoutCard = (workout: WorkoutWithDate, isPast: boolean) => {
+  const renderWorkoutCard = (
+    workout: WorkoutDayWithWeekNumber,
+    isPast: boolean
+  ) => {
     if (workout.isRestDay) {
       return (
         <RestDayCard key={workout.id}>
@@ -483,13 +451,10 @@ export const Workout: React.FC = () => {
               <span>
                 {completedSets}/{totalSets} sets
               </span>
-              {workout.completedAt && (
+              {workout.isCompleted && (
                 <>
                   <span>•</span>
-                  <span>
-                    Completed:{" "}
-                    {new Date(workout.completedAt).toLocaleDateString()}
-                  </span>
+                  <span>Completed: {workout.completedDate}</span>
                 </>
               )}
             </WorkoutMeta>
@@ -530,15 +495,46 @@ export const Workout: React.FC = () => {
           </div>
 
           <TimelineContainer>
+            {/* Past Workouts */}
+            {groupedWorkouts.past.size > 0 && (
+              <TimelineSection>
+                <SectionHeader>Past Workouts</SectionHeader>
+                {Array.from(groupedWorkouts.past.entries()).map(
+                  ([dateKey, workouts]) => (
+                    <DateGroup key={dateKey}>
+                      <DateHeader $isPast={true}>
+                        <div className="date-text">{dateKey}</div>
+                        <div className="day-name">
+                          {
+                            DAY_NAMES[
+                              (workouts[0].isCompleted &&
+                              workouts[0].completedDate
+                                ? new Date(workouts[0].completedDate).getDay()
+                                : new Date(
+                                    workouts[0].scheduledDate
+                                  ).getDay()) - 1
+                            ]
+                          }
+                        </div>
+                      </DateHeader>
+                      {workouts.map((workout) => {
+                        return renderWorkoutCard(workout, true);
+                      })}
+                    </DateGroup>
+                  )
+                )}
+              </TimelineSection>
+            )}
+
             {/* Today's Workouts */}
             {groupedWorkouts.today.length > 0 && (
-              <TimelineSection>
+              <TimelineSection ref={todaysWorkoutsRef}>
                 <SectionHeader>Today</SectionHeader>
                 <DateGroup>
                   <DateHeader $isToday={true}>
                     <div className="date-text">{formatDate(new Date())}</div>
                     <div className="day-name">
-                      {getDayName(new Date().getDay())}
+                      {DAY_NAMES[new Date().getDay()]}
                     </div>
                   </DateHeader>
                   {groupedWorkouts.today.map((workout) =>
@@ -558,7 +554,16 @@ export const Workout: React.FC = () => {
                       <DateHeader>
                         <div className="date-text">{dateKey}</div>
                         <div className="day-name">
-                          {getDayName(workouts[0].scheduledDate.getDay())}
+                          {
+                            DAY_NAMES[
+                              (workouts[0].isCompleted &&
+                              workouts[0].completedDate
+                                ? new Date(workouts[0].completedDate).getDay()
+                                : new Date(
+                                    workouts[0].scheduledDate
+                                  ).getDay()) - 1
+                            ]
+                          }
                         </div>
                       </DateHeader>
                       {workouts.map((workout) =>
@@ -567,28 +572,6 @@ export const Workout: React.FC = () => {
                     </DateGroup>
                   )
                 )}
-              </TimelineSection>
-            )}
-
-            {/* Past Workouts */}
-            {groupedWorkouts.past.size > 0 && (
-              <TimelineSection>
-                <SectionHeader>Past Workouts</SectionHeader>
-                {Array.from(groupedWorkouts.past.entries())
-                  .reverse()
-                  .map(([dateKey, workouts]) => (
-                    <DateGroup key={dateKey}>
-                      <DateHeader $isPast={true}>
-                        <div className="date-text">{dateKey}</div>
-                        <div className="day-name">
-                          {getDayName(workouts[0].scheduledDate.getDay())}
-                        </div>
-                      </DateHeader>
-                      {workouts.map((workout) =>
-                        renderWorkoutCard(workout, true)
-                      )}
-                    </DateGroup>
-                  ))}
               </TimelineSection>
             )}
           </TimelineContainer>

@@ -278,13 +278,13 @@ export const Register: React.FC = () => {
     }
   };
 
-  const handleInputChange = (field: keyof RegisterRequest) => (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    clearError();
-    // dateOfBirth is stored as ISO string (YYYY-MM-DD)
-    setFormData({ ...formData, [field]: e.target.value });
-  };
+  const handleInputChange =
+    (field: keyof RegisterRequest) =>
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      clearError();
+      // dateOfBirth is stored as ISO string (YYYY-MM-DD)
+      setFormData({ ...formData, [field]: e.target.value });
+    };
 
   const passwordsMatch = formData.password === confirmPassword;
   const passwordLongEnough = formData.password.length >= 6;
@@ -321,7 +321,9 @@ export const Register: React.FC = () => {
           <Title>
             Join <span>trAInr</span>
           </Title>
-          <Subtitle>Create your account and start your fitness journey</Subtitle>
+          <Subtitle>
+            Create your account and start your fitness journey
+          </Subtitle>
 
           <StepIndicator>
             <Step $active={step === 1} $completed={step > 1}>
@@ -340,7 +342,7 @@ export const Register: React.FC = () => {
           {error && <ErrorMessage>{error}</ErrorMessage>}
 
           {step === 1 && (
-            <Stack gap="1.25rem">
+            <Stack $gap="1.25rem">
               <Input
                 label="Username"
                 placeholder="Choose a username"
@@ -357,7 +359,11 @@ export const Register: React.FC = () => {
                   value={formData.password}
                   onChange={handleInputChange("password")}
                   autoComplete="new-password"
-                  error={formData.password && !passwordLongEnough ? "Password must be at least 6 characters" : undefined}
+                  error={
+                    formData.password && !passwordLongEnough
+                      ? "Password must be at least 6 characters"
+                      : undefined
+                  }
                 />
                 <PasswordHint>Minimum 6 characters</PasswordHint>
               </div>
@@ -371,7 +377,11 @@ export const Register: React.FC = () => {
                   setConfirmPassword(e.target.value);
                 }}
                 autoComplete="new-password"
-                error={confirmPassword && !passwordsMatch ? "Passwords do not match" : undefined}
+                error={
+                  confirmPassword && !passwordsMatch
+                    ? "Passwords do not match"
+                    : undefined
+                }
               />
               <Input
                 label="Email"
@@ -381,7 +391,7 @@ export const Register: React.FC = () => {
                 onChange={handleInputChange("email")}
                 autoComplete="email"
               />
-              <Flex gap="1rem">
+              <Flex $gap="1rem">
                 <Input
                   label="First Name"
                   placeholder="John"
@@ -407,7 +417,7 @@ export const Register: React.FC = () => {
           )}
 
           {step === 2 && (
-            <Stack gap="1.5rem">
+            <Stack $gap="1.5rem">
               <div>
                 <h4 style={{ marginBottom: "1rem" }}>
                   What's your fitness level?
@@ -454,7 +464,7 @@ export const Register: React.FC = () => {
           )}
 
           {step === 3 && (
-            <Stack gap="1.5rem">
+            <Stack $gap="1.5rem">
               <div>
                 <h4 style={{ marginBottom: "1rem" }}>
                   How many days can you train?
@@ -483,7 +493,8 @@ export const Register: React.FC = () => {
                 <p style={{ color: "#A0AEC0", fontSize: "0.875rem" }}>
                   <strong>Username:</strong> {formData.username}
                   <br />
-                  <strong>Name:</strong> {formData.firstName} {formData.lastName}
+                  <strong>Name:</strong> {formData.firstName}{" "}
+                  {formData.lastName}
                   <br />
                   <strong>Level:</strong>{" "}
                   {
@@ -506,12 +517,8 @@ export const Register: React.FC = () => {
             </Stack>
           )}
 
-          <Flex justify="space-between" style={{ marginTop: "2rem" }}>
-            <Button
-              variant="ghost"
-              onClick={handleBack}
-              disabled={step === 1}
-            >
+          <Flex $justify="space-between" style={{ marginTop: "2rem" }}>
+            <Button variant="ghost" onClick={handleBack} disabled={step === 1}>
               Back
             </Button>
             {step < 3 ? (
@@ -537,4 +544,3 @@ export const Register: React.FC = () => {
     </PageWrapper>
   );
 };
-

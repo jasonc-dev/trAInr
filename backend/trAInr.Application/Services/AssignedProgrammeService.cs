@@ -203,6 +203,7 @@ public class AssignedProgrammeService(
     {
         return new ProgrammeWeekResponse(
             week.Id,
+            week.WeekStartDate,
             week.WeekNumber,
             week.Notes,
             week.IsCompleted,
@@ -242,28 +243,6 @@ public class AssignedProgrammeService(
             exercise.SupersetGroupId,
             exercise.SupersetRestSeconds,
             exercise.Sets.Select(MapExerciseSetToResponse));
-    }
-
-    private static ExerciseSetResponse MapExerciseSetToResponse(ExerciseSet set)
-    {
-#pragma warning disable CS0618 // Type or member is obsolete
-        var isWarmup = set.IsWarmup; // Keep for backward compatibility
-#pragma warning restore CS0618 // Type or member is obsolete
-        return new ExerciseSetResponse(
-            set.Id,
-            set.SetNumber,
-            set.Reps,
-            set.Weight,
-            set.DurationSeconds,
-            set.Distance,
-            set.Difficulty,
-            set.Intensity,
-            set.IsCompleted,
-            isWarmup,
-            set.SetType,
-            set.DropPercentage,
-            set.Notes,
-            set.CompletedAt);
     }
 
     public async Task<ProgrammeWeekResponse?> CopyWeekAsync(Guid sourceWeekId, int targetWeekNumber)
@@ -340,9 +319,6 @@ public class AssignedProgrammeService(
                     // Copy sets (but reset completion status)
                     foreach (var sourceSet in sourceExercise.Sets)
                     {
-#pragma warning disable CS0618
-                        var isWarmup = sourceSet.IsWarmup;
-#pragma warning restore CS0618
                         var newSet = new ExerciseSet
                         {
                             Id = Guid.NewGuid(),
@@ -355,8 +331,7 @@ public class AssignedProgrammeService(
                             Difficulty = sourceSet.Difficulty,
                             Intensity = sourceSet.Intensity,
                             IsCompleted = false, // Reset completion status
-                            IsWarmup = isWarmup,
-                            SetType = sourceSet.SetType,
+                            SetType = SetType.Normal,
                             DropPercentage = sourceSet.DropPercentage,
                             Notes = sourceSet.Notes,
                             CompletedAt = null, // Reset completion timestamp
@@ -370,11 +345,11 @@ public class AssignedProgrammeService(
             }
 
             await unitOfWork.SaveChangesAsync();
-            
+
             // Reload the program to get the full response with navigation properties
             var updatedProgram = await assignedProgramRepository.GetByIdAsync(assignedProgram.Id);
             var createdWeek = updatedProgram?.GetWeekByNumber(targetWeekNumber);
-            
+
             return createdWeek is not null ? MapWeekToResponse(createdWeek) : null;
         }
         catch (Exception ex)
@@ -412,6 +387,7 @@ public class AssignedProgrammeService(
             // Copy workout days from source to target
             foreach (var sourceDay in sourceWeek.WorkoutDays)
             {
+                var nextWeekScheduledDate = sourceDay.ScheduledDate?.AddDays(7);
                 var newDay = new WorkoutDay
                 {
                     Id = Guid.NewGuid(),
@@ -421,6 +397,7 @@ public class AssignedProgrammeService(
                     Description = sourceDay.Description,
                     IsRestDay = sourceDay.IsRestDay,
                     IsCompleted = false, // Reset completion status
+                    ScheduledDate = nextWeekScheduledDate,
                     CompletedDate = null,
                     CreatedAt = DateTime.UtcNow
                 };
@@ -454,9 +431,6 @@ public class AssignedProgrammeService(
                     // Copy sets (but reset completion status)
                     foreach (var sourceSet in sourceExercise.Sets)
                     {
-#pragma warning disable CS0618
-                        var isWarmup = sourceSet.IsWarmup;
-#pragma warning restore CS0618
                         var newSet = new ExerciseSet
                         {
                             Id = Guid.NewGuid(),
@@ -469,7 +443,6 @@ public class AssignedProgrammeService(
                             Difficulty = sourceSet.Difficulty,
                             Intensity = sourceSet.Intensity,
                             IsCompleted = false, // Reset completion status
-                            IsWarmup = isWarmup,
                             SetType = sourceSet.SetType,
                             DropPercentage = sourceSet.DropPercentage,
                             Notes = sourceSet.Notes,
@@ -496,6 +469,24 @@ public class AssignedProgrammeService(
             logger.LogError(ex, "Failed to copy week content from {SourceWeekId} to {TargetWeekId}", sourceWeekId, targetWeekId);
             return null;
         }
+    }
+
+    private static ExerciseSetResponse MapExerciseSetToResponse(ExerciseSet set)
+    {
+        return new ExerciseSetResponse(
+            set.Id,
+            set.SetNumber,
+            set.Reps,
+            set.Weight,
+            set.DurationSeconds,
+            set.Distance,
+            set.Difficulty,
+            set.Intensity,
+            set.IsCompleted,
+            set.SetType,
+            set.DropPercentage,
+            set.Notes,
+            set.CompletedAt);
     }
 
     private static ProgrammeSummaryResponse MapToSummary(AssignedProgram assignedProgram)
