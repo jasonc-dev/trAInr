@@ -4,10 +4,11 @@
  */
 
 import { useState, useCallback } from "react";
-import { workoutApi } from "../services";
+import { workoutApi, programmeApi } from "../services";
 import {
   WorkoutDay,
   WorkoutExercise,
+  ProgrammeWeek,
   ExerciseSet,
   CreateWorkoutDayRequest,
   UpdateWorkoutDayRequest,
@@ -22,6 +23,7 @@ import {
 
 export const useWorkouts = () => {
   const [currentWorkout, setCurrentWorkout] = useState<WorkoutDay | null>(null);
+  const [workoutWeeks, setWorkoutWeeks] = useState<ProgrammeWeek[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -44,22 +46,21 @@ export const useWorkouts = () => {
     []
   );
 
-  const loadWorkoutDays = useCallback(
-    async (weekId: string): Promise<WorkoutDay[]> => {
+  const loadWorkoutWeeks = useCallback(
+    async (programmeId: string): Promise<ProgrammeWeek[]> => {
       try {
-        setLoading(true);
-        setError(null);
-        const response = await workoutApi.getWorkoutDays(weekId);
-        return response.data;
+        const response = await programmeApi.getById(programmeId);
+        if (workoutWeeks) {
+          setWorkoutWeeks(response.data.weeks);
+        }
+        return response.data.weeks;
       } catch (err: any) {
-        const message = err.response?.data || "Failed to load workout days";
+        const message = err.response?.data || "Failed to load workout weeks";
         setError(message);
         throw new Error(message);
-      } finally {
-        setLoading(false);
       }
     },
-    []
+    [workoutWeeks]
   );
 
   const createWorkoutDay = useCallback(
@@ -371,7 +372,7 @@ export const useWorkouts = () => {
     loading,
     error,
     loadWorkout,
-    loadWorkoutDays,
+    loadWorkoutWeeks,
     createWorkoutDay,
     updateWorkoutDay,
     deleteWorkoutDay,

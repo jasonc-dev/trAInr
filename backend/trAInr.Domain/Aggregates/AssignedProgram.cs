@@ -147,11 +147,14 @@ public class AssignedProgram
         if (_weeks.Any(w => w.WeekNumber == weekNumber))
             throw new InvalidOperationException($"Week {weekNumber} already exists in this program");
 
+        var weekStartDate = StartDate.AddDays((weekNumber - 1) * 7);
+
         var week = new ProgrammeWeek
         {
             Id = Guid.NewGuid(),
             AssignedProgramId = Id,
-            WeekNumber = weekNumber,
+            WeekStartDate = weekStartDate,
+            WeekNumber = weekNumber,    
             Notes = notes,
             IsCompleted = false,
             CreatedAt = DateTime.UtcNow
@@ -170,10 +173,13 @@ public class AssignedProgram
     {
         var week = _weeks.FirstOrDefault(w => w.Id == weekId);
         if (week is null) return null;
+
+        var scheduledDate = week.WeekStartDate.AddDays((int)workoutDay.DayOfWeek - 1);
         
         workoutDay.Id = Guid.NewGuid();
         workoutDay.ProgrammeWeekId = weekId;
         workoutDay.CreatedAt = DateTime.UtcNow;
+        workoutDay.ScheduledDate = scheduledDate;
         
         week.WorkoutDays.Add(workoutDay);
         UpdatedAt = DateTime.UtcNow;

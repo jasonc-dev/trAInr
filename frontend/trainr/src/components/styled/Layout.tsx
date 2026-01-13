@@ -16,14 +16,14 @@ export const PageWrapper = styled.main`
   padding-bottom: ${({ theme }) => theme.spacing["2xl"]};
 `;
 
-export const Grid = styled.div<{ columns?: number; gap?: string }>`
+export const Grid = styled.div<{ $columns?: number; $gap?: string }>`
   display: grid;
-  grid-template-columns: repeat(${({ columns }) => columns || 1}, 1fr);
-  gap: ${({ gap, theme }) => gap || theme.spacing.lg};
+  grid-template-columns: repeat(${({ $columns }) => $columns || 1}, 1fr);
+  gap: ${({ $gap, theme }) => $gap || theme.spacing.md};
 
   @media (max-width: ${({ theme }) => theme.breakpoints.lg}) {
     grid-template-columns: repeat(
-      ${({ columns }) => Math.min(columns || 1, 2)},
+      ${({ $columns }) => Math.min($columns || 1, 2)},
       1fr
     );
   }
@@ -35,17 +35,17 @@ export const Grid = styled.div<{ columns?: number; gap?: string }>`
 
 export const Flex = styled.div<{
   direction?: "row" | "column";
-  align?: string;
-  justify?: string;
-  gap?: string;
-  wrap?: boolean;
+  $align?: string;
+  $justify?: string;
+  $gap?: string;
+  $wrap?: boolean;
 }>`
   display: flex;
   flex-direction: ${({ direction }) => direction || "row"};
-  align-items: ${({ align }) => align || "stretch"};
-  justify-content: ${({ justify }) => justify || "flex-start"};
-  gap: ${({ gap, theme }) => gap || theme.spacing.md};
-  flex-wrap: ${({ wrap }) => (wrap ? "wrap" : "nowrap")};
+  align-items: ${({ $align }) => $align || "stretch"};
+  justify-content: ${({ $justify }) => $justify || "flex-start"};
+  gap: ${({ $gap, theme }) => $gap || theme.spacing.md};
+  flex-wrap: ${({ $wrap }) => ($wrap ? "wrap" : "nowrap")};
 `;
 
 export const Stack = styled(Flex)`

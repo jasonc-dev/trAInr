@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import {
@@ -25,7 +25,7 @@ import {
   WorkoutDay,
   WorkoutExercise,
 } from "../types";
-import { getExerciseTypeLabel, getMuscleGroupLabel } from "../utils";
+import { DAY_NAMES, getExerciseTypeLabel, getMuscleGroupLabel } from "../utils";
 
 const PageTitle = styled.h1`
   font-size: ${({ theme }) => theme.fontSizes["3xl"]};
@@ -227,16 +227,6 @@ const ExerciseSearchItem = styled.div`
   }
 `;
 
-const dayNames = [
-  "Sunday",
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
-];
-
 export const ProgrammeDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -267,7 +257,7 @@ export const ProgrammeDetail: React.FC = () => {
 
   // Form states
   const [newDay, setNewDay] = useState({
-    dayOfWeek: DayOfWeek.Monday as DayOfWeek,
+    dayOfWeek: DayOfWeek.Monday,
     name: "",
     description: "",
     isRestDay: false,
@@ -275,11 +265,21 @@ export const ProgrammeDetail: React.FC = () => {
 
   const [editDay, setEditDay] = useState({
     id: "",
-    dayOfWeek: DayOfWeek.Monday as DayOfWeek,
+    dayOfWeek: DayOfWeek.Monday,
     name: "",
     description: "",
     isRestDay: false,
   });
+
+  const firstWorkoutDay = useMemo(() => {
+    return programme?.weeks[selectedWeek]?.workoutDays.length === 0;
+  }, [programme?.weeks, selectedWeek]);
+
+  const firstWorkoutDayDayOfWeek = useMemo(() => {
+    var dayOfWeek = programme?.weeks[selectedWeek]?.weekStartDate;
+    const numberDayOfWeek = new Date(dayOfWeek || "").getDay();
+    return numberDayOfWeek;
+  }, [programme?.weeks, selectedWeek]);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<ExerciseSummary[]>([]);
@@ -341,6 +341,21 @@ export const ProgrammeDetail: React.FC = () => {
     return () => clearTimeout(debounce);
   }, [searchQuery, searchExercises]);
 
+  // Update newDay.dayOfWeek when it's the first workout day
+  useEffect(() => {
+    if (firstWorkoutDay && programme?.weeks[selectedWeek]) {
+      setNewDay((prev) => ({
+        ...prev,
+        dayOfWeek: firstWorkoutDayDayOfWeek as DayOfWeek,
+      }));
+    }
+  }, [
+    firstWorkoutDay,
+    firstWorkoutDayDayOfWeek,
+    programme?.weeks,
+    selectedWeek,
+  ]);
+
   const handleAddFirstWeek = (
     programmeId: string
   ): React.MouseEventHandler<HTMLButtonElement> | undefined => {
@@ -366,7 +381,7 @@ export const ProgrammeDetail: React.FC = () => {
       const existingDays = programme.weeks[selectedWeek].workoutDays.length;
 
       await workoutsApi.createWorkoutDay(weekId, {
-        dayOfWeek: newDay.dayOfWeek,
+        dayOfWeek: newDay.dayOfWeek as unknown as DayOfWeek,
         name: newDay.name || `Day ${existingDays + 1}`,
         description: newDay.description,
         isRestDay: newDay.isRestDay,
@@ -762,8 +777,8 @@ export const ProgrammeDetail: React.FC = () => {
           </BackButton>
 
           <Flex
-            justify="space-between"
-            align="flex-start"
+            $justify="space-between"
+            $align="flex-start"
             style={{ marginBottom: "2rem" }}
           >
             <div>
@@ -807,12 +822,12 @@ export const ProgrammeDetail: React.FC = () => {
               {currentWeek && (
                 <>
                   <Flex
-                    justify="space-between"
-                    align="center"
+                    $justify="space-between"
+                    $align="center"
                     style={{ marginBottom: "1.5rem" }}
                   >
                     <h3>Week {currentWeek.weekNumber} Workouts</h3>
-                    <Flex gap="0.5rem">
+                    <Flex $gap="0.5rem">
                       <Button
                         size="sm"
                         onClick={() => setShowAddDayModal(true)}
@@ -852,7 +867,7 @@ export const ProgrammeDetail: React.FC = () => {
                       </div>
                     </Card>
                   ) : (
-                    <Grid columns={2} gap="1.5rem">
+                    <Grid $columns={2} $gap="1.5rem">
                       {currentWeek.workoutDays
                         .sort((a, b) => a.dayOfWeek - b.dayOfWeek)
                         .map((day) => (
@@ -871,16 +886,16 @@ export const ProgrammeDetail: React.FC = () => {
                                     color: "#64748B",
                                   }}
                                 >
-                                  {dayNames[day.dayOfWeek]}
+                                  {DAY_NAMES[day.dayOfWeek]}
                                 </span>
                               </div>
-                              <Flex gap="0.5rem">
+                              <Flex $gap="0.5rem">
                                 {day.isRestDay && <Badge>Rest Day</Badge>}
                                 {day.isCompleted && (
                                   <Badge $variant="success">Done</Badge>
                                 )}
                               </Flex>
-                              <Flex gap="0.5rem">
+                              <Flex $gap="0.5rem">
                                 <Button
                                   variant="primary"
                                   size="sm"
@@ -1016,7 +1031,7 @@ export const ProgrammeDetail: React.FC = () => {
                                                   : "transparent",
                                             }}
                                           >
-                                            <Flex align="center" gap="0.5rem">
+                                            <Flex $align="center" $gap="0.5rem">
                                               <input
                                                 type="checkbox"
                                                 checked={selectedExercises.has(
@@ -1065,8 +1080,8 @@ export const ProgrammeDetail: React.FC = () => {
                                                   </span>
                                                   {exercise.supersetGroupId && (
                                                     <Flex
-                                                      align="center"
-                                                      gap="0.25rem"
+                                                      $align="center"
+                                                      $gap="0.25rem"
                                                     >
                                                       <Badge $variant="primary">
                                                         {createSupersetLabel(
@@ -1138,7 +1153,7 @@ export const ProgrammeDetail: React.FC = () => {
                                                 )}
                                               </div>
                                             </Flex>
-                                            <Flex gap="0.25rem">
+                                            <Flex $gap="0.25rem">
                                               <Button
                                                 variant="ghost"
                                                 size="sm"
@@ -1172,9 +1187,9 @@ export const ProgrammeDetail: React.FC = () => {
                                   )}
                                 </ExerciseList>
                                 <Flex
-                                  gap="0.5rem"
+                                  $gap="0.5rem"
                                   style={{ marginTop: "1rem" }}
-                                  wrap
+                                  $wrap
                                 >
                                   <Button
                                     variant="ghost"
@@ -1225,7 +1240,7 @@ export const ProgrammeDetail: React.FC = () => {
           <Modal onClick={() => setShowAddDayModal(false)}>
             <ModalContent onClick={(e) => e.stopPropagation()}>
               <h2 style={{ marginBottom: "1.5rem" }}>Add Workout Day</h2>
-              <Stack gap="1rem">
+              <Stack $gap="1rem">
                 <Input
                   label="Day Name"
                   placeholder="e.g., Push Day, Leg Day"
@@ -1236,11 +1251,15 @@ export const ProgrammeDetail: React.FC = () => {
                 />
                 <Select
                   label="Day of Week"
-                  options={dayNames.map((name, index) => ({
+                  options={DAY_NAMES.map((name, index) => ({
                     value: index.toString(),
                     label: name,
                   }))}
-                  value={newDay.dayOfWeek.toString()}
+                  value={
+                    firstWorkoutDay
+                      ? firstWorkoutDayDayOfWeek.toString()
+                      : newDay.dayOfWeek.toString()
+                  }
                   onChange={(e) =>
                     setNewDay({
                       ...newDay,
@@ -1256,7 +1275,7 @@ export const ProgrammeDetail: React.FC = () => {
                     setNewDay({ ...newDay, description: e.target.value })
                   }
                 />
-                <Flex gap="1rem">
+                <Flex $gap="1rem">
                   <label
                     style={{
                       display: "flex",
@@ -1275,8 +1294,8 @@ export const ProgrammeDetail: React.FC = () => {
                   </label>
                 </Flex>
                 <Flex
-                  justify="flex-end"
-                  gap="1rem"
+                  $justify="flex-end"
+                  $gap="1rem"
                   style={{ marginTop: "1rem" }}
                 >
                   <Button
@@ -1297,7 +1316,7 @@ export const ProgrammeDetail: React.FC = () => {
           <Modal onClick={() => setShowEditDayModal(false)}>
             <ModalContent onClick={(e) => e.stopPropagation()}>
               <h2 style={{ marginBottom: "1.5rem" }}>Edit Workout Day</h2>
-              <Stack gap="1rem">
+              <Stack $gap="1rem">
                 <Input
                   label="Day Name"
                   placeholder="e.g., Push Day, Leg Day"
@@ -1308,7 +1327,7 @@ export const ProgrammeDetail: React.FC = () => {
                 />
                 <Select
                   label="Day of Week"
-                  options={dayNames.map((name, index) => ({
+                  options={DAY_NAMES.map((name, index) => ({
                     value: index.toString(),
                     label: name,
                   }))}
@@ -1328,7 +1347,7 @@ export const ProgrammeDetail: React.FC = () => {
                     setEditDay({ ...editDay, description: e.target.value })
                   }
                 />
-                <Flex gap="1rem">
+                <Flex $gap="1rem">
                   <label
                     style={{
                       display: "flex",
@@ -1347,8 +1366,8 @@ export const ProgrammeDetail: React.FC = () => {
                   </label>
                 </Flex>
                 <Flex
-                  justify="flex-end"
-                  gap="1rem"
+                  $justify="flex-end"
+                  $gap="1rem"
                   style={{ marginTop: "1rem" }}
                 >
                   <Button
@@ -1374,7 +1393,7 @@ export const ProgrammeDetail: React.FC = () => {
                 cannot be undone. All exercises in this day will also be
                 removed.
               </p>
-              <Flex justify="flex-end" gap="1rem">
+              <Flex $justify="flex-end" $gap="1rem">
                 <Button
                   variant="ghost"
                   onClick={() => setShowDeleteDayModal(false)}
@@ -1400,7 +1419,7 @@ export const ProgrammeDetail: React.FC = () => {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
 
-              <Flex gap="1rem" style={{ marginTop: "1rem" }}>
+              <Flex $gap="1rem" style={{ marginTop: "1rem" }}>
                 <Input
                   label="Sets"
                   type="number"
@@ -1436,7 +1455,7 @@ export const ProgrammeDetail: React.FC = () => {
                 />
               </Flex>
 
-              <Flex gap="1rem" style={{ marginTop: "1rem" }}>
+              <Flex $gap="1rem" style={{ marginTop: "1rem" }}>
                 <Input
                   label="Rest (seconds)"
                   type="number"
@@ -1522,7 +1541,7 @@ export const ProgrammeDetail: React.FC = () => {
                 )}
               </ExerciseSearchList>
 
-              <Flex justify="flex-end" style={{ marginTop: "1rem" }}>
+              <Flex $justify="flex-end" style={{ marginTop: "1rem" }}>
                 <Button
                   variant="ghost"
                   onClick={() => setShowAddExerciseModal(false)}
@@ -1541,8 +1560,8 @@ export const ProgrammeDetail: React.FC = () => {
               <h2 style={{ marginBottom: "1.5rem" }}>
                 Edit Exercise: {selectedExercise.exerciseName}
               </h2>
-              <Stack gap="1rem">
-                <Flex gap="1rem">
+              <Stack $gap="1rem">
+                <Flex $gap="1rem">
                   <Input
                     label="Sets"
                     type="number"
@@ -1578,7 +1597,7 @@ export const ProgrammeDetail: React.FC = () => {
                   />
                 </Flex>
 
-                <Flex gap="1rem">
+                <Flex $gap="1rem">
                   <Input
                     label="Rest (seconds)"
                     type="number"
@@ -1628,8 +1647,8 @@ export const ProgrammeDetail: React.FC = () => {
                 />
 
                 <Flex
-                  justify="flex-end"
-                  gap="1rem"
+                  $justify="flex-end"
+                  $gap="1rem"
                   style={{ marginTop: "1rem" }}
                 >
                   <Button
@@ -1654,7 +1673,7 @@ export const ProgrammeDetail: React.FC = () => {
               </h2>
 
               {selectedExercise.details && (
-                <Stack gap="1.5rem">
+                <Stack $gap="1.5rem">
                   <div>
                     <h4
                       style={{
@@ -1670,7 +1689,7 @@ export const ProgrammeDetail: React.FC = () => {
                     <p>{selectedExercise.details.description}</p>
                   </div>
 
-                  <Flex gap="1rem" wrap>
+                  <Flex $gap="1rem" $wrap>
                     <Badge>{ExerciseType[selectedExercise.details.type]}</Badge>
                     <Badge>
                       {MuscleGroup[selectedExercise.details.primaryMuscleGroup]}
@@ -1792,7 +1811,7 @@ export const ProgrammeDetail: React.FC = () => {
                 </Stack>
               )}
 
-              <Flex justify="space-between" style={{ marginTop: "1.5rem" }}>
+              <Flex $justify="space-between" style={{ marginTop: "1.5rem" }}>
                 <Button
                   variant="primary"
                   onClick={() => {
@@ -1818,13 +1837,13 @@ export const ProgrammeDetail: React.FC = () => {
           <Modal onClick={() => setShowDropSetModal(false)}>
             <ModalContent onClick={(e) => e.stopPropagation()}>
               <h2 style={{ marginBottom: "1rem" }}>Configure Drop Set</h2>
-              <Stack gap="1rem">
+              <Stack $gap="1rem">
                 <p style={{ fontSize: "0.875rem", color: "#94A3B8" }}>
                   Drop sets involve reducing weight after each set while
                   increasing reps. Configure the starting parameters and
                   progression.
                 </p>
-                <Flex gap="1rem">
+                <Flex $gap="1rem">
                   <Input
                     label="Starting Weight (kg)"
                     type="number"
@@ -1848,7 +1867,7 @@ export const ProgrammeDetail: React.FC = () => {
                     }
                   />
                 </Flex>
-                <Flex gap="1rem">
+                <Flex $gap="1rem">
                   <Input
                     label="Number of Drops"
                     type="number"
@@ -1915,8 +1934,8 @@ export const ProgrammeDetail: React.FC = () => {
                   </ul>
                 </div>
                 <Flex
-                  justify="flex-end"
-                  gap="1rem"
+                  $justify="flex-end"
+                  $gap="1rem"
                   style={{ marginTop: "1rem" }}
                 >
                   <Button

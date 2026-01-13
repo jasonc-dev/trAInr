@@ -23,12 +23,6 @@ public class ExerciseSet
     public bool IsCompleted { get; set; }
     
     /// <summary>
-    ///     Deprecated: Use SetType instead. Kept for backward compatibility.
-    /// </summary>
-    [Obsolete("Use SetType property instead")]
-    public bool IsWarmup { get; set; }
-    
-    /// <summary>
     ///     Type of set (Normal, Warmup, DropSet, etc.)
     /// </summary>
     public SetType SetType { get; set; } = SetType.Normal;
@@ -91,14 +85,29 @@ public enum SetType
     ///     Drop set - reduced weight for additional reps
     /// </summary>
     DropSet = 2,
-    
+
     /// <summary>
-    ///     Set taken to failure
+    ///     Super set - two exercises performed back to back
     /// </summary>
-    Failure = 3,
-    
+    SuperSet = 3,
+
+    /// <summary>
+    ///     Tri set - three exercises performed back to back
+    /// </summary>
+    TriSet = 4,
+
+    /// <summary>
+    ///     Giant set - three exercises performed back to back
+    /// </summary>
+    GiantSet = 5,
+
     /// <summary>
     ///     As Many Reps As Possible
     /// </summary>
-    Amrap = 4
+    Amrap = 5,
+
+    /// <summary>
+    ///     Set taken to failure
+    /// </summary>
+    Failure = 6
 }

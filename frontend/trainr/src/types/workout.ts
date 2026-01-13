@@ -3,7 +3,7 @@
  * Types related to workout days, exercises, and sets
  */
 
-import { DayOfWeek, Difficulty, Intensity, SetType } from './enums';
+import { DayOfWeek, Difficulty, Intensity, SetType } from "./enums";
 
 export interface WorkoutDay {
   id: string;
@@ -13,7 +13,8 @@ export interface WorkoutDay {
   description?: string;
   isRestDay: boolean;
   isCompleted: boolean;
-  completedAt?: string;
+  scheduledDate: string;
+  completedDate?: string;
   exercises: WorkoutExercise[];
 }
 
@@ -35,9 +36,9 @@ export interface CreateWorkoutDayRequest {
 }
 
 export interface UpdateWorkoutDayRequest {
-  name?: string;
+  dayOfWeek: DayOfWeek;
+  name: string;
   description?: string;
-  dayOfWeek?: DayOfWeek;
   isRestDay?: boolean;
 }
 
@@ -104,7 +105,6 @@ export interface ExerciseSet {
   setNumber: number;
   reps?: number;
   weight?: number;
-  isWarmup: boolean;
   setType: SetType;
   dropPercentage?: number;
   isCompleted: boolean;
@@ -118,7 +118,6 @@ export interface CreateExerciseSetRequest {
   setNumber: number;
   reps?: number;
   weight?: number;
-  isWarmup?: boolean;
   setType?: SetType;
   dropPercentage?: number;
 }
@@ -126,7 +125,6 @@ export interface CreateExerciseSetRequest {
 export interface UpdateExerciseSetRequest {
   reps?: number;
   weight?: number;
-  isWarmup?: boolean;
   setType?: SetType;
   dropPercentage?: number;
   difficulty?: Difficulty;

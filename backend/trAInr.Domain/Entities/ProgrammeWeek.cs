@@ -9,6 +9,7 @@ public class ProgrammeWeek
 {
     public Guid Id { get; set; }
     public Guid AssignedProgramId { get; set; }
+    public DateOnly WeekStartDate { get; set; }
     public int WeekNumber { get; set; }
     public string? Notes { get; set; }
     public bool IsCompleted { get; set; }

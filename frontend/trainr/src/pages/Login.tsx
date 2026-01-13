@@ -1,13 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import styled, { keyframes } from "styled-components";
-import {
-  Container,
-  Card,
-  Button,
-  Input,
-  Stack,
-} from "../components/styled";
+import { Container, Card, Button, Input, Stack } from "../components/styled";
 import { useAuth } from "../hooks/useAuth";
 
 const fadeIn = keyframes`
@@ -108,7 +102,7 @@ export const Login: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.username || !formData.password) {
       return;
     }
@@ -121,10 +115,11 @@ export const Login: React.FC = () => {
     }
   };
 
-  const handleInputChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
-    clearError();
-    setFormData({ ...formData, [field]: e.target.value });
-  };
+  const handleInputChange =
+    (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
+      clearError();
+      setFormData({ ...formData, [field]: e.target.value });
+    };
 
   const isValid = formData.username.trim() && formData.password.trim();
 
@@ -141,7 +136,7 @@ export const Login: React.FC = () => {
           {error && <ErrorMessage>{error}</ErrorMessage>}
 
           <form onSubmit={handleSubmit}>
-            <Stack gap="1.25rem">
+            <Stack $gap="1.25rem">
               <Input
                 label="Username"
                 placeholder="Enter your username"
@@ -177,4 +172,3 @@ export const Login: React.FC = () => {
     </PageWrapper>
   );
 };
-

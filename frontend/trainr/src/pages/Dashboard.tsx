@@ -188,7 +188,7 @@ export const Dashboard: React.FC = () => {
                   </div>
                   <Badge $variant="primary">Active</Badge>
                 </CardHeader>
-                <Flex align="center" gap="2rem" style={{ marginTop: "1rem" }}>
+                <Flex $align="center" $gap="2rem" style={{ marginTop: "1rem" }}>
                   <div style={{ flex: 1 }}>
                     <ProgressBar
                       value={
@@ -205,7 +205,7 @@ export const Dashboard: React.FC = () => {
               </ActiveProgrammeCard>
 
               {/* Stats Overview */}
-              <Grid columns={4} gap="1rem" style={{ marginBottom: "2rem" }}>
+              <Grid $columns={4} $gap="1rem" style={{ marginBottom: "2rem" }}>
                 <StatCard>
                   <div className="stat-value">
                     {dashboard?.overallStats.totalWorkoutsCompleted || 0}
@@ -235,7 +235,7 @@ export const Dashboard: React.FC = () => {
               </Grid>
 
               {/* Charts */}
-              <Grid columns={2} gap="1.5rem" style={{ marginBottom: "2rem" }}>
+              <Grid $columns={2} $gap="1.5rem" style={{ marginBottom: "2rem" }}>
                 <Card>
                   <CardHeader>
                     <CardTitle>Weekly Volume</CardTitle>
@@ -336,15 +336,15 @@ export const Dashboard: React.FC = () => {
               </Grid>
 
               {/* Current Week & Top Exercises */}
-              <Grid columns={2} gap="1.5rem">
+              <Grid $columns={2} $gap="1.5rem">
                 <Card>
                   <CardHeader>
                     <CardTitle>This Week</CardTitle>
                   </CardHeader>
                   <CardContent>
                     {dashboard?.currentWeekMetrics ? (
-                      <Stack gap="1rem">
-                        <Flex justify="space-between">
+                      <Stack $gap="1rem">
+                        <Flex $justify="space-between">
                           <span style={{ color: "#A0AEC0" }}>
                             Workouts Completed
                           </span>
@@ -353,7 +353,7 @@ export const Dashboard: React.FC = () => {
                             {dashboard.currentWeekMetrics.workoutsPlanned}
                           </span>
                         </Flex>
-                        <Flex justify="space-between">
+                        <Flex $justify="space-between">
                           <span style={{ color: "#A0AEC0" }}>
                             Sets Completed
                           </span>
@@ -361,7 +361,7 @@ export const Dashboard: React.FC = () => {
                             {dashboard.currentWeekMetrics.totalSetsCompleted}
                           </span>
                         </Flex>
-                        <Flex justify="space-between">
+                        <Flex $justify="space-between">
                           <span style={{ color: "#A0AEC0" }}>Total Volume</span>
                           <span>
                             {Math.round(
@@ -370,7 +370,7 @@ export const Dashboard: React.FC = () => {
                             kg
                           </span>
                         </Flex>
-                        <Flex justify="space-between">
+                        <Flex $justify="space-between">
                           <span style={{ color: "#A0AEC0" }}>Total Reps</span>
                           <span>{dashboard.currentWeekMetrics.totalReps}</span>
                         </Flex>

@@ -36,6 +36,7 @@ public record ProgrammeSummaryResponse(
 
 public record ProgrammeWeekResponse(
     Guid Id,
+    DateOnly WeekStartDate,
     int WeekNumber,
     string? Notes,
     bool IsCompleted,

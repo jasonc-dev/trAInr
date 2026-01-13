@@ -202,6 +202,7 @@ public class TrainrDbContext(DbContextOptions<TrainrDbContext> options) : DbCont
             entity.HasIndex(e => e.AssignedProgramId);
             entity.HasIndex(e => new { e.AssignedProgramId, e.WeekNumber }).IsUnique();
             entity.Property(e => e.CreatedAt).HasColumnType("timestamp with time zone");
+            entity.Property(e => e.WeekStartDate).HasColumnType("date").IsRequired();
 
             // Configure WorkoutDays collection
             entity.HasMany(e => e.WorkoutDays)
