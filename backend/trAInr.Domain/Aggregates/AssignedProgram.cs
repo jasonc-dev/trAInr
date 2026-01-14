@@ -173,13 +173,11 @@ public class AssignedProgram
     {
         var week = _weeks.FirstOrDefault(w => w.Id == weekId);
         if (week is null) return null;
-
-        var scheduledDate = week.WeekStartDate.AddDays((int)workoutDay.DayOfWeek - 1);
         
         workoutDay.Id = Guid.NewGuid();
         workoutDay.ProgrammeWeekId = weekId;
         workoutDay.CreatedAt = DateTime.UtcNow;
-        workoutDay.ScheduledDate = scheduledDate;
+        workoutDay.ScheduledDate = workoutDay.ScheduledDate;
         
         week.WorkoutDays.Add(workoutDay);
         UpdatedAt = DateTime.UtcNow;

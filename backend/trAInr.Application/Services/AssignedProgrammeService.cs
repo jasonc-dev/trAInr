@@ -78,10 +78,6 @@ public class AssignedProgrammeService(
             assignedProgram.Deactivate();
         }
 
-        // Note: AssignedProgram doesn't have public setters for Name/Description
-        // This may require adding domain methods or using reflection/EF Core change tracking
-        // For now, we'll need to update through EF Core's change tracking
-        // This is a limitation that should be addressed with proper domain methods
         await assignedProgramRepository.UpdateAsync(assignedProgram);
         await unitOfWork.SaveChangesAsync();
         return MapToResponse(assignedProgram);
@@ -215,7 +211,6 @@ public class AssignedProgrammeService(
         return new WorkoutDayResponse(
             day.Id,
             day.ProgrammeWeekId,
-            day.DayOfWeek,
             day.Name,
             day.Description,
             day.ScheduledDate,
@@ -281,7 +276,6 @@ public class AssignedProgrammeService(
                 {
                     Id = Guid.NewGuid(),
                     ProgrammeWeekId = newWeek.Id,
-                    DayOfWeek = sourceDay.DayOfWeek,
                     Name = sourceDay.Name,
                     Description = sourceDay.Description,
                     IsRestDay = sourceDay.IsRestDay,
@@ -392,7 +386,6 @@ public class AssignedProgrammeService(
                 {
                     Id = Guid.NewGuid(),
                     ProgrammeWeekId = targetWeek.Id,
-                    DayOfWeek = sourceDay.DayOfWeek,
                     Name = sourceDay.Name,
                     Description = sourceDay.Description,
                     IsRestDay = sourceDay.IsRestDay,

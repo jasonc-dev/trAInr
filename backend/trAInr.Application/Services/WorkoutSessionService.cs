@@ -39,9 +39,13 @@ public class WorkoutSessionService(
         var week = assignedProgram.GetWeekById(weekId);
         if (week is null) return null;
 
+        DateOnly? scheduledDate = request.scheduledDate is not null
+                ? new DateOnly(request.scheduledDate.Value.Year, request.scheduledDate.Value.Month, request.scheduledDate.Value.Day)
+                : null;
+
         var workoutDay = new WorkoutDay
         {
-            DayOfWeek = request.DayOfWeek,
+            ScheduledDate = scheduledDate,
             Name = request.Name,
             Description = request.Description,
             IsRestDay = request.IsRestDay,
@@ -60,23 +64,22 @@ public class WorkoutSessionService(
 
     public async Task<WorkoutDayResponse?> UpdateWorkoutDayAsync(Guid workoutDayId, UpdateWorkoutDayRequest request)
     {
-        var assignedProgram = await assignedProgramRepository.GetByWorkoutDayIdAsync(workoutDayId);
+        AssignedProgram? assignedProgram = await assignedProgramRepository.GetByWorkoutDayIdAsync(workoutDayId);
         if (assignedProgram is null) return null;
 
-        var workoutDay = assignedProgram.Weeks
+        WorkoutDay? workoutDay = assignedProgram.Weeks
             .SelectMany(w => w.WorkoutDays)
             .FirstOrDefault(d => d.Id == workoutDayId);
 
         if (workoutDay is null) return null;
-        
-        DateOnly? ScheduledDate = workoutDay.ScheduledDate?.AddDays(request.DayOfWeek.HasValue
-            ? (request.DayOfWeek.Value - workoutDay.DayOfWeek)
-            : 0);
+
+        DateOnly? scheduledDate = request.scheduledDate is not null
+            ? new DateOnly(request.scheduledDate.Value.Year, request.scheduledDate.Value.Month, request.scheduledDate.Value.Day)
+            : null;
 
         workoutDay.Name = request.Name;
         workoutDay.Description = request.Description;
-        workoutDay.DayOfWeek = request.DayOfWeek ?? workoutDay.DayOfWeek;
-        workoutDay.ScheduledDate = ScheduledDate;
+        workoutDay.ScheduledDate = scheduledDate;
         workoutDay.IsCompleted = request.IsCompleted;
         workoutDay.IsRestDay = request.IsRestDay;
 
@@ -513,7 +516,6 @@ public class WorkoutSessionService(
         return new WorkoutDayResponse(
             day.Id,
             day.ProgrammeWeekId,
-            day.DayOfWeek,
             day.Name,
             day.Description,
             day.ScheduledDate,

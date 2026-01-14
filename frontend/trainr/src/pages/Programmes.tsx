@@ -133,14 +133,6 @@ const EmptyState = styled.div`
   }
 `;
 
-// const CheckboxLabel = styled.label`
-//   display: block;
-//   font-size: ${({ theme }) => theme.fontSizes.sm};
-//   font-weight: ${({ theme }) => theme.fontWeights.medium};
-//   color: ${({ theme }) => theme.colors.textSecondary};
-//   cursor: pointer;
-// `;
-
 const durationOptions = [
   { value: "4", label: "4 weeks" },
   { value: "5", label: "5 weeks" },
