@@ -19,8 +19,10 @@ namespace trAInr.Infrastructure.Migrations
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     AthleteId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ProgramTemplateId = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
                     Description = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: false),
+                    DurationWeeks = table.Column<int>(type: "integer", nullable: false),
                     CurrentPhase = table.Column<int>(type: "integer", nullable: false),
                     StartDate = table.Column<DateOnly>(type: "date", nullable: false),
                     EndDate = table.Column<DateOnly>(type: "date", nullable: true),
@@ -60,27 +62,6 @@ namespace trAInr.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Exercise",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Name = table.Column<string>(type: "text", nullable: false),
-                    Description = table.Column<string>(type: "text", nullable: false),
-                    Type = table.Column<int>(type: "integer", nullable: false),
-                    PrimaryMuscleGroup = table.Column<int>(type: "integer", nullable: false),
-                    SecondaryMuscleGroup = table.Column<int>(type: "integer", nullable: true),
-                    Instructions = table.Column<string>(type: "text", nullable: true),
-                    VideoUrl = table.Column<string>(type: "text", nullable: true),
-                    IsSystemExercise = table.Column<bool>(type: "boolean", nullable: false),
-                    CreatedByUserId = table.Column<Guid>(type: "uuid", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Exercise", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "ExerciseDefinitions",
                 columns: table => new
                 {
@@ -101,6 +82,27 @@ namespace trAInr.Infrastructure.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_ExerciseDefinitions", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Exercises",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    Description = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: false),
+                    Type = table.Column<int>(type: "integer", nullable: false),
+                    PrimaryMuscleGroup = table.Column<int>(type: "integer", nullable: false),
+                    SecondaryMuscleGroup = table.Column<int>(type: "integer", nullable: true),
+                    Instructions = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: true),
+                    VideoUrl = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    IsSystemExercise = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedByUserId = table.Column<Guid>(type: "uuid", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Exercises", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -130,6 +132,7 @@ namespace trAInr.Infrastructure.Migrations
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     AssignedProgramId = table.Column<Guid>(type: "uuid", nullable: false),
+                    WeekStartDate = table.Column<DateOnly>(type: "date", nullable: false),
                     WeekNumber = table.Column<int>(type: "integer", nullable: false),
                     Notes = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
                     IsCompleted = table.Column<bool>(type: "boolean", nullable: false),
@@ -175,14 +178,14 @@ namespace trAInr.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "WorkoutDay",
+                name: "WorkoutDays",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     ProgrammeWeekId = table.Column<Guid>(type: "uuid", nullable: false),
                     DayOfWeek = table.Column<int>(type: "integer", nullable: false),
-                    Name = table.Column<string>(type: "text", nullable: false),
-                    Description = table.Column<string>(type: "text", nullable: true),
+                    Name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    Description = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
                     ScheduledDate = table.Column<DateOnly>(type: "date", nullable: true),
                     CompletedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     IsCompleted = table.Column<bool>(type: "boolean", nullable: false),
@@ -191,9 +194,9 @@ namespace trAInr.Infrastructure.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_WorkoutDay", x => x.Id);
+                    table.PrimaryKey("PK_WorkoutDays", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_WorkoutDay_ProgrammeWeeks_ProgrammeWeekId",
+                        name: "FK_WorkoutDays_ProgrammeWeeks_ProgrammeWeekId",
                         column: x => x.ProgrammeWeekId,
                         principalTable: "ProgrammeWeeks",
                         principalColumn: "Id",
@@ -229,64 +232,69 @@ namespace trAInr.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "WorkoutExercise",
+                name: "WorkoutExercises",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     WorkoutDayId = table.Column<Guid>(type: "uuid", nullable: false),
-                    ExerciseId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ExerciseDefinitionId = table.Column<Guid>(type: "uuid", nullable: false),
                     OrderIndex = table.Column<int>(type: "integer", nullable: false),
-                    Notes = table.Column<string>(type: "text", nullable: true),
+                    Notes = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
                     TargetSets = table.Column<int>(type: "integer", nullable: false),
                     TargetReps = table.Column<int>(type: "integer", nullable: false),
-                    TargetWeight = table.Column<decimal>(type: "numeric", nullable: true),
+                    TargetWeight = table.Column<decimal>(type: "numeric(10,2)", precision: 10, scale: 2, nullable: true),
                     TargetDurationSeconds = table.Column<int>(type: "integer", nullable: true),
-                    TargetDistance = table.Column<decimal>(type: "numeric", nullable: true),
+                    TargetDistance = table.Column<decimal>(type: "numeric(10,2)", precision: 10, scale: 2, nullable: true),
+                    RestSeconds = table.Column<int>(type: "integer", nullable: true),
+                    SupersetGroupId = table.Column<Guid>(type: "uuid", nullable: true),
+                    SupersetRestSeconds = table.Column<int>(type: "integer", nullable: true),
+                    TargetRpe = table.Column<int>(type: "integer", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_WorkoutExercise", x => x.Id);
+                    table.PrimaryKey("PK_WorkoutExercises", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_WorkoutExercise_Exercise_ExerciseId",
-                        column: x => x.ExerciseId,
-                        principalTable: "Exercise",
+                        name: "FK_WorkoutExercises_ExerciseDefinitions_ExerciseDefinitionId",
+                        column: x => x.ExerciseDefinitionId,
+                        principalTable: "ExerciseDefinitions",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_WorkoutExercise_WorkoutDay_WorkoutDayId",
+                        name: "FK_WorkoutExercises_WorkoutDays_WorkoutDayId",
                         column: x => x.WorkoutDayId,
-                        principalTable: "WorkoutDay",
+                        principalTable: "WorkoutDays",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "ExerciseSet",
+                name: "ExerciseSets",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     WorkoutExerciseId = table.Column<Guid>(type: "uuid", nullable: false),
                     SetNumber = table.Column<int>(type: "integer", nullable: false),
                     Reps = table.Column<int>(type: "integer", nullable: true),
-                    Weight = table.Column<decimal>(type: "numeric", nullable: true),
+                    Weight = table.Column<decimal>(type: "numeric(10,2)", precision: 10, scale: 2, nullable: true),
                     DurationSeconds = table.Column<int>(type: "integer", nullable: true),
-                    Distance = table.Column<decimal>(type: "numeric", nullable: true),
+                    Distance = table.Column<decimal>(type: "numeric(10,2)", precision: 10, scale: 2, nullable: true),
                     Difficulty = table.Column<int>(type: "integer", nullable: true),
                     Intensity = table.Column<int>(type: "integer", nullable: true),
                     IsCompleted = table.Column<bool>(type: "boolean", nullable: false),
-                    IsWarmup = table.Column<bool>(type: "boolean", nullable: false),
-                    Notes = table.Column<string>(type: "text", nullable: true),
+                    SetType = table.Column<int>(type: "integer", nullable: false),
+                    DropPercentage = table.Column<decimal>(type: "numeric", nullable: true),
+                    Notes = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
                     CompletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ExerciseSet", x => x.Id);
+                    table.PrimaryKey("PK_ExerciseSets", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_ExerciseSet_WorkoutExercise_WorkoutExerciseId",
+                        name: "FK_ExerciseSets_WorkoutExercises_WorkoutExerciseId",
                         column: x => x.WorkoutExerciseId,
-                        principalTable: "WorkoutExercise",
+                        principalTable: "WorkoutExercises",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -395,8 +403,13 @@ namespace trAInr.Infrastructure.Migrations
                 column: "WorkoutSessionId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ExerciseSet_WorkoutExerciseId",
-                table: "ExerciseSet",
+                name: "IX_Exercises_Name",
+                table: "Exercises",
+                column: "Name");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ExerciseSets_WorkoutExerciseId",
+                table: "ExerciseSets",
                 column: "WorkoutExerciseId");
 
             migrationBuilder.CreateIndex(
@@ -411,18 +424,18 @@ namespace trAInr.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_WorkoutDay_ProgrammeWeekId",
-                table: "WorkoutDay",
+                name: "IX_WorkoutDays_ProgrammeWeekId",
+                table: "WorkoutDays",
                 column: "ProgrammeWeekId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_WorkoutExercise_ExerciseId",
-                table: "WorkoutExercise",
-                column: "ExerciseId");
+                name: "IX_WorkoutExercises_ExerciseDefinitionId",
+                table: "WorkoutExercises",
+                column: "ExerciseDefinitionId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_WorkoutExercise_WorkoutDayId",
-                table: "WorkoutExercise",
+                name: "IX_WorkoutExercises_WorkoutDayId",
+                table: "WorkoutExercises",
                 column: "WorkoutDayId");
 
             migrationBuilder.CreateIndex(
@@ -451,25 +464,25 @@ namespace trAInr.Infrastructure.Migrations
                 name: "CompletedSets");
 
             migrationBuilder.DropTable(
-                name: "ExerciseDefinitions");
+                name: "Exercises");
 
             migrationBuilder.DropTable(
-                name: "ExerciseSet");
+                name: "ExerciseSets");
 
             migrationBuilder.DropTable(
                 name: "ExerciseInstances");
 
             migrationBuilder.DropTable(
-                name: "WorkoutExercise");
+                name: "WorkoutExercises");
 
             migrationBuilder.DropTable(
                 name: "WorkoutSessions");
 
             migrationBuilder.DropTable(
-                name: "Exercise");
+                name: "ExerciseDefinitions");
 
             migrationBuilder.DropTable(
-                name: "WorkoutDay");
+                name: "WorkoutDays");
 
             migrationBuilder.DropTable(
                 name: "ProgrammeWeeks");
