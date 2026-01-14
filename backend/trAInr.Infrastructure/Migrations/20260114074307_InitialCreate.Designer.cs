@@ -12,8 +12,8 @@ using trAInr.Infrastructure.Data;
 namespace trAInr.Infrastructure.Migrations
 {
     [DbContext(typeof(TrainrDbContext))]
-    [Migration("20251230221908_FixWorkoutExerciseFkToExerciseDefinition")]
-    partial class FixWorkoutExerciseFkToExerciseDefinition
+    [Migration("20260114074307_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -1014,6 +1014,9 @@ namespace trAInr.Infrastructure.Migrations
                         .HasPrecision(10, 2)
                         .HasColumnType("numeric(10,2)");
 
+                    b.Property<decimal?>("DropPercentage")
+                        .HasColumnType("numeric");
+
                     b.Property<int?>("DurationSeconds")
                         .HasColumnType("integer");
 
@@ -1021,9 +1024,6 @@ namespace trAInr.Infrastructure.Migrations
                         .HasColumnType("integer");
 
                     b.Property<bool>("IsCompleted")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsWarmup")
                         .HasColumnType("boolean");
 
                     b.Property<string>("Notes")
@@ -1034,6 +1034,9 @@ namespace trAInr.Infrastructure.Migrations
                         .HasColumnType("integer");
 
                     b.Property<int>("SetNumber")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("SetType")
                         .HasColumnType("integer");
 
                     b.Property<decimal?>("Weight")
@@ -1071,6 +1074,9 @@ namespace trAInr.Infrastructure.Migrations
 
                     b.Property<int>("WeekNumber")
                         .HasColumnType("integer");
+
+                    b.Property<DateOnly>("WeekStartDate")
+                        .HasColumnType("date");
 
                     b.HasKey("Id");
 
@@ -1145,6 +1151,12 @@ namespace trAInr.Infrastructure.Migrations
                         .HasColumnType("integer");
 
                     b.Property<int?>("RestSeconds")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid?>("SupersetGroupId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int?>("SupersetRestSeconds")
                         .HasColumnType("integer");
 
                     b.Property<decimal?>("TargetDistance")
