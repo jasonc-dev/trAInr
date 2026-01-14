@@ -8,13 +8,12 @@ import { DayOfWeek, Difficulty, Intensity, SetType } from "./enums";
 export interface WorkoutDay {
   id: string;
   weekId: string;
-  dayOfWeek: DayOfWeek;
   name: string;
   description?: string;
   isRestDay: boolean;
   isCompleted: boolean;
-  scheduledDate: string;
-  completedDate?: string;
+  scheduledDate: Date;
+  completedDate?: Date;
   exercises: WorkoutExercise[];
 }
 
@@ -29,14 +28,14 @@ export interface WorkoutDaySummary {
 }
 
 export interface CreateWorkoutDayRequest {
-  dayOfWeek: DayOfWeek;
+  scheduledDate: Date;
   name: string;
   description?: string;
   isRestDay?: boolean;
 }
 
 export interface UpdateWorkoutDayRequest {
-  dayOfWeek: DayOfWeek;
+  scheduledDate: Date;
   name: string;
   description?: string;
   isRestDay?: boolean;

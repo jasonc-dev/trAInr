@@ -1,7 +1,7 @@
 namespace trAInr.Application.DTOs;
 
 public record CreateWorkoutDayRequest(
-    DayOfWeek DayOfWeek,
+    DateTime? scheduledDate,
     string Name,
     string? Description,
     bool IsRestDay);
@@ -9,19 +9,18 @@ public record CreateWorkoutDayRequest(
 public record UpdateWorkoutDayRequest(
     string Name,
     string? Description,
-    DayOfWeek? DayOfWeek,
+    DateTime? scheduledDate,
     bool IsCompleted,
     bool IsRestDay);
 
 public record WorkoutDayResponse(
     Guid Id,
     Guid ProgrammeWeekId,
-    DayOfWeek DayOfWeek,
     string Name,
     string? Description,
     DateOnly? ScheduledDate,
     DateTime? CompletedDate,
-    bool IsCompleted,
+    bool IsCompleted,   
     bool IsRestDay,
     IEnumerable<WorkoutExerciseResponse> Exercises);
 

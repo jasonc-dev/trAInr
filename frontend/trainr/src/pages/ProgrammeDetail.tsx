@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import {
@@ -21,7 +21,6 @@ import {
   ExerciseSummary,
   ExerciseType,
   MuscleGroup,
-  DayOfWeek,
   WorkoutDay,
   WorkoutExercise,
 } from "../types";
@@ -257,7 +256,8 @@ export const ProgrammeDetail: React.FC = () => {
 
   // Form states
   const [newDay, setNewDay] = useState({
-    dayOfWeek: DayOfWeek.Monday,
+    id: "",
+    scheduledDate: new Date(),
     name: "",
     description: "",
     isRestDay: false,
@@ -265,21 +265,11 @@ export const ProgrammeDetail: React.FC = () => {
 
   const [editDay, setEditDay] = useState({
     id: "",
-    dayOfWeek: DayOfWeek.Monday,
     name: "",
     description: "",
+    scheduledDate: new Date(),
     isRestDay: false,
   });
-
-  const firstWorkoutDay = useMemo(() => {
-    return programme?.weeks[selectedWeek]?.workoutDays.length === 0;
-  }, [programme?.weeks, selectedWeek]);
-
-  const firstWorkoutDayDayOfWeek = useMemo(() => {
-    var dayOfWeek = programme?.weeks[selectedWeek]?.weekStartDate;
-    const numberDayOfWeek = new Date(dayOfWeek || "").getDay();
-    return numberDayOfWeek;
-  }, [programme?.weeks, selectedWeek]);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<ExerciseSummary[]>([]);
@@ -289,19 +279,22 @@ export const ProgrammeDetail: React.FC = () => {
     targetReps: 10,
     targetWeight: 0,
     restSeconds: 90,
-    targetRpe: undefined as number | undefined,
+    targetRpe: null as number | null,
     notes: "",
+    supersetGroupId: null as string | null,
   });
 
   const [editExercise, setEditExercise] = useState({
     id: "",
+    exerciseId: "",
     targetSets: 3,
     targetReps: 10,
     targetWeight: 0,
     restSeconds: 90,
-    targetRpe: undefined as number | undefined,
+    targetRpe: null as number | null,
     notes: "",
     orderIndex: 0,
+    supersetGroupId: null as string | null,
   });
 
   const [dropSetConfig, setDropSetConfig] = useState({
@@ -311,6 +304,7 @@ export const ProgrammeDetail: React.FC = () => {
     numberOfDrops: 2,
     dropPercentage: 20,
     repsAdjustment: 2,
+    sets: [] as Array<{ reps: number; percentage: number }>,
   });
 
   useEffect(() => {
@@ -341,20 +335,57 @@ export const ProgrammeDetail: React.FC = () => {
     return () => clearTimeout(debounce);
   }, [searchQuery, searchExercises]);
 
-  // Update newDay.dayOfWeek when it's the first workout day
-  useEffect(() => {
-    if (firstWorkoutDay && programme?.weeks[selectedWeek]) {
-      setNewDay((prev) => ({
-        ...prev,
-        dayOfWeek: firstWorkoutDayDayOfWeek as DayOfWeek,
-      }));
+  const getDateFromDayName = useCallback((dayName: string): Date => {
+    // index of desired day (0=Sunday, 1=Monday...)
+    const targetDayIndex = DAY_NAMES.findIndex(
+      (d) => d.toLowerCase() === dayName.toLowerCase()
+    );
+    if (targetDayIndex === -1) {
+      throw new Error(`Invalid day name: ${dayName}`);
     }
-  }, [
-    firstWorkoutDay,
-    firstWorkoutDayDayOfWeek,
-    programme?.weeks,
-    selectedWeek,
-  ]);
+
+    // Use today as reference point - find the target day in the current week
+    const today = new Date();
+    const todayDayIndex = today.getDay();
+
+    // Calculate the offset from today to the target day
+    let dayOffset = targetDayIndex - todayDayIndex;
+
+    // If the target day is before today, go to next week
+    if (dayOffset <= 0) dayOffset += 7;
+
+    // Return date for that day
+    const result = new Date(today);
+    result.setDate(today.getDate() + dayOffset);
+    result.setHours(0, 0, 0, 0); // Reset time to start of day
+
+    return result;
+  }, []);
+
+  const getDayNameFromDate = useCallback((date: Date | string): string => {
+    const dateObj = typeof date === "string" ? new Date(date) : date;
+    if (!(dateObj instanceof Date) || isNaN(dateObj.getTime())) {
+      return "Invalid Date";
+    }
+    const dayIndex = dateObj.getDay();
+    return DAY_NAMES[dayIndex];
+  }, []);
+
+  // Initialize newDay when add modal opens
+  useEffect(() => {
+    if (showAddDayModal) {
+      // Default to today's date so the dropdown shows the current day
+      const today = new Date();
+      today.setHours(0, 0, 0, 0); // Reset time to start of day
+      setNewDay({
+        id: "",
+        scheduledDate: today,
+        name: "",
+        description: "",
+        isRestDay: false,
+      });
+    }
+  }, [showAddDayModal]);
 
   const handleAddFirstWeek = (
     programmeId: string
@@ -381,8 +412,8 @@ export const ProgrammeDetail: React.FC = () => {
       const existingDays = programme.weeks[selectedWeek].workoutDays.length;
 
       await workoutsApi.createWorkoutDay(weekId, {
-        dayOfWeek: newDay.dayOfWeek as unknown as DayOfWeek,
-        name: newDay.name || `Day ${existingDays + 1}`,
+        scheduledDate: newDay.scheduledDate,
+        name: newDay.name || `Day ${existingDays}`,
         description: newDay.description,
         isRestDay: newDay.isRestDay,
       });
@@ -392,7 +423,8 @@ export const ProgrammeDetail: React.FC = () => {
       setProgramme(response.data);
       setShowAddDayModal(false);
       setNewDay({
-        dayOfWeek: DayOfWeek.Monday,
+        id: "",
+        scheduledDate: new Date(),
         name: "",
         description: "",
         isRestDay: false,
@@ -410,8 +442,8 @@ export const ProgrammeDetail: React.FC = () => {
 
     setEditDay({
       id: workoutDay.id,
-      dayOfWeek: workoutDay.dayOfWeek,
       name: workoutDay.name,
+      scheduledDate: new Date(workoutDay.scheduledDate || ""),
       description: workoutDay.description || "",
       isRestDay: workoutDay.isRestDay,
     });
@@ -424,7 +456,7 @@ export const ProgrammeDetail: React.FC = () => {
 
     try {
       await workoutsApi.updateWorkoutDay(editDay.id, {
-        dayOfWeek: editDay.dayOfWeek,
+        scheduledDate: editDay.scheduledDate,
         name: editDay.name,
         description: editDay.description,
         isRestDay: editDay.isRestDay,
@@ -494,8 +526,9 @@ export const ProgrammeDetail: React.FC = () => {
         targetReps: 10,
         targetWeight: 0,
         restSeconds: 90,
-        targetRpe: undefined,
+        targetRpe: null,
         notes: "",
+        supersetGroupId: null,
       });
     } catch (err) {
       console.error("Failed to add exercise:", err);
@@ -505,6 +538,7 @@ export const ProgrammeDetail: React.FC = () => {
   const handleOpenEditExercise = (exercise: any) => {
     setEditExercise({
       id: exercise.id,
+      exerciseId: exercise.exerciseId,
       targetSets: exercise.targetSets,
       targetReps: exercise.targetReps,
       targetWeight: exercise.targetWeight || 0,
@@ -512,6 +546,7 @@ export const ProgrammeDetail: React.FC = () => {
       targetRpe: exercise.targetRpe,
       notes: exercise.notes || "",
       orderIndex: exercise.orderIndex,
+      supersetGroupId: exercise.supersetGroupId,
     });
     setSelectedExercise(exercise);
     setShowEditExerciseModal(true);
@@ -672,6 +707,7 @@ export const ProgrammeDetail: React.FC = () => {
       numberOfDrops: 2,
       dropPercentage: 20,
       repsAdjustment: 2,
+      sets: [],
     });
     setShowDropSetModal(true);
   };
@@ -752,20 +788,18 @@ export const ProgrammeDetail: React.FC = () => {
       (day) => day.exercises && day.exercises.length > 0
     ) ?? false;
 
-  function createSupersetLabel(
+  const createSupersetLabel = (
     day: WorkoutDay,
     exercise: WorkoutExercise
-  ): React.ReactNode {
-    return (() => {
-      const supersetCount = day.exercises
-        .map((e) => e.supersetGroupId)
-        .filter((id) => id === exercise.supersetGroupId).length;
-      if (supersetCount === 2) return "Superset";
-      if (supersetCount === 3) return "Triset";
-      if (supersetCount >= 4) return "Giant set";
-      return `${supersetCount} exercises`;
-    })();
-  }
+  ): React.ReactNode => {
+    const supersetCount = day.exercises
+      .map((e) => e.supersetGroupId)
+      .filter((id) => id === exercise.supersetGroupId).length;
+    if (supersetCount === 2) return "Superset";
+    if (supersetCount === 3) return "Triset";
+    if (supersetCount >= 4) return "Giant set";
+    return `${supersetCount} exercises`;
+  };
 
   return (
     <>
@@ -869,7 +903,11 @@ export const ProgrammeDetail: React.FC = () => {
                   ) : (
                     <Grid $columns={2} $gap="1.5rem">
                       {currentWeek.workoutDays
-                        .sort((a, b) => a.dayOfWeek - b.dayOfWeek)
+                        .sort(
+                          (a, b) =>
+                            new Date(a.scheduledDate).getTime() -
+                            new Date(b.scheduledDate).getTime()
+                        )
                         .map((day) => (
                           <DayCard
                             key={day.id}
@@ -886,7 +924,7 @@ export const ProgrammeDetail: React.FC = () => {
                                     color: "#64748B",
                                   }}
                                 >
-                                  {DAY_NAMES[day.dayOfWeek]}
+                                  {getDayNameFromDate(day.scheduledDate)}
                                 </span>
                               </div>
                               <Flex $gap="0.5rem">
@@ -1246,26 +1284,25 @@ export const ProgrammeDetail: React.FC = () => {
                   placeholder="e.g., Push Day, Leg Day"
                   value={newDay.name}
                   onChange={(e) =>
-                    setNewDay({ ...newDay, name: e.target.value })
+                    setNewDay({
+                      ...newDay,
+                      name: e.target.value,
+                    })
                   }
                 />
                 <Select
                   label="Day of Week"
-                  options={DAY_NAMES.map((name, index) => ({
-                    value: index.toString(),
+                  options={DAY_NAMES.map((name) => ({
+                    value: name,
                     label: name,
                   }))}
-                  value={
-                    firstWorkoutDay
-                      ? firstWorkoutDayDayOfWeek.toString()
-                      : newDay.dayOfWeek.toString()
-                  }
-                  onChange={(e) =>
+                  value={getDayNameFromDate(newDay.scheduledDate)}
+                  onChange={(e) => {
                     setNewDay({
                       ...newDay,
-                      dayOfWeek: parseInt(e.target.value) as DayOfWeek,
-                    })
-                  }
+                      scheduledDate: getDateFromDayName(e.target.value),
+                    });
+                  }}
                 />
                 <Input
                   label="Description (optional)"
@@ -1327,15 +1364,15 @@ export const ProgrammeDetail: React.FC = () => {
                 />
                 <Select
                   label="Day of Week"
-                  options={DAY_NAMES.map((name, index) => ({
-                    value: index.toString(),
+                  options={DAY_NAMES.map((name) => ({
+                    value: name,
                     label: name,
                   }))}
-                  value={editDay.dayOfWeek.toString()}
+                  value={getDayNameFromDate(editDay.scheduledDate)}
                   onChange={(e) =>
                     setEditDay({
                       ...editDay,
-                      dayOfWeek: parseInt(e.target.value) as DayOfWeek,
+                      scheduledDate: getDateFromDayName(e.target.value),
                     })
                   }
                 />
@@ -1478,7 +1515,7 @@ export const ProgrammeDetail: React.FC = () => {
                       ...newExercise,
                       targetRpe: e.target.value
                         ? parseInt(e.target.value)
-                        : undefined,
+                        : null,
                     })
                   }
                   placeholder="Optional"
@@ -1620,7 +1657,7 @@ export const ProgrammeDetail: React.FC = () => {
                         ...editExercise,
                         targetRpe: e.target.value
                           ? parseInt(e.target.value)
-                          : undefined,
+                          : null,
                       })
                     }
                     placeholder="Optional"

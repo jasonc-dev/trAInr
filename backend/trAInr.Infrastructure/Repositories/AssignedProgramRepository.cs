@@ -23,7 +23,6 @@ public class AssignedProgramRepository(TrainrDbContext context) : IAssignedProgr
             .ThenInclude(d => d.Exercises)
             .ThenInclude(e => e.Sets)
             .AsSplitQuery()
-            .AsNoTracking()
             .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
     }
 

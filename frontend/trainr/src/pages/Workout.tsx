@@ -234,7 +234,6 @@ export const Workout: React.FC = () => {
   );
   const todaysWorkoutsRef = useRef<HTMLDivElement>(null);
 
-  // Load all workout days from all weeks with their scheduled dates
   useEffect(() => {
     const loadAllWorkouts = async () => {
       if (!activeProgramme || !activeProgramme.startDate) {
@@ -267,7 +266,6 @@ export const Workout: React.FC = () => {
     loadAllWorkouts();
   }, [activeProgramme]);
 
-  // Group workouts by past, today, and future
   const groupedWorkouts = useMemo((): GroupedWorkouts => {
     const today = new Date();
     const past = new Map<string, WorkoutDayWithWeekNumber[]>();
@@ -275,11 +273,16 @@ export const Workout: React.FC = () => {
     const future = new Map<string, WorkoutDayWithWeekNumber[]>();
 
     allWorkoutDays.forEach((workout) => {
-      const dateKey = formatDate(new Date(workout.scheduledDate));
+      const dateToUse =
+        workout.isCompleted && workout.completedDate
+          ? new Date(workout.completedDate)
+          : new Date(workout.scheduledDate);
 
-      if (isSameDay(new Date(workout.scheduledDate), today)) {
+      const dateKey = formatDate(dateToUse);
+
+      if (isSameDay(dateToUse, today)) {
         todayWorkouts.push(workout);
-      } else if (isBeforeDay(new Date(workout.scheduledDate), today)) {
+      } else if (isBeforeDay(dateToUse, today)) {
         if (!past.has(dateKey)) {
           past.set(dateKey, []);
         }
@@ -295,7 +298,6 @@ export const Workout: React.FC = () => {
     return { past, today: todayWorkouts, future };
   }, [allWorkoutDays]);
 
-  // Scroll to today's workouts when they load
   useEffect(() => {
     if (groupedWorkouts.today.length > 0 && todaysWorkoutsRef.current) {
       todaysWorkoutsRef.current.scrollIntoView({
@@ -314,7 +316,7 @@ export const Workout: React.FC = () => {
       setAllWorkoutDays((prev) =>
         prev.map((w) =>
           w.id === workoutId
-            ? { ...w, isCompleted: true, completedAt: new Date().toISOString() }
+            ? { ...w, isCompleted: true, completedDate: new Date() }
             : w
         )
       );
@@ -454,7 +456,10 @@ export const Workout: React.FC = () => {
               {workout.isCompleted && (
                 <>
                   <span>•</span>
-                  <span>Completed: {workout.completedDate}</span>
+                  <span>
+                    Completed:{" "}
+                    {formatDate(new Date(workout.completedDate ?? ""))}
+                  </span>
                 </>
               )}
             </WorkoutMeta>
@@ -507,12 +512,10 @@ export const Workout: React.FC = () => {
                         <div className="day-name">
                           {
                             DAY_NAMES[
-                              (workouts[0].isCompleted &&
+                              workouts[0].isCompleted &&
                               workouts[0].completedDate
                                 ? new Date(workouts[0].completedDate).getDay()
-                                : new Date(
-                                    workouts[0].scheduledDate
-                                  ).getDay()) - 1
+                                : new Date(workouts[0].scheduledDate).getDay()
                             ]
                           }
                         </div>
@@ -556,12 +559,10 @@ export const Workout: React.FC = () => {
                         <div className="day-name">
                           {
                             DAY_NAMES[
-                              (workouts[0].isCompleted &&
+                              workouts[0].isCompleted &&
                               workouts[0].completedDate
                                 ? new Date(workouts[0].completedDate).getDay()
-                                : new Date(
-                                    workouts[0].scheduledDate
-                                  ).getDay()) - 1
+                                : new Date(workouts[0].scheduledDate).getDay()
                             ]
                           }
                         </div>
