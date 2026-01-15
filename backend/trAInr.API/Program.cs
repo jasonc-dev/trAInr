@@ -12,6 +12,7 @@ using trAInr.Infrastructure.Data;
 using trAInr.Infrastructure.Repositories;
 using trAInr.Infrastructure.Services;
 
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container
@@ -98,7 +99,8 @@ app.UseJwtAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
-// Apply database migrations and fix date column types
+
+// Apply database migrations and seed data on startup
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<TrainrDbContext>();
@@ -106,52 +108,62 @@ using (var scope = app.Services.CreateScope())
 
     try
     {
-        // First, ensure the database exists
-        dbContext.Database.EnsureCreated();
+        logger.LogInformation("Applying database migrations...");
+        dbContext.Database.Migrate();
+        logger.LogInformation("Database migrations completed successfully.");
 
-        // Check if date columns need to be converted from timestamp to date
-        // This handles databases created before the DateOnly migration
-        var needsDateConversion = false;
-        using (var connection = dbContext.Database.GetDbConnection())
-        {
-            connection.Open();
-            using var command = connection.CreateCommand();
-            command.CommandText = @"
-                SELECT COUNT(*) FROM information_schema.columns 
-                WHERE table_name = 'Users' 
-                AND column_name = 'DateOfBirth' 
-                AND data_type = 'timestamp with time zone'";
-            var result = command.ExecuteScalar();
-            needsDateConversion = Convert.ToInt32(result) > 0;
-        }
-
-        if (needsDateConversion)
-        {
-            logger.LogInformation("Converting date columns from timestamp to date type...");
-
-            // Convert timestamp columns to date columns
-            dbContext.Database.ExecuteSqlRaw(@"
-                ALTER TABLE ""Users"" ALTER COLUMN ""DateOfBirth"" TYPE date USING ""DateOfBirth""::date;
-                ALTER TABLE ""Programmes"" ALTER COLUMN ""StartDate"" TYPE date USING ""StartDate""::date;
-                ALTER TABLE ""Programmes"" ALTER COLUMN ""EndDate"" TYPE date USING ""EndDate""::date;
-                ALTER TABLE ""WorkoutDays"" ALTER COLUMN ""ScheduledDate"" TYPE date USING ""ScheduledDate""::date;
-            ");
-
-            logger.LogInformation("Date columns converted successfully.");
-        }
-        else
-        {
-            logger.LogInformation("Database schema is up to date.");
-        }
+        // Seed exercise definitions if table is empty
+        await SeedExerciseDefinitionsAsync(dbContext, logger);
     }
     catch (Exception ex)
     {
-        logger.LogError(ex, "An error occurred while setting up the database.");
+        logger.LogError(ex, "An error occurred during database initialization.");
         throw;
     }
 }
 
+/// <summary>
+/// Seeds exercise definitions from SQL file if the table is empty.
+/// </summary>
+static async Task SeedExerciseDefinitionsAsync(TrainrDbContext dbContext, ILogger logger)
+{
+    try
+    {
+        // Check if ExerciseDefinitions table has any data
+        var exerciseCount = await dbContext.ExerciseDefinitions.CountAsync();
+
+        if (exerciseCount == 0)
+        {
+            logger.LogInformation("Seeding exercise definitions...");
+
+            // Read the SQL file content
+            var sqlFilePath = Path.Combine(AppContext.BaseDirectory, "Data", "insert_exercise_definitions.sql");
+
+            if (File.Exists(sqlFilePath))
+            {
+                var sqlContent = await File.ReadAllTextAsync(sqlFilePath);
+                await dbContext.Database.ExecuteSqlRawAsync(sqlContent);
+                logger.LogInformation("Exercise definitions seeded successfully.");
+            }
+            else
+            {
+                logger.LogWarning("Exercise definitions SQL file not found at: {Path}", sqlFilePath);
+            }
+        }
+        else
+        {
+            logger.LogInformation("Exercise definitions already exist ({Count} records), skipping seed.", exerciseCount);
+        }
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Error occurred while seeding exercise definitions.");
+        // Don't throw here - allow application to continue even if seeding fails
+    }
+}
+
 app.Run();
+
 
 /// <summary>
 ///     JSON converter for DateOnly type to/from ISO 8601 date string (yyyy-MM-dd)
