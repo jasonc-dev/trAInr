@@ -26,6 +26,9 @@ FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 
+# Copy seed data
+COPY --from=build /src/trAInr.Infrastructure/Data ./Data/
+
 # Set environment variables
 ENV ASPNETCORE_URLS=http://+:8080
 ENV ASPNETCORE_ENVIRONMENT=Docker
