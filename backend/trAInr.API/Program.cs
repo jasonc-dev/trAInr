@@ -34,8 +34,7 @@ string connectionString;
 // In production, require DATABASE_URL environment variable
 if (builder.Environment.IsProduction())
 {
-    connectionString = builder.Configuration["DATABASE_URL"] ?? throw new InvalidOperationException(
-        "Database connection string is not configured. Please set the DATABASE_URL environment variable with your PostgreSQL connection string.");
+    connectionString = builder.Configuration["DATABASE_URL"] ?? string.Empty;
     if (string.IsNullOrEmpty(connectionString))
     {
         throw new InvalidOperationException(
@@ -46,9 +45,12 @@ if (builder.Environment.IsProduction())
 else
 {
     // In development, use connection string from appsettings
-    connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-                        ?? throw new InvalidOperationException(
-                            "Database connection string is not configured in appsettings.json.");
+    connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? string.Empty;
+    if (string.IsNullOrEmpty(connectionString))
+    {
+        throw new InvalidOperationException(
+            "Database connection string is not configured in appsettings.json.");
+    }
 }
 
 builder.Services.AddDbContext<TrainrDbContext>(options =>
@@ -59,8 +61,6 @@ builder.Services.AddDbContext<TrainrDbContext>(options =>
     });
 });
 
-// Register Infrastructure services
-builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
