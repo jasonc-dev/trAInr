@@ -71,6 +71,7 @@ builder.Services.AddScoped<IAssignedProgramRepository, AssignedProgramRepository
 builder.Services.AddScoped<IWorkoutSessionRepository, WorkoutSessionRepository>();
 
 // Register Application services
+builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IAthleteService, AthleteService>();
 builder.Services.AddScoped<IAssignedProgrammeService, AssignedProgrammeService>();
