@@ -44,6 +44,8 @@ But for Render.com deployment, Docker is required for the backend.
 3. Go to the "Connect" tab
 4. Copy the PostgreSQL connection URL (it should look like: `postgresql://postgres:[PASSWORD]@[HOST]:[PORT]/railway`)
 
+**This connection string is what you'll use for the `DATABASE_URL` environment variable in Render.com.**
+
 ## Step 2: Deploy to Render.com
 
 ### Manual Service Creation
@@ -65,16 +67,19 @@ For completeness, here are the manual setup instructions:
    - **Environment**: `Docker`
    - **Dockerfile Path**: `backend/Dockerfile`
 
-4. **Environment Variables**:
+4. **Environment Variables** (REQUIRED):
+
    ```
    ASPNETCORE_ENVIRONMENT=Production
-   DATABASE_URL=your_railway_connection_string
+   DATABASE_URL=postgresql://postgres:[PASSWORD]@[HOST]:[PORT]/railway
    JWT_SECRET=your_super_secret_key_at_least_32_chars
    JWT_ISSUER=trainr-api
    JWT_AUDIENCE=trainr-frontend
    JWT_EXPIRATION_DAYS=7
    ALLOWED_ORIGINS=https://your-frontend-service.onrender.com
    ```
+
+   **⚠️ CRITICAL**: The `DATABASE_URL` environment variable is required and must be set to your Railway PostgreSQL connection string. Without it, the application will fail to start with a database connection error.
 
 #### Alternative: Backend on Different Platform
 
@@ -161,6 +166,28 @@ ALLOWED_ORIGINS=https://trainr-frontend.onrender.com
 # Frontend
 REACT_APP_API_URL=https://trainr-api.onrender.com
 ```
+
+## Troubleshooting
+
+### Database Connection Errors
+
+**Error**: "Format of the initialization string does not conform to specification starting at index 0"
+
+**Cause**: The `DATABASE_URL` environment variable is not set or is invalid.
+
+**Solution**:
+
+1. Go to your Railway PostgreSQL database → "Connect" tab
+2. Copy the full PostgreSQL connection URL
+3. In Render.com, go to your backend service → Environment
+4. Set `DATABASE_URL` to your Railway connection string
+5. Redeploy the service
+
+### CORS Errors
+
+**Error**: CORS policy blocking requests from frontend
+
+**Solution**: Update the `ALLOWED_ORIGINS` environment variable with your frontend URL after both services are deployed.
 
 ## Security Notes
 
