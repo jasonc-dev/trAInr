@@ -72,7 +72,18 @@ public class JwtTokenService(IConfiguration configuration, ILogger<JwtTokenServi
 
     private string GetJwtSecret()
     {
-        return configuration["Jwt:Secret"]
-               ?? throw new InvalidOperationException("JWT Secret is not configured");
+        var secret = configuration["Jwt:Secret"];
+        if (string.IsNullOrEmpty(secret))
+        {
+            throw new InvalidOperationException("JWT Secret is not configured or is empty");
+        }
+
+        // HMAC-SHA256 requires at least 256 bits (32 bytes) key length
+        if (Encoding.UTF8.GetBytes(secret).Length < 32)
+        {
+            throw new InvalidOperationException("JWT Secret must be at least 32 characters long for HMAC-SHA256");
+        }
+
+        return secret;
     }
 }
