@@ -38,6 +38,14 @@ if (!string.IsNullOrEmpty(databaseUrl))
     connectionString = databaseUrl;
 }
 
+// Validate that we have a connection string
+if (string.IsNullOrEmpty(connectionString) || connectionString == "DATABASE_URL_ENVIRONMENT_VARIABLE_REQUIRED")
+{
+    throw new InvalidOperationException(
+        "Database connection string is not configured. " +
+        "Please set the DATABASE_URL environment variable with your Railway PostgreSQL connection string.");
+}
+
 builder.Services.AddDbContext<TrainrDbContext>(options =>
 {
     options.UseNpgsql(connectionString, npgsqlOptions =>
