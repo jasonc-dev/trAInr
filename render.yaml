@@ -1,0 +1,38 @@
+services:
+  # Backend API Service
+  - type: web
+    name: trainr-api
+    runtime: dotnet
+    buildCommand: "cd backend/trAInr.API && dotnet publish -c Release -o published"
+    startCommand: "cd backend/trAInr.API/published && dotnet trAInr.API.dll"
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: DATABASE_URL
+        sync: false # We'll set this manually with Railway connection string
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_ISSUER
+        value: trainr-api
+      - key: JWT_AUDIENCE
+        value: trainr-frontend
+      - key: JWT_EXPIRATION_DAYS
+        value: 7
+      - key: ALLOWED_ORIGINS
+        fromService:
+          type: web
+          name: trainr-frontend
+          property: host
+
+  # Frontend Static Site
+  - type: web
+    name: trainr-frontend
+    runtime: static
+    buildCommand: "cd frontend/trainr && npm install && npm run build:production"
+    staticPublishPath: frontend/trainr/build
+    envVars:
+      - key: REACT_APP_API_URL
+        fromService:
+          type: web
+          name: trainr-api
+          property: host

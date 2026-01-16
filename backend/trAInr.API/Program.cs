@@ -31,6 +31,13 @@ builder.Services.AddOpenApi();
 // Configure database based on environment
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
+// Allow DATABASE_URL environment variable to override connection string (for Render.com)
+var databaseUrl = builder.Configuration["DATABASE_URL"];
+if (!string.IsNullOrEmpty(databaseUrl))
+{
+    connectionString = databaseUrl;
+}
+
 builder.Services.AddDbContext<TrainrDbContext>(options =>
 {
     options.UseNpgsql(connectionString, npgsqlOptions =>
@@ -61,13 +68,21 @@ builder.Services.AddScoped<IDashboardService, DashboardService>();
 // Configure CORS for frontend
 var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ?? new[] { "http://localhost:3000" };
 
+// Check for ALLOWED_ORIGINS environment variable (for Render.com)
+var allowedOriginsEnv = builder.Configuration["ALLOWED_ORIGINS"];
+if (!string.IsNullOrEmpty(allowedOriginsEnv))
+{
+    allowedOrigins = allowedOriginsEnv.Split(',');
+}
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
         policy.WithOrigins(allowedOrigins)
             .AllowAnyHeader()
-            .AllowAnyMethod();
+            .AllowAnyMethod()
+            .AllowCredentials();
     });
 });
 
