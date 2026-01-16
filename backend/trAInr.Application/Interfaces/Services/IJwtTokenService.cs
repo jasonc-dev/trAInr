@@ -4,6 +4,6 @@ namespace trAInr.Application.Interfaces.Services;
 
 public interface IJwtTokenService
 {
-    string GenerateToken(Athlete athlete, DateTime expiresAt);
-    Guid? ValidateToken(string token);
+    public string GenerateToken(Athlete athlete, DateTime expiresAt);
+    public Guid? ValidateToken(string token);
 }
