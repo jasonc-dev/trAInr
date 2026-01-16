@@ -63,7 +63,7 @@ Your JWT secret should be a secure, randomly generated string of at least 32 cha
 **Option 1: Use Render.com's built-in generator**
 
 - When setting environment variables, Render.com can auto-generate secure values
-- Set `JWT_SECRET` as "generated" and Render.com will create a secure random string
+- Set `Jwt__Secret` as "generated" and Render.com will create a secure random string
 
 **Option 2: Generate locally**
 
@@ -79,6 +79,15 @@ python3 -c "import secrets; print(secrets.token_urlsafe(32))"
 ```
 
 **Store this securely** - never commit real JWT secrets to your repository!
+
+### ASP.NET Core Environment Variable Mapping
+
+In ASP.NET Core, environment variables are automatically mapped to configuration keys:
+
+- `Jwt__Secret` (double underscores) → `Jwt:Secret` (colon separator)
+- `ConnectionStrings__DefaultConnection` → `ConnectionStrings:DefaultConnection`
+
+**Important**: Use double underscores `__` in environment variable names to represent nested configuration sections.
 
 ## Step 2: Deploy to Render.com
 
@@ -106,7 +115,7 @@ For completeness, here are the manual setup instructions:
    ```
    ASPNETCORE_ENVIRONMENT=Production
    DATABASE_URL=postgresql://username:password@host.region-postgres.render.com/database
-   JWT_SECRET=[GENERATE_SECURELY_OR_USE_RENDER_GENERATOR]
+   Jwt__Secret=[GENERATE_SECURELY_OR_USE_RENDER_GENERATOR]
    JWT_ISSUER=trainr-api
    JWT_AUDIENCE=trainr-frontend
    JWT_EXPIRATION_DAYS=7
@@ -116,7 +125,7 @@ For completeness, here are the manual setup instructions:
    **Environment Variable Setup in Render.com**:
 
    - `DATABASE_URL`: **REQUIRED** - Copy "External Database URL" from your Render.com PostgreSQL service
-   - `JWT_SECRET`: Click "Generate" in Render.com to auto-create a secure 32+ character secret
+   - `Jwt__Secret`: Click "Generate" in Render.com to auto-create a secure 32+ character secret
    - `ALLOWED_ORIGINS`: Set after frontend is deployed (use frontend's external URL)
 
    **Note**: In production, the app uses `DATABASE_URL` environment variable exclusively. The `DefaultConnection` in appsettings is only used for development.
@@ -189,7 +198,7 @@ Once both services are deployed:
 
 - **Database connection fails**: Double-check your Railway connection string
 - **Migrations fail**: Check Render logs for specific error messages
-- **JWT secret too short**: Make sure your JWT_SECRET is at least 32 characters
+- **JWT secret too short**: Make sure your Jwt\_\_Secret is at least 32 characters
 
 ### Frontend Issues
 
@@ -202,7 +211,7 @@ Once both services are deployed:
 ```
 # Backend
 DATABASE_URL=postgresql://username:password@host.region-postgres.render.com/database
-JWT_SECRET=[GENERATE_SECURELY_OR_USE_RENDER_GENERATOR]
+Jwt__Secret=[GENERATE_SECURELY_OR_USE_RENDER_GENERATOR]
 ALLOWED_ORIGINS=https://trainr-frontend.onrender.com
 
 # Frontend
