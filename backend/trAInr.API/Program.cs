@@ -28,22 +28,27 @@ builder.Services.AddControllers()
 // Configure OpenAPI (built-in .NET 10 support)
 builder.Services.AddOpenApi();
 
-// Configure database based on environment
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+// Configure database connection string
+string connectionString;
 
-// Allow DATABASE_URL environment variable to override connection string (for Render.com)
-var databaseUrl = builder.Configuration["DATABASE_URL"];
-if (!string.IsNullOrEmpty(databaseUrl))
+// In production, require DATABASE_URL environment variable
+if (builder.Environment.IsProduction())
 {
-    connectionString = databaseUrl;
+    connectionString = builder.Configuration["DATABASE_URL"] ?? throw new InvalidOperationException(
+        "Database connection string is not configured. Please set the DATABASE_URL environment variable with your PostgreSQL connection string.");
+    if (string.IsNullOrEmpty(connectionString))
+    {
+        throw new InvalidOperationException(
+            "Database connection string is not configured. " +
+            "Please set the DATABASE_URL environment variable with your PostgreSQL connection string.");
+    }
 }
-
-// Validate that we have a connection string
-if (string.IsNullOrEmpty(connectionString) || connectionString == "DATABASE_URL_ENVIRONMENT_VARIABLE_REQUIRED")
+else
 {
-    throw new InvalidOperationException(
-        "Database connection string is not configured. " +
-        "Please set the DATABASE_URL environment variable with your Railway PostgreSQL connection string.");
+    // In development, use connection string from appsettings
+    connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+                        ?? throw new InvalidOperationException(
+                            "Database connection string is not configured in appsettings.json.");
 }
 
 builder.Services.AddDbContext<TrainrDbContext>(options =>
