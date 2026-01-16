@@ -21,7 +21,7 @@ But for Render.com deployment, Docker is required for the backend.
 
 - Updated `Program.cs` to handle environment variables
 - Created `appsettings.Production.json` for production settings
-- Your existing `backend/Dockerfile` is ready to use
+- Fixed `backend/Dockerfile` to work with Render.com's build context
 
 ✅ **Frontend Configuration**:
 
@@ -63,7 +63,7 @@ For completeness, here are the manual setup instructions:
 3. Configure build settings:
 
    - **Environment**: `Docker`
-   - **Dockerfile Path**: `backend/Dockerfile` (the existing one in your backend folder)
+   - **Dockerfile Path**: `backend/Dockerfile`
 
 4. **Environment Variables**:
    ```

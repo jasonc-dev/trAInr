@@ -7,12 +7,15 @@ FROM mcr.microsoft.com/dotnet/sdk:10.0-preview AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 
-# Copy project file and restore dependencies
-COPY ["trAInr.API/trAInr.API.csproj", "trAInr.API/"]
+# Copy project files and restore dependencies
+COPY ["backend/trAInr.API/trAInr.API.csproj", "trAInr.API/"]
+COPY ["backend/trAInr.Application/trAInr.Application.csproj", "trAInr.Application/"]
+COPY ["backend/trAInr.Domain/trAInr.Domain.csproj", "trAInr.Domain/"]
+COPY ["backend/trAInr.Infrastructure/trAInr.Infrastructure.csproj", "trAInr.Infrastructure/"]
 RUN dotnet restore "trAInr.API/trAInr.API.csproj"
 
 # Copy the rest of the source code
-COPY . .
+COPY backend/ .
 WORKDIR "/src/trAInr.API"
 
 # Build the application
