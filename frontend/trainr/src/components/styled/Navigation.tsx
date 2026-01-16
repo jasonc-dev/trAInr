@@ -13,10 +13,11 @@ const Nav = styled.nav`
   backdrop-filter: blur(12px);
   border-bottom: 1px solid ${({ theme }) => theme.colors.border};
   z-index: 1000;
+  overflow: visible;
 `;
 
 const NavContainer = styled.div`
-  max-width: 1400px;
+  width: 100%;
   margin: 0 auto;
   height: 100%;
   padding: 0 ${({ theme }) => theme.spacing.lg};
@@ -51,6 +52,64 @@ const NavLinks = styled.div`
   display: flex;
   align-items: center;
   gap: ${({ theme }) => theme.spacing.xs};
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
+    display: none;
+  }
+`;
+
+const MenuButton = styled.button`
+  display: none;
+  padding: ${({ theme }) => theme.spacing.xs} ${({ theme }) =>
+  theme.spacing.sm};
+  border-radius: ${({ theme }) => theme.radii.md};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  background: ${({ theme }) => theme.colors.surface};
+  color: ${({ theme }) => theme.colors.text};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  font-weight: ${({ theme }) => theme.fontWeights.medium};
+  cursor: pointer;
+  transition: all ${({ theme }) => theme.transitions.fast};
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.surfaceHover};
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 36px;
+  }
+`;
+
+const MobileMenu = styled.div<{ $isOpen: boolean }>`
+  display: none;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  background: ${({ theme }) => theme.colors.surface};
+  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
+  box-shadow: ${({ theme }) => theme.shadows.md};
+  padding: ${({ theme }) => theme.spacing.sm} 0;
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
+    display: ${({ $isOpen }) => ($isOpen ? "block" : "none")};
+  }
+`;
+
+const MobileNavLinks = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.xs};
+  padding: 0 ${({ theme }) => theme.spacing.sm};
+
+  & > a,
+  & > button {
+    width: 100%;
+    justify-content: flex-start;
+  }
 `;
 
 const NavLink = styled(Link)<{ $active?: boolean }>`
@@ -115,6 +174,7 @@ export const Navigation: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { logout } = useAuth();
+  const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const isActive = (path: string) => location.pathname === path;
 
   const handleLogout = () => {
@@ -122,12 +182,24 @@ export const Navigation: React.FC = () => {
     navigate("/login");
   };
 
+  React.useEffect(() => {
+    setIsMenuOpen(false);
+  }, [location.pathname]);
+
   return (
     <Nav>
       <NavContainer>
-        <Logo to="/dashboard">
+        <Logo to="/dashboard" onClick={() => setIsMenuOpen(false)}>
           <span>trAInr</span>
         </Logo>
+
+        <MenuButton
+          onClick={() => setIsMenuOpen((prev) => !prev)}
+          aria-expanded={isMenuOpen}
+          aria-label="Toggle navigation menu"
+        >
+          Menu
+        </MenuButton>
 
         <NavLinks>
           <NavLink to="/dashboard" $active={isActive("/dashboard")}>
@@ -152,6 +224,51 @@ export const Navigation: React.FC = () => {
           </LogoutButton>
         </NavLinks>
       </NavContainer>
+      <MobileMenu $isOpen={isMenuOpen}>
+        <MobileNavLinks>
+          <NavLink
+            to="/dashboard"
+            $active={isActive("/dashboard")}
+            onClick={() => setIsMenuOpen(false)}
+          >
+            <IconWrapper>📊</IconWrapper>
+            Dashboard
+          </NavLink>
+          <NavLink
+            to="/programmes"
+            $active={isActive("/programmes")}
+            onClick={() => setIsMenuOpen(false)}
+          >
+            <IconWrapper>📋</IconWrapper>
+            Programmes
+          </NavLink>
+          <NavLink
+            to="/workout"
+            $active={isActive("/workout")}
+            onClick={() => setIsMenuOpen(false)}
+          >
+            <IconWrapper>🏋️</IconWrapper>
+            Workout
+          </NavLink>
+          <NavLink
+            to="/exercises"
+            $active={isActive("/exercises")}
+            onClick={() => setIsMenuOpen(false)}
+          >
+            <IconWrapper>💪</IconWrapper>
+            Exercises
+          </NavLink>
+          <LogoutButton
+            onClick={() => {
+              setIsMenuOpen(false);
+              handleLogout();
+            }}
+          >
+            <IconWrapper>🚪</IconWrapper>
+            Logout
+          </LogoutButton>
+        </MobileNavLinks>
+      </MobileMenu>
     </Nav>
   );
 };

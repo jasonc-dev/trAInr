@@ -10,6 +10,8 @@ export const GlobalStyles = createGlobalStyle`
   html {
     font-size: 16px;
     scroll-behavior: smooth;
+    width: 100%;
+    overflow-x: hidden;
   }
   
   body {
@@ -20,6 +22,8 @@ export const GlobalStyles = createGlobalStyle`
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     min-height: 100vh;
+    width: 100%;
+    overflow-x: hidden;
     
     /* Subtle gradient background */
     background: 
@@ -33,6 +37,12 @@ export const GlobalStyles = createGlobalStyle`
     font-weight: ${({ theme }) => theme.fontWeights.bold};
     line-height: 1.2;
     letter-spacing: -0.02em;
+  }
+
+  #root {
+    min-height: 100vh;
+    width: 100%;
+    overflow-x: hidden;
   }
   
   h1 { font-size: ${({ theme }) => theme.fontSizes["5xl"]}; }

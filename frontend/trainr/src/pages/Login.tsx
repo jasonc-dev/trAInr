@@ -31,6 +31,13 @@ const PageWrapper = styled.div`
 const LoginCard = styled(Card)`
   max-width: 420px;
   width: 100%;
+  align-items: center;
+  justify-content: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
   animation: ${fadeIn} 0.5s ease-out;
 `;
 
@@ -144,6 +151,7 @@ export const Login: React.FC = () => {
                 onChange={handleInputChange("username")}
                 autoComplete="username"
                 autoFocus
+                required
               />
               <Input
                 label="Password"
@@ -152,6 +160,7 @@ export const Login: React.FC = () => {
                 value={formData.password}
                 onChange={handleInputChange("password")}
                 autoComplete="current-password"
+                required
               />
               <Button
                 type="submit"

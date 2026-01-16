@@ -261,7 +261,8 @@ export const Register: React.FC = () => {
   });
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  const handleNext = () => {
+  const handleNext = (e: React.FormEvent) => {
+    e.preventDefault();
     if (step < 3) setStep(step + 1);
   };
 
@@ -269,7 +270,8 @@ export const Register: React.FC = () => {
     if (step > 1) setStep(step - 1);
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     try {
       await register(formData);
       navigate("/dashboard");
@@ -342,179 +344,193 @@ export const Register: React.FC = () => {
           {error && <ErrorMessage>{error}</ErrorMessage>}
 
           {step === 1 && (
-            <Stack $gap="1.25rem">
-              <Input
-                label="Username"
-                placeholder="Choose a username"
-                value={formData.username}
-                onChange={handleInputChange("username")}
-                autoComplete="username"
-                autoFocus
-              />
-              <div>
+            <form id="step-1" onSubmit={handleNext}>
+              <Stack $gap="1.25rem">
                 <Input
-                  label="Password"
+                  label="Username"
+                  placeholder="Choose a username"
+                  value={formData.username}
+                  onChange={handleInputChange("username")}
+                  autoComplete="username"
+                  autoFocus
+                  required
+                />
+                <div>
+                  <Input
+                    label="Password"
+                    type="password"
+                    placeholder="Create a password"
+                    value={formData.password}
+                    onChange={handleInputChange("password")}
+                    autoComplete="new-password"
+                    error={
+                      formData.password && !passwordLongEnough
+                        ? "Password must be at least 6 characters"
+                        : undefined
+                    }
+                    required
+                  />
+                  <PasswordHint>Minimum 6 characters</PasswordHint>
+                </div>
+                <Input
+                  label="Confirm Password"
                   type="password"
-                  placeholder="Create a password"
-                  value={formData.password}
-                  onChange={handleInputChange("password")}
+                  placeholder="Confirm your password"
+                  value={confirmPassword}
+                  onChange={(e) => {
+                    clearError();
+                    setConfirmPassword(e.target.value);
+                  }}
                   autoComplete="new-password"
                   error={
-                    formData.password && !passwordLongEnough
-                      ? "Password must be at least 6 characters"
+                    confirmPassword && !passwordsMatch
+                      ? "Passwords do not match"
                       : undefined
                   }
-                />
-                <PasswordHint>Minimum 6 characters</PasswordHint>
-              </div>
-              <Input
-                label="Confirm Password"
-                type="password"
-                placeholder="Confirm your password"
-                value={confirmPassword}
-                onChange={(e) => {
-                  clearError();
-                  setConfirmPassword(e.target.value);
-                }}
-                autoComplete="new-password"
-                error={
-                  confirmPassword && !passwordsMatch
-                    ? "Passwords do not match"
-                    : undefined
-                }
-              />
-              <Input
-                label="Email"
-                type="email"
-                placeholder="john@example.com"
-                value={formData.email}
-                onChange={handleInputChange("email")}
-                autoComplete="email"
-              />
-              <Flex $gap="1rem">
-                <Input
-                  label="First Name"
-                  placeholder="John"
-                  value={formData.firstName}
-                  onChange={handleInputChange("firstName")}
-                  autoComplete="given-name"
+                  required
                 />
                 <Input
-                  label="Last Name"
-                  placeholder="Doe"
-                  value={formData.lastName}
-                  onChange={handleInputChange("lastName")}
-                  autoComplete="family-name"
+                  label="Email"
+                  type="email"
+                  placeholder="john@example.com"
+                  value={formData.email}
+                  onChange={handleInputChange("email")}
+                  autoComplete="email"
+                  required
                 />
-              </Flex>
-              <Input
-                label="Date of Birth"
-                type="date"
-                value={formData.dateOfBirth}
-                onChange={handleInputChange("dateOfBirth")}
-              />
-            </Stack>
+                <Flex $gap="1rem">
+                  <Input
+                    label="First Name"
+                    placeholder="John"
+                    value={formData.firstName}
+                    onChange={handleInputChange("firstName")}
+                    autoComplete="given-name"
+                    required
+                  />
+                  <Input
+                    label="Last Name"
+                    placeholder="Doe"
+                    value={formData.lastName}
+                    onChange={handleInputChange("lastName")}
+                    autoComplete="family-name"
+                    required
+                  />
+                </Flex>
+                <Input
+                  label="Date of Birth"
+                  type="date"
+                  value={formData.dateOfBirth}
+                  onChange={handleInputChange("dateOfBirth")}
+                  required
+                />
+              </Stack>
+            </form>
           )}
 
           {step === 2 && (
-            <Stack $gap="1.5rem">
-              <div>
-                <h4 style={{ marginBottom: "1rem" }}>
-                  What's your fitness level?
-                </h4>
-                <OptionGrid>
-                  {fitnessLevelOptions.map((option) => (
-                    <OptionCard
-                      key={option.value}
-                      type="button"
-                      $selected={formData.fitnessLevel === option.value}
-                      onClick={() =>
-                        setFormData({ ...formData, fitnessLevel: option.value })
-                      }
-                    >
-                      <div className="icon">{option.icon}</div>
-                      <div className="title">{option.label}</div>
-                      <div className="description">{option.desc}</div>
-                    </OptionCard>
-                  ))}
-                </OptionGrid>
-              </div>
-              <div>
-                <h4 style={{ marginBottom: "1rem" }}>
-                  What's your primary goal?
-                </h4>
-                <OptionGrid>
-                  {fitnessGoalOptions.map((option) => (
-                    <OptionCard
-                      key={option.value}
-                      type="button"
-                      $selected={formData.primaryGoal === option.value}
-                      onClick={() =>
-                        setFormData({ ...formData, primaryGoal: option.value })
-                      }
-                    >
-                      <div className="icon">{option.icon}</div>
-                      <div className="title">{option.label}</div>
-                      <div className="description">{option.desc}</div>
-                    </OptionCard>
-                  ))}
-                </OptionGrid>
-              </div>
-            </Stack>
+            <form id="step-2" onSubmit={handleNext}>
+              <Stack $gap="1.5rem">
+                <div>
+                  <h4 style={{ marginBottom: "1rem" }}>
+                    What's your fitness level?
+                  </h4>
+                  <OptionGrid>
+                    {fitnessLevelOptions.map((option) => (
+                      <OptionCard
+                        key={option.value}
+                        type="button"
+                        $selected={formData.fitnessLevel === option.value}
+                        onClick={() =>
+                          setFormData({ ...formData, fitnessLevel: option.value })
+                        }
+                      >
+                        <div className="icon">{option.icon}</div>
+                        <div className="title">{option.label}</div>
+                        <div className="description">{option.desc}</div>
+                      </OptionCard>
+                    ))}
+                  </OptionGrid>
+                </div>
+                <div>
+                  <h4 style={{ marginBottom: "1rem" }}>
+                    What's your primary goal?
+                  </h4>
+                  <OptionGrid>
+                    {fitnessGoalOptions.map((option) => (
+                      <OptionCard
+                        key={option.value}
+                        type="button"
+                        $selected={formData.primaryGoal === option.value}
+                        onClick={() =>
+                          setFormData({ ...formData, primaryGoal: option.value })
+                        }
+                      >
+                        <div className="icon">{option.icon}</div>
+                        <div className="title">{option.label}</div>
+                        <div className="description">{option.desc}</div>
+                      </OptionCard>
+                    ))}
+                  </OptionGrid>
+                </div>
+              </Stack>
+            </form>
           )}
 
           {step === 3 && (
-            <Stack $gap="1.5rem">
-              <div>
-                <h4 style={{ marginBottom: "1rem" }}>
-                  How many days can you train?
-                </h4>
-                <Select
-                  options={daysOptions}
-                  value={formData.workoutDaysPerWeek.toString()}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      workoutDaysPerWeek: parseInt(e.target.value),
-                    })
-                  }
-                />
-              </div>
-              <Card
-                $padding="1.5rem"
-                style={{
-                  background: "rgba(0, 207, 193, 0.1)",
-                  border: "1px solid rgba(0, 207, 193, 0.3)",
-                }}
-              >
-                <h4 style={{ color: "#00CFC1", marginBottom: "0.5rem" }}>
-                  Your Profile Summary
-                </h4>
-                <p style={{ color: "#A0AEC0", fontSize: "0.875rem" }}>
-                  <strong>Username:</strong> {formData.username}
-                  <br />
-                  <strong>Name:</strong> {formData.firstName}{" "}
-                  {formData.lastName}
-                  <br />
-                  <strong>Level:</strong>{" "}
-                  {
-                    fitnessLevelOptions.find(
-                      (o) => o.value === formData.fitnessLevel
-                    )?.label
-                  }
-                  <br />
-                  <strong>Goal:</strong>{" "}
-                  {
-                    fitnessGoalOptions.find(
-                      (o) => o.value === formData.primaryGoal
-                    )?.label
-                  }
-                  <br />
-                  <strong>Training Days:</strong> {formData.workoutDaysPerWeek}{" "}
-                  per week
-                </p>
-              </Card>
-            </Stack>
+            <form id="step-3" onSubmit={handleSubmit}>
+              <Stack $gap="1.5rem">
+                <div>
+                  <h4 style={{ marginBottom: "1rem" }}>
+                    How many days can you train?
+                  </h4>
+                  <Select
+                    options={daysOptions}
+                    value={formData.workoutDaysPerWeek.toString()}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        workoutDaysPerWeek: parseInt(e.target.value),
+                      })
+                    }
+                    required
+                  />
+                </div>
+                <Card
+                  $padding="1.5rem"
+                  style={{
+                    background: "rgba(0, 207, 193, 0.1)",
+                    border: "1px solid rgba(0, 207, 193, 0.3)",
+                  }}
+                >
+                  <h4 style={{ color: "#00CFC1", marginBottom: "0.5rem" }}>
+                    Your Profile Summary
+                  </h4>
+                  <p style={{ color: "#A0AEC0", fontSize: "0.875rem" }}>
+                    <strong>Username:</strong> {formData.username}
+                    <br />
+                    <strong>Name:</strong> {formData.firstName}{" "}
+                    {formData.lastName}
+                    <br />
+                    <strong>Level:</strong>{" "}
+                    {
+                      fitnessLevelOptions.find(
+                        (o) => o.value === formData.fitnessLevel
+                      )?.label
+                    }
+                    <br />
+                    <strong>Goal:</strong>{" "}
+                    {
+                      fitnessGoalOptions.find(
+                        (o) => o.value === formData.primaryGoal
+                      )?.label
+                    }
+                    <br />
+                    <strong>Training Days:</strong> {formData.workoutDaysPerWeek}{" "}
+                    per week
+                  </p>
+                </Card>
+              </Stack>
+            </form>
           )}
 
           <Flex $justify="space-between" style={{ marginTop: "2rem" }}>
@@ -522,12 +538,13 @@ export const Register: React.FC = () => {
               Back
             </Button>
             {step < 3 ? (
-              <Button onClick={handleNext} disabled={!isStepValid()}>
+              <Button type="submit" form={`step-${step}`} disabled={!isStepValid()}>
                 Continue
               </Button>
             ) : (
               <Button
-                onClick={handleSubmit}
+                type="submit"
+                form="step-3"
                 disabled={!isStepValid() || loading}
               >
                 {loading ? "Creating Account..." : "Create Account"}

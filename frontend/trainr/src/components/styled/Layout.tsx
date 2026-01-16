@@ -1,19 +1,43 @@
 import styled from "styled-components";
 
 export const Container = styled.div`
-  max-width: 1400px;
+  width: 100%;
+  max-width: 100%;
   margin: 0 auto;
   padding: 0 ${({ theme }) => theme.spacing.lg};
+  box-sizing: border-box;
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.lg}) {
+    padding: 0 ${({ theme }) => theme.spacing.md};
+  }
 
   @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
-    padding: 0 ${({ theme }) => theme.spacing.md};
+    width: 100%;
+    max-width: 100%;
+    padding: 0 ${({ theme }) => theme.spacing.sm};
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    & > * {
+      width: 100%;
+    }
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
+    padding: 0 ${({ theme }) => theme.spacing.sm};
   }
 `;
 
 export const PageWrapper = styled.main`
   min-height: 100vh;
-  padding-top: 20px;
-  padding-bottom: ${({ theme }) => theme.spacing["2xl"]};
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+  box-sizing: border-box;
 `;
 
 export const Grid = styled.div<{ $columns?: number; $gap?: string }>`
