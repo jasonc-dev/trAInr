@@ -8,6 +8,7 @@ public record CreateExerciseRequest(
     ExerciseType Type,
     MuscleGroup PrimaryMuscleGroup,
     MuscleGroup? SecondaryMuscleGroup,
+    LevelOfDifficulty LevelOfDifficulty,
     string? Instructions,
     string? VideoUrl);
 

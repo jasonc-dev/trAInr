@@ -167,7 +167,7 @@ export const Programmes: React.FC = () => {
     name: "",
     description: "",
     durationWeeks: 6,
-    startDate: "",
+    startDate: new Date().toISOString().split("T")[0],
   });
   const [editFormData, setEditFormData] = useState<UpdateProgrammeRequest>({
     name: "",

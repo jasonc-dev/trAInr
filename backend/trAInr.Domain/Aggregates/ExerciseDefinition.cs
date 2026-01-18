@@ -24,6 +24,7 @@ public class ExerciseDefinition
         MovementPattern movementPattern,
         MuscleGroup primaryMuscleGroup,
         MuscleGroup? secondaryMuscleGroup = null,
+        LevelOfDifficulty levelOfDifficulty = LevelOfDifficulty.Beginner,
         string? instructions = null,
         string? videoUrl = null,
         bool isSystemExercise = true,
@@ -39,6 +40,7 @@ public class ExerciseDefinition
         MovementPattern = movementPattern;
         PrimaryMuscleGroup = primaryMuscleGroup;
         SecondaryMuscleGroup = secondaryMuscleGroup;
+        LevelOfDifficulty = levelOfDifficulty;
         Instructions = instructions;
         VideoUrl = videoUrl;
         IsSystemExercise = isSystemExercise;
@@ -53,6 +55,7 @@ public class ExerciseDefinition
     public MovementPattern MovementPattern { get; private set; }
     public MuscleGroup PrimaryMuscleGroup { get; private set; }
     public MuscleGroup? SecondaryMuscleGroup { get; private set; }
+    public LevelOfDifficulty LevelOfDifficulty { get; private set; }
     public string? Instructions { get; private set; }
     public string? VideoUrl { get; private set; }
     public IReadOnlyCollection<EquipmentRequirement> EquipmentRequirements => _equipmentRequirements.AsReadOnly();
@@ -105,18 +108,3 @@ public class ExerciseDefinition
     }
 }
 
-/// <summary>
-///     Movement pattern classification.
-/// </summary>
-public enum MovementPattern
-{
-    Push = 1,
-    Pull = 2,
-    Squat = 3,
-    Hinge = 4,
-    Lunge = 5,
-    Carry = 6,
-    Isometric = 7,
-    Cardio = 8,
-    Flexibility = 9
-}
