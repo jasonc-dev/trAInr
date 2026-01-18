@@ -53,9 +53,10 @@ public class ExerciseDefinitionService(
             movementPattern,
             request.PrimaryMuscleGroup,
             request.SecondaryMuscleGroup,
+            request.LevelOfDifficulty,
             request.Instructions,
             request.VideoUrl,
-            false, // isSystemExercise
+            isSystemExercise: false,
             userId);
 
         await exerciseDefinitionRepository.AddAsync(exerciseDefinition);

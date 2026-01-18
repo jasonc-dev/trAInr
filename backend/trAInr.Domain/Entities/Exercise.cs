@@ -48,3 +48,26 @@ public enum MuscleGroup
   FullBody = 12,
   Cardio = 13
 }
+
+public enum LevelOfDifficulty
+{
+  Beginner = 1,
+  Intermediate = 2,
+  Advanced = 3
+}
+
+/// <summary>
+///     Movement pattern classification.
+/// </summary>
+public enum MovementPattern
+{
+    Push = 1,
+    Pull = 2,
+    Squat = 3,
+    Hinge = 4,
+    Lunge = 5,
+    Carry = 6,
+    Isometric = 7,
+    Cardio = 8,
+    Flexibility = 9
+}
