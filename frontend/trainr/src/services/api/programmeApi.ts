@@ -13,6 +13,7 @@ import {
   CreateProgrammeWeekRequest,
   UpdateProgrammeWeekRequest,
   CopyWeekRequest,
+  CloneProgrammeRequest,
 } from "../../types";
 
 export const programmeApi = {
@@ -43,9 +44,10 @@ export const programmeApi = {
 
   delete: (id: string) => apiClient.delete(`/assignedprogramme/${id}`),
 
-  clone: (programmeId: string, athleteId: string) =>
+  clone: (programmeId: string, request: CloneProgrammeRequest) =>
     apiClient.post<Programme>(
-      `/assignedprogramme/${programmeId}/clone/${athleteId}`
+      `/assignedprogramme/${programmeId}/clone`,
+      request
     ),
 
   // Week operations

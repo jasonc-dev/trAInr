@@ -13,17 +13,7 @@ public interface IAssignedProgrammeService
     Task<ProgrammeWeekResponse?> AddWeekAsync(Guid programmeId, CreateProgrammeWeekRequest request);
     Task<ProgrammeWeekResponse?> UpdateWeekAsync(Guid weekId, UpdateProgrammeWeekRequest request);
     Task<IEnumerable<ProgrammeSummaryResponse>> GetPreMadeProgrammesAsync();
-    Task<ProgrammeResponse?> CloneProgrammeAsync(Guid programmeId, Guid userId);
-    
-    /// <summary>
-    ///     Copies a week's workout days, exercises, and sets to a new week.
-    ///     All completion statuses are reset to false on the copied week.
-    /// </summary>
+    Task<ProgrammeResponse?> CloneProgrammeAsync(Guid programmeId, CloneProgrammeRequest request);
     Task<ProgrammeWeekResponse?> CopyWeekAsync(Guid sourceWeekId, int targetWeekNumber);
-    
-    /// <summary>
-    ///     Copies workout days, exercises, and sets from a source week into an existing target week.
-    ///     All completion statuses are reset to false. Any existing content in the target week is preserved.
-    /// </summary>
     Task<ProgrammeWeekResponse?> CopyWeekContentAsync(Guid sourceWeekId, Guid targetWeekId);
 }

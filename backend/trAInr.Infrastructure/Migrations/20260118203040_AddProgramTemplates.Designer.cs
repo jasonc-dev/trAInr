@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using trAInr.Infrastructure.Data;
@@ -11,9 +12,11 @@ using trAInr.Infrastructure.Data;
 namespace trAInr.Infrastructure.Migrations
 {
     [DbContext(typeof(TrainrDbContext))]
-    partial class TrainrDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260118203040_AddProgramTemplates")]
+    partial class AddProgramTemplates
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

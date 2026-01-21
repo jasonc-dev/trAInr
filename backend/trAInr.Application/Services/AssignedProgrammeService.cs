@@ -10,6 +10,7 @@ namespace trAInr.Application.Services;
 
 public class AssignedProgrammeService(
     IAssignedProgramRepository assignedProgramRepository,
+    IProgramTemplateRepository programTemplateRepository,
     IAthleteRepository athleteRepository,
     IUnitOfWork unitOfWork,
     ILogger<AssignedProgrammeService> logger)
@@ -131,33 +132,29 @@ public class AssignedProgrammeService(
         return MapWeekToResponse(updatedWeek);
     }
 
-    public Task<IEnumerable<ProgrammeSummaryResponse>> GetPreMadeProgrammesAsync()
+    public async Task<IEnumerable<ProgrammeSummaryResponse>> GetPreMadeProgrammesAsync()
     {
-        // Note: Pre-made programmes would be ProgramTemplates, not AssignedPrograms
-        // This requires a ProgramTemplate repository which doesn't exist yet
-        // For now, returning empty list
-        logger.LogWarning("GetPreMadeProgrammesAsync is not yet implemented - requires ProgramTemplate repository");
-        return Task.FromResult(Enumerable.Empty<ProgrammeSummaryResponse>());
+        var programTemplates = await programTemplateRepository.GetAllActiveAsync();
+        return programTemplates.Select(MapTemplateToSummary);
     }
 
-    public async Task<ProgrammeResponse?> CloneProgrammeAsync(Guid programmeId, Guid userId)
+    public async Task<ProgrammeResponse?> CloneProgrammeAsync(Guid programmeId, CloneProgrammeRequest request)
     {
-        // userId is actually athleteId in the domain model
-        var sourceAssignedProgram = await assignedProgramRepository.GetByIdAsync(programmeId);
-        if (sourceAssignedProgram is null) return null;
+        var programmeTemplate = await programTemplateRepository.GetByIdAsync(programmeId);
+        if (programmeTemplate is null) return null;
 
-        var athlete = await athleteRepository.GetByIdAsync(userId);
-        if (athlete is null) throw new InvalidOperationException($"Athlete with ID {userId} not found");
+        var athlete = await athleteRepository.GetByIdAsync(request.AthleteId);
+        if (athlete is null) throw new InvalidOperationException($"Athlete with ID {request.AthleteId} not found");
 
         // Clone the AssignedProgram
         var clonedAssignedProgram = new AssignedProgram(
             Guid.NewGuid(),
-            userId, // athleteId
-            sourceAssignedProgram.ProgramTemplateId, // Use same template ID
-            $"{sourceAssignedProgram.Name} (Copy)",
-            sourceAssignedProgram.Description,
-            sourceAssignedProgram.DurationWeeks,
-            DateOnly.FromDateTime(DateTime.UtcNow));
+            request.AthleteId,
+            programmeTemplate.Id,
+            programmeTemplate.Name,
+            programmeTemplate.Description,
+            programmeTemplate.DurationWeeks,
+            request.StartDate);
 
         // Deactivate the cloned program initially
         clonedAssignedProgram.Deactivate();
@@ -165,19 +162,62 @@ public class AssignedProgrammeService(
         await assignedProgramRepository.AddAsync(clonedAssignedProgram);
         await unitOfWork.SaveChangesAsync();
 
-        // Clone weeks from source program
-        foreach (var sourceWeek in sourceAssignedProgram.Weeks.OrderBy(w => w.WeekNumber))
+        foreach (ProgramTemplateWeek sourceWeek in programmeTemplate.Weeks.OrderBy(w => w.WeekNumber))
         {
-            var clonedWeek = clonedAssignedProgram.AddWeek(sourceWeek.WeekNumber, sourceWeek.Notes);
-            clonedWeek.IsCompleted = false; // Reset completion status for cloned week
-            // Explicitly add so EF Core tracks it as Added
+            DateOnly weekStartDate = request.StartDate.AddDays((sourceWeek.WeekNumber - 1) * 7);
+            ProgrammeWeek clonedWeek = clonedAssignedProgram.AddWeek(sourceWeek.WeekNumber, sourceWeek.Notes);
+            clonedWeek.WeekStartDate = weekStartDate;
+            clonedWeek.IsCompleted = false; 
+            
             await assignedProgramRepository.AddProgrammeWeekAsync(clonedWeek);
+            
+            var exerciseDays = sourceWeek.WorkoutDays.Where(wd => !wd.IsRestDay).OrderBy(wd => wd.Name).ToList();
+
+            foreach (ProgramTemplateWorkoutDay sourceWorkoutDay in sourceWeek.WorkoutDays.OrderBy(wd => wd.Name))
+            {
+                DateOnly? scheduledDate = null;
+                if (!sourceWorkoutDay.IsRestDay)
+                {
+                    // Calculate position among exercise days and schedule with 1-day gaps
+                    int exerciseDayIndex = exerciseDays.IndexOf(sourceWorkoutDay);
+                    scheduledDate = weekStartDate.AddDays(exerciseDayIndex * 2);
+                }
+
+                var clonedWorkoutDay = new WorkoutDay
+                {
+                    Id = Guid.NewGuid(),
+                    Name = sourceWorkoutDay.Name,
+                    Description = sourceWorkoutDay.Description,
+                    IsRestDay = sourceWorkoutDay.IsRestDay,
+                    ScheduledDate = scheduledDate,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                var addedWorkoutDay = clonedAssignedProgram.AddWorkoutDay(clonedWeek.Id, clonedWorkoutDay);
+                if (addedWorkoutDay != null)
+                {
+                    foreach (ProgramTemplateWorkoutExercise sourceExercise in sourceWorkoutDay.Exercises.OrderBy(e => e.OrderIndex))
+                    {
+                        addedWorkoutDay.AddExercise(
+                            sourceExercise.ExerciseDefinitionId,
+                            sourceExercise.OrderIndex,
+                            sourceExercise.TargetSets,
+                            sourceExercise.TargetReps,
+                            sourceExercise.TargetWeight,
+                            sourceExercise.TargetDurationSeconds,
+                            sourceExercise.TargetDistance,
+                            sourceExercise.RestSeconds,
+                            sourceExercise.TargetRpe,
+                            sourceExercise.Notes);
+                    }
+                }
+            }
         }
 
         await unitOfWork.SaveChangesAsync();
-
         return MapToResponse(clonedAssignedProgram);
     }
+
 
     private static ProgrammeResponse MapToResponse(AssignedProgram assignedProgram)
     {
@@ -495,8 +535,23 @@ public class AssignedProgrammeService(
             assignedProgram.Description,
             assignedProgram.DurationWeeks,
             assignedProgram.IsActive,
+            false, // IsPreMade - assigned programs are not pre-made
             assignedProgram.StartDate,
             completedWeeks,
             progressPercentage);
+    }
+
+    private static ProgrammeSummaryResponse MapTemplateToSummary(Domain.Aggregates.ProgramTemplate programTemplate)
+    {
+        return new ProgrammeSummaryResponse(
+            programTemplate.Id,
+            programTemplate.Name,
+            programTemplate.Description,
+            programTemplate.DurationWeeks,
+            programTemplate.IsActive,
+            true, // IsPreMade - templates are pre-made
+            DateOnly.MinValue, // Templates don't have start dates
+            0, // No completed weeks for templates
+            0); // No progress for templates
     }
 }

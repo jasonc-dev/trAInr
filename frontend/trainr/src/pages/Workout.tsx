@@ -12,6 +12,7 @@ import { Navigation } from "../components/styled/Navigation";
 import { useUser, useProgrammes, useWorkouts } from "../hooks";
 import { WorkoutDay } from "../types";
 import { DAY_NAMES } from "../utils";
+import { Tooltip } from "../components/styled/Tooltip";
 
 const PageTitle = styled.h1`
   font-size: ${({ theme }) => theme.fontSizes["3xl"]};
@@ -356,7 +357,16 @@ export const Workout: React.FC = () => {
               <EmptyState>
                 <div className="icon">🏋️</div>
                 <h3>No Active Programme</h3>
-                <p>Create or select a programme to start working out</p>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", width: "100%", marginBottom: "1rem" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                    <p style={{ cursor: "help", margin: 0, textAlign: "center" }}>
+                      Create or set a programme to active to start tracking your workouts
+                    </p>
+                    <Tooltip content="Edit a programme and set it to active" position="top">
+                      <span role="img" aria-label="Hint">🔍</span>
+                    </Tooltip>
+                  </div>
+                </div>
                 <Link to="/programmes">
                   <Button size="lg">Browse Programmes</Button>
                 </Link>

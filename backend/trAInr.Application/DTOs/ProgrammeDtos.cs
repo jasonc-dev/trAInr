@@ -30,6 +30,7 @@ public record ProgrammeSummaryResponse(
     string Description,
     int DurationWeeks,
     bool IsActive,
+    bool IsPreMade,
     DateOnly StartDate,
     int CompletedWeeks,
     double ProgressPercentage);
@@ -52,3 +53,7 @@ public record UpdateProgrammeWeekRequest(
 
 public record CopyWeekRequest(
     int TargetWeekNumber);
+
+public record CloneProgrammeRequest(
+    Guid AthleteId,
+    DateOnly StartDate);

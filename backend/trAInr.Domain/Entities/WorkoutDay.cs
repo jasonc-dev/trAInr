@@ -62,7 +62,8 @@ public class WorkoutDay
             TargetDistance = targetDistance,
             RestSeconds = restSeconds,
             TargetRpe = targetRpe,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            Sets = CreateSets(targetSets, targetReps, targetWeight, targetDurationSeconds, notes)
         };
 
         Exercises.Add(exercise);
@@ -99,5 +100,32 @@ public class WorkoutDay
         }
 
         return true;
+    }
+
+        private static List<ExerciseSet> CreateSets(int targetSets, int targetReps, decimal? targetWeight, int? targetDurationSeconds, string? notes)
+    {
+        var sets = new List<ExerciseSet>();
+        for (var i = 0; i < targetSets; i++)
+        {
+            var set = new ExerciseSet()
+            {
+                Id = Guid.NewGuid(),
+                WorkoutExerciseId = new Guid(),
+                SetNumber = i + 1,
+                Reps = targetReps,
+                Weight = targetWeight,
+                DurationSeconds = targetDurationSeconds,
+                IsCompleted = false,
+                SetType = SetType.Normal,
+                DropPercentage = null,
+                Notes = notes,
+                CreatedAt = DateTime.UtcNow,
+                CompletedAt = null,
+
+            };
+            sets.Add(set);
+        }
+
+        return sets;
     }
 }

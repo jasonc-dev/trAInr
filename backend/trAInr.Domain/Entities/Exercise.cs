@@ -57,6 +57,16 @@ public enum LevelOfDifficulty
 }
 
 /// <summary>
+///     Experience level classification for program templates.
+/// </summary>
+public enum ExperienceLevel
+{
+    Beginner = 1,      // <1 year experience
+    Intermediate = 2,  // 1-3 years experience
+    Advanced = 3       // 3+ years experience
+}
+
+/// <summary>
 ///     Movement pattern classification.
 /// </summary>
 public enum MovementPattern

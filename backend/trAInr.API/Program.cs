@@ -8,6 +8,7 @@ using trAInr.Application.Interfaces;
 using trAInr.Application.Interfaces.Repositories;
 using trAInr.Application.Interfaces.Services;
 using trAInr.Application.Services;
+using trAInr.Domain.Entities;
 using trAInr.Infrastructure.Data;
 using trAInr.Infrastructure.Repositories;
 using trAInr.Infrastructure.Services;
@@ -68,6 +69,7 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IAthleteRepository, AthleteRepository>();
 builder.Services.AddScoped<IExerciseDefinitionRepository, ExerciseDefinitionRepository>();
 builder.Services.AddScoped<IAssignedProgramRepository, AssignedProgramRepository>();
+builder.Services.AddScoped<IProgramTemplateRepository, ProgramTemplateRepository>();
 builder.Services.AddScoped<IWorkoutSessionRepository, WorkoutSessionRepository>();
 
 // Register Application services
@@ -143,6 +145,9 @@ using (var scope = app.Services.CreateScope())
 
         // Seed exercise definitions if table is empty
         await SeedExerciseDefinitionsAsync(dbContext, logger);
+
+        // Seed program templates if table is empty
+        await SeedProgramTemplatesAsync(dbContext, logger);
     }
     catch (Exception ex)
     {
@@ -190,6 +195,47 @@ static async Task SeedExerciseDefinitionsAsync(TrainrDbContext dbContext, ILogge
         // Don't throw here - allow application to continue even if seeding fails
     }
 }
+
+/// <summary>
+/// Seeds program templates from SQL file if the table is empty.
+/// </summary>
+static async Task SeedProgramTemplatesAsync(TrainrDbContext dbContext, ILogger logger)
+{
+    try
+    {
+        // Check if ProgramTemplates table has any data
+        var templateCount = await dbContext.ProgramTemplates.CountAsync();
+
+        if (templateCount == 0)
+        {
+            logger.LogInformation("Seeding program templates...");
+
+            // Read the SQL file content
+            var sqlFilePath = Path.Combine(AppContext.BaseDirectory, "Data", "seed_program_templates.sql");
+
+            if (File.Exists(sqlFilePath))
+            {
+                var sqlContent = await File.ReadAllTextAsync(sqlFilePath);
+                await dbContext.Database.ExecuteSqlRawAsync(sqlContent);
+                logger.LogInformation("Program templates seeded successfully.");
+            }
+            else
+            {
+                logger.LogWarning("Program templates SQL file not found at: {Path}", sqlFilePath);
+            }
+        }
+        else
+        {
+            logger.LogInformation("Program templates already exist ({Count} records), skipping seed.", templateCount);
+        }
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Error occurred while seeding program templates.");
+        // Don't throw here - allow application to continue even if seeding fails
+    }
+}
+
 
 app.Run();
 

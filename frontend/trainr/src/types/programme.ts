@@ -81,3 +81,8 @@ export interface UpdateProgrammeWeekRequest {
 export interface CopyWeekRequest {
   targetWeekNumber: number;
 }
+
+export interface CloneProgrammeRequest {
+  athleteId: string;
+  startDate: string;
+}

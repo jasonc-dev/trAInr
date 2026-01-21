@@ -32,12 +32,16 @@ public class TrainrDbContext(DbContextOptions<TrainrDbContext> options) : DbCont
     public DbSet<Athlete> Athletes => Set<Athlete>();
     public DbSet<ExerciseDefinition> ExerciseDefinitions => Set<ExerciseDefinition>();
     public DbSet<AssignedProgram> AssignedPrograms => Set<AssignedProgram>();
+    public DbSet<ProgramTemplate> ProgramTemplates => Set<ProgramTemplate>();
     public DbSet<WorkoutSession> WorkoutSessions => Set<WorkoutSession>();
 
     // Entities
     public DbSet<ProgrammeWeek> ProgrammeWeeks => Set<ProgrammeWeek>();
+    public DbSet<ProgramTemplateWeek> ProgramTemplateWeeks => Set<ProgramTemplateWeek>();
     public DbSet<WorkoutDay> WorkoutDays => Set<WorkoutDay>();
+    public DbSet<ProgramTemplateWorkoutDay> ProgramTemplateWorkoutDays => Set<ProgramTemplateWorkoutDay>();
     public DbSet<WorkoutExercise> WorkoutExercises => Set<WorkoutExercise>();
+    public DbSet<ProgramTemplateWorkoutExercise> ProgramTemplateWorkoutExercises => Set<ProgramTemplateWorkoutExercise>();
     public DbSet<ExerciseSet> ExerciseSets => Set<ExerciseSet>();
     public DbSet<Exercise> Exercises => Set<Exercise>();
 
@@ -52,10 +56,14 @@ public class TrainrDbContext(DbContextOptions<TrainrDbContext> options) : DbCont
         ConfigureAthlete(modelBuilder);
         ConfigureExerciseDefinition(modelBuilder);
         ConfigureAssignedProgram(modelBuilder);
+        ConfigureProgramTemplate(modelBuilder);
         ConfigureWorkoutSession(modelBuilder);
         ConfigureProgrammeWeek(modelBuilder);
+        ConfigureProgramTemplateWeek(modelBuilder);
         ConfigureWorkoutDay(modelBuilder);
+        ConfigureProgramTemplateWorkoutDay(modelBuilder);
         ConfigureWorkoutExercise(modelBuilder);
+        ConfigureProgramTemplateWorkoutExercise(modelBuilder);
         ConfigureExerciseSet(modelBuilder);
         ConfigureExercise(modelBuilder);
     }
@@ -281,6 +289,72 @@ public class TrainrDbContext(DbContextOptions<TrainrDbContext> options) : DbCont
             entity.Property(e => e.VideoUrl).HasMaxLength(500);
             entity.HasIndex(e => e.Name);
             entity.Property(e => e.CreatedAt).HasColumnType("timestamp with time zone");
+        });
+    }
+
+    private static void ConfigureProgramTemplate(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<ProgramTemplate>(entity =>
+        {
+            entity.HasKey(pt => pt.Id);
+            entity.Property(pt => pt.Name).HasMaxLength(200).IsRequired();
+            entity.Property(pt => pt.Description).HasMaxLength(1000).IsRequired();
+            entity.Property(pt => pt.CreatedAt).HasColumnType("timestamp with time zone");
+            entity.Property(pt => pt.UpdatedAt).HasColumnType("timestamp with time zone");
+            entity.HasIndex(pt => pt.Name);
+            entity.HasIndex(pt => pt.ExperienceLevel);
+        });
+    }
+
+    private static void ConfigureProgramTemplateWeek(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<ProgramTemplateWeek>(entity =>
+        {
+            entity.HasKey(ptw => ptw.Id);
+            entity.Property(ptw => ptw.Notes).HasMaxLength(500);
+            entity.Property(ptw => ptw.CreatedAt).HasColumnType("timestamp with time zone");
+            entity.HasIndex(ptw => new { ptw.ProgramTemplateId, ptw.WeekNumber }).IsUnique();
+
+            entity.HasOne(ptw => ptw.ProgramTemplate)
+                .WithMany(pt => pt.Weeks)
+                .HasForeignKey(ptw => ptw.ProgramTemplateId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+    }
+
+    private static void ConfigureProgramTemplateWorkoutDay(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<ProgramTemplateWorkoutDay>(entity =>
+        {
+            entity.HasKey(ptwd => ptwd.Id);
+            entity.Property(ptwd => ptwd.Name).HasMaxLength(100).IsRequired();
+            entity.Property(ptwd => ptwd.Description).HasMaxLength(500);
+            entity.Property(ptwd => ptwd.CreatedAt).HasColumnType("timestamp with time zone");
+
+            entity.HasOne(ptwd => ptwd.ProgramTemplateWeek)
+                .WithMany(ptw => ptw.WorkoutDays)
+                .HasForeignKey(ptwd => ptwd.ProgramTemplateWeekId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+    }
+
+    private static void ConfigureProgramTemplateWorkoutExercise(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<ProgramTemplateWorkoutExercise>(entity =>
+        {
+            entity.HasKey(ptwe => ptwe.Id);
+            entity.Property(ptwe => ptwe.Notes).HasMaxLength(500);
+            entity.Property(ptwe => ptwe.CreatedAt).HasColumnType("timestamp with time zone");
+
+            entity.HasOne(ptwe => ptwe.ProgramTemplateWorkoutDay)
+                .WithMany(ptwd => ptwd.Exercises)
+                .HasForeignKey(ptwe => ptwe.ProgramTemplateWorkoutDayId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(ptwe => ptwe.ExerciseDefinition)
+                .WithMany()
+                .HasForeignKey(ptwe => ptwe.ExerciseDefinitionId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
     }
 }
