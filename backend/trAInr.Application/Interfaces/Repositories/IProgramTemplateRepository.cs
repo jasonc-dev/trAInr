@@ -7,6 +7,6 @@ public interface IProgramTemplateRepository
     Task<ProgramTemplate?> GetByIdAsync(Guid id);
     Task<IEnumerable<ProgramTemplate>> GetAllActiveAsync();
     Task AddAsync(ProgramTemplate programTemplate);
-    Task UpdateAsync(ProgramTemplate programTemplate);
-    Task DeleteAsync(ProgramTemplate programTemplate);
+    void Update(ProgramTemplate programTemplate);
+    void Delete(ProgramTemplate programTemplate);
 }

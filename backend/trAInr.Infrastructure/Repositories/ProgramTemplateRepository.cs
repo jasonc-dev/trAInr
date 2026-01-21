@@ -33,12 +33,12 @@ public class ProgramTemplateRepository(TrainrDbContext context) : IProgramTempla
         await context.ProgramTemplates.AddAsync(programTemplate);
     }
 
-    public async Task UpdateAsync(ProgramTemplate programTemplate)
+    public void Update(ProgramTemplate programTemplate)
     {
         context.ProgramTemplates.Update(programTemplate);
     }
 
-    public async Task DeleteAsync(ProgramTemplate programTemplate)
+    public void Delete(ProgramTemplate programTemplate)
     {
         context.ProgramTemplates.Remove(programTemplate);
     }
