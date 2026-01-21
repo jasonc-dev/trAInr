@@ -92,12 +92,12 @@ public class AssignedProgrammeController(IAssignedProgrammeService assignedProgr
     /// <summary>
     ///     Clone a pre-made programme for an athlete
     /// </summary>
-    [HttpPost("{programmeId:guid}/clone/{athleteId:guid}")]
-    public async Task<ActionResult<ProgrammeResponse>> CloneProgramme(Guid programmeId, Guid athleteId)
+    [HttpPost("{programmeId:guid}/clone")]
+    public async Task<ActionResult<ProgrammeResponse>> CloneProgramme(Guid programmeId, [FromBody] CloneProgrammeRequest request)
     {
-        if (!await athleteService.ExistsAsync(athleteId)) return NotFound("Athlete not found");
+        if (!await athleteService.ExistsAsync(request.AthleteId)) return NotFound("Athlete not found");
 
-        var programme = await assignedProgramService.CloneProgrammeAsync(programmeId, athleteId);
+        var programme = await assignedProgramService.CloneProgrammeAsync(programmeId, request);
         if (programme is null) return NotFound("Programme not found");
 
         return CreatedAtAction(nameof(GetById), new { id = programme.Id }, programme);

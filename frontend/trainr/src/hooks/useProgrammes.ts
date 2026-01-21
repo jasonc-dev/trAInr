@@ -12,6 +12,7 @@ import {
   UpdateProgrammeRequest,
   CreateProgrammeWeekRequest,
   UpdateProgrammeWeekRequest,
+  CloneProgrammeRequest,
 } from "../types";
 import { programmeApi } from "../services";
 
@@ -139,12 +140,12 @@ export const useProgrammes = (athleteId: string | undefined) => {
   );
 
   const cloneProgramme = useCallback(
-    async (programmeId: string): Promise<Programme> => {
+    async (programmeId: string, request: CloneProgrammeRequest): Promise<Programme> => {
       if (!athleteId) throw new Error("Athlete not authenticated");
 
       try {
         setLoading(true);
-        const response = await programmeApi.clone(programmeId, athleteId);
+        const response = await programmeApi.clone(programmeId, request);
         await loadProgrammes();
         setActiveProgramme(response.data);
         return response.data;

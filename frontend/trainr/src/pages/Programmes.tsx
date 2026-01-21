@@ -143,6 +143,30 @@ const durationOptions = [
   { value: "10", label: "10 weeks" },
 ];
 
+const generateStartDateOptions = () => {
+  const options = [];
+  const today = new Date();
+
+  // Start from today and generate options for the next 90 days
+  for (let i = 0; i < 90; i++) {
+    const date = new Date(today);
+    date.setDate(today.getDate() + i);
+
+    const value = date.toISOString().split("T")[0]; // YYYY-MM-DD format
+    const label = date.toLocaleDateString("en-US", {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+    });
+
+    options.push({ value, label });
+  }
+
+  return options;
+};
+
+const startDateOptions = generateStartDateOptions();
+
 export const Programmes: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useUser();
@@ -177,6 +201,7 @@ export const Programmes: React.FC = () => {
   const [creating, setCreating] = useState(false);
   const [updating, setUpdating] = useState(false);
   const [cloning, setCloning] = useState(false);
+  const [startDate, setStartDate] = useState<string>("");
 
   const handleCreateProgramme = async () => {
     try {
@@ -187,7 +212,7 @@ export const Programmes: React.FC = () => {
         name: "",
         description: "",
         durationWeeks: 6,
-        startDate: "",
+        startDate: new Date().toISOString().split("T")[0],
       });
       // Navigate to programme detail with flag to open the exercise builder
       navigate(`/programmes/${programme.id}`, { state: { openBuilder: true } });
@@ -232,6 +257,7 @@ export const Programmes: React.FC = () => {
 
   const handleCloneTemplate = (template: ProgrammeSummary) => {
     setSelectedTemplate(template);
+    setStartDate(new Date().toISOString().split("T")[0]); // Default to today
     setShowCloneModal(true);
   };
 
@@ -240,9 +266,13 @@ export const Programmes: React.FC = () => {
 
     try {
       setCloning(true);
-      const programme = await cloneProgramme(selectedTemplate.id);
+      const programme = await cloneProgramme(selectedTemplate.id, {
+          athleteId: user?.id || "",
+          startDate: startDate
+        });
       setShowCloneModal(false);
       setSelectedTemplate(null);
+      setStartDate("");
       navigate(`/programmes/${programme.id}`);
     } catch (err) {
       console.error("Failed to clone programme:", err);
@@ -655,6 +685,14 @@ export const Programmes: React.FC = () => {
                   customize and track your progress.
                 </p>
 
+                {/* Select start date (must be greater than today) */}
+                <Select
+                  label="Start Date"
+                  options={startDateOptions}
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                />
+
                 <Flex
                   $justify="flex-end"
                   $gap="1rem"
@@ -665,6 +703,7 @@ export const Programmes: React.FC = () => {
                     onClick={() => {
                       setShowCloneModal(false);
                       setSelectedTemplate(null);
+                      setStartDate("");
                     }}
                   >
                     Cancel

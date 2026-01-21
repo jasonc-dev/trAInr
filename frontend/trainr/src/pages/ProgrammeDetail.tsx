@@ -363,6 +363,7 @@ export const ProgrammeDetail: React.FC = () => {
   }, []);
 
   const getDayNameFromDate = useCallback((date: Date | string): string => {
+    console.log('Date:', date);
     const dateObj = typeof date === "string" ? new Date(date) : date;
     if (!(dateObj instanceof Date) || isNaN(dateObj.getTime())) {
       return "Invalid Date";
@@ -924,7 +925,11 @@ export const ProgrammeDetail: React.FC = () => {
                                     color: "#64748B",
                                   }}
                                 >
-                                  {getDayNameFromDate(day.scheduledDate)}
+                                  {(() => {
+                                    console.log('Day:', day);
+                                    console.log('Scheduled Date:', getDayNameFromDate(day.scheduledDate));
+                                    return getDayNameFromDate(day.scheduledDate);
+                                  })()}
                                 </span>
                               </div>
                               <Flex $gap="0.5rem">

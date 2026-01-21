@@ -1,0 +1,45 @@
+using Microsoft.EntityFrameworkCore;
+using trAInr.Application.Interfaces.Repositories;
+using trAInr.Domain.Aggregates;
+using trAInr.Infrastructure.Data;
+
+namespace trAInr.Infrastructure.Repositories;
+
+public class ProgramTemplateRepository(TrainrDbContext context) : IProgramTemplateRepository
+{
+    public async Task<ProgramTemplate?> GetByIdAsync(Guid id)
+    {
+        return await context.ProgramTemplates
+            .Include(pt => pt.Weeks)
+                .ThenInclude(w => w.WorkoutDays)
+                    .ThenInclude(wd => wd.Exercises)
+                        .ThenInclude(we => we.ExerciseDefinition)
+            .FirstOrDefaultAsync(pt => pt.Id == id);
+    }
+
+    public async Task<IEnumerable<ProgramTemplate>> GetAllActiveAsync()
+    {
+        return await context.ProgramTemplates
+            .Where(pt => pt.IsActive)
+            .Include(pt => pt.Weeks)
+                .ThenInclude(w => w.WorkoutDays)
+                    .ThenInclude(wd => wd.Exercises)
+                        .ThenInclude(we => we.ExerciseDefinition)
+            .ToListAsync();
+    }
+
+    public async Task AddAsync(ProgramTemplate programTemplate)
+    {
+        await context.ProgramTemplates.AddAsync(programTemplate);
+    }
+
+    public async Task UpdateAsync(ProgramTemplate programTemplate)
+    {
+        context.ProgramTemplates.Update(programTemplate);
+    }
+
+    public async Task DeleteAsync(ProgramTemplate programTemplate)
+    {
+        context.ProgramTemplates.Remove(programTemplate);
+    }
+}

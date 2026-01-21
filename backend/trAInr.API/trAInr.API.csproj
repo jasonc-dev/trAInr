@@ -29,4 +29,10 @@
         <ProjectReference Include="..\trAInr.Domain\trAInr.Domain.csproj"/>
     </ItemGroup>
 
+    <ItemGroup>
+        <None Update="Data\**">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
+
 </Project>

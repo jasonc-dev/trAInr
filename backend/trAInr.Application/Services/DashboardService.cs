@@ -296,6 +296,7 @@ public class DashboardService(
             programme.Description,
             programme.DurationWeeks,
             programme.IsActive,
+            false, // IsPreMade - dashboard programmes are assigned programmes
             programme.StartDate,
             completedWeeks,
             progressPercentage);
