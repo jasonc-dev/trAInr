@@ -4,12 +4,6 @@
 
 BEGIN;
 
--- Clear existing data to prevent duplicates
-DELETE FROM "ProgramTemplateWorkoutExercises";
-DELETE FROM "ProgramTemplateWorkoutDays";
-DELETE FROM "ProgramTemplateWeeks";
-DELETE FROM "ProgramTemplates";
-
 -- Insert Beginner Program Template (<1 year experience)
 -- 4 weeks, 3 days (push/pull/lower), LevelOfDifficulty=1 exercises
 

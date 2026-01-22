@@ -8,7 +8,6 @@ using trAInr.Application.Interfaces;
 using trAInr.Application.Interfaces.Repositories;
 using trAInr.Application.Interfaces.Services;
 using trAInr.Application.Services;
-using trAInr.Domain.Entities;
 using trAInr.Infrastructure.Data;
 using trAInr.Infrastructure.Repositories;
 using trAInr.Infrastructure.Services;
@@ -142,12 +141,6 @@ using (var scope = app.Services.CreateScope())
         logger.LogInformation("Applying database migrations...");
         dbContext.Database.Migrate();
         logger.LogInformation("Database migrations completed successfully.");
-
-        // Seed exercise definitions if table is empty
-        await SeedExerciseDefinitionsAsync(dbContext, logger);
-
-        // Seed program templates if table is empty
-        await SeedProgramTemplatesAsync(dbContext, logger);
     }
     catch (Exception ex)
     {
@@ -156,85 +149,6 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-/// <summary>
-/// Seeds exercise definitions from SQL file if the table is empty.
-/// </summary>
-static async Task SeedExerciseDefinitionsAsync(TrainrDbContext dbContext, ILogger logger)
-{
-    try
-    {
-        // Check if ExerciseDefinitions table has any data
-        var exerciseCount = await dbContext.ExerciseDefinitions.CountAsync();
-
-        if (exerciseCount == 0)
-        {
-            logger.LogInformation("Seeding exercise definitions...");
-
-            // Read the SQL file content
-            var sqlFilePath = Path.Combine(AppContext.BaseDirectory, "Data", "insert_exercise_definitions.sql");
-
-            if (File.Exists(sqlFilePath))
-            {
-                var sqlContent = await File.ReadAllTextAsync(sqlFilePath);
-                await dbContext.Database.ExecuteSqlRawAsync(sqlContent);
-                logger.LogInformation("Exercise definitions seeded successfully.");
-            }
-            else
-            {
-                logger.LogWarning("Exercise definitions SQL file not found at: {Path}", sqlFilePath);
-            }
-        }
-        else
-        {
-            logger.LogInformation("Exercise definitions already exist ({Count} records), skipping seed.", exerciseCount);
-        }
-    }
-    catch (Exception ex)
-    {
-        logger.LogError(ex, "Error occurred while seeding exercise definitions.");
-        // Don't throw here - allow application to continue even if seeding fails
-    }
-}
-
-/// <summary>
-/// Seeds program templates from SQL file if the table is empty.
-/// </summary>
-static async Task SeedProgramTemplatesAsync(TrainrDbContext dbContext, ILogger logger)
-{
-    try
-    {
-        // Check if ProgramTemplates table has any data
-        var templateCount = await dbContext.ProgramTemplates.CountAsync();
-
-        if (templateCount == 0)
-        {
-            logger.LogInformation("Seeding program templates...");
-
-            // Read the SQL file content
-            var sqlFilePath = Path.Combine(AppContext.BaseDirectory, "Data", "seed_program_templates.sql");
-
-            if (File.Exists(sqlFilePath))
-            {
-                var sqlContent = await File.ReadAllTextAsync(sqlFilePath);
-                await dbContext.Database.ExecuteSqlRawAsync(sqlContent);
-                logger.LogInformation("Program templates seeded successfully.");
-            }
-            else
-            {
-                logger.LogWarning("Program templates SQL file not found at: {Path}", sqlFilePath);
-            }
-        }
-        else
-        {
-            logger.LogInformation("Program templates already exist ({Count} records), skipping seed.", templateCount);
-        }
-    }
-    catch (Exception ex)
-    {
-        logger.LogError(ex, "Error occurred while seeding program templates.");
-        // Don't throw here - allow application to continue even if seeding fails
-    }
-}
 
 
 app.Run();
