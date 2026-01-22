@@ -5,10 +5,10 @@
 BEGIN;
 
 -- Clear existing data to prevent duplicates
-TRUNCATE TABLE "ProgramTemplateWorkoutExercises" CASCADE;
-TRUNCATE TABLE "ProgramTemplateWorkoutDays" CASCADE;
-TRUNCATE TABLE "ProgramTemplateWeeks" CASCADE;
-TRUNCATE TABLE "ProgramTemplates" CASCADE;
+DELETE FROM "ProgramTemplateWorkoutExercises";
+DELETE FROM "ProgramTemplateWorkoutDays";
+DELETE FROM "ProgramTemplateWeeks";
+DELETE FROM "ProgramTemplates";
 
 -- Insert Beginner Program Template (<1 year experience)
 -- 4 weeks, 3 days (push/pull/lower), LevelOfDifficulty=1 exercises
