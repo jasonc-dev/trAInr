@@ -37,7 +37,7 @@ const PageSubtitle = styled.p`
 `;
 
 const PageHeader = styled(Flex)`
-  margin-bottom: 2rem;
+  margin-bottom: ${({ theme }) => theme.spacing.xl};
   margin-top: 1rem;
 
   @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
