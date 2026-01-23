@@ -118,31 +118,18 @@ const NavLink = styled(Link)<{ $active?: boolean }>`
   font-weight: ${({ theme }) => theme.fontWeights.medium};
   color: ${({ theme, $active }) =>
     $active ? theme.colors.primary : theme.colors.textSecondary};
-  text-decoration: none;
+  text-decoration: ${({ $active }) => ($active ? 'underline' : 'none')};
+  text-decoration-color: ${({ theme }) => theme.colors.primary};
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
   border-radius: ${({ theme }) => theme.radii.lg};
   transition: all ${({ theme }) => theme.transitions.fast};
-  position: relative;
-
-  &::after {
-    content: "";
-    position: absolute;
-    bottom: -2px;
-    left: 50%;
-    transform: translateX(-50%) scaleX(${({ $active }) => ($active ? 1 : 0)});
-    width: 60%;
-    height: 2px;
-    background: ${({ theme }) => theme.colors.primary};
-    border-radius: ${({ theme }) => theme.radii.full};
-    transition: transform ${({ theme }) => theme.transitions.fast};
-  }
 
   &:hover {
     color: ${({ theme }) => theme.colors.text};
     background: ${({ theme }) => theme.colors.surface};
-
-    &::after {
-      transform: translateX(-50%) scaleX(1);
-    }
+    text-decoration: underline;
+    text-decoration-color: ${({ theme }) => theme.colors.primary};
   }
 `;
 

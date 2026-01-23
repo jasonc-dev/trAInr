@@ -36,6 +36,17 @@ const PageSubtitle = styled.p`
   margin-bottom: ${({ theme }) => theme.spacing["2xl"]};
 `;
 
+const PageHeader = styled(Flex)`
+  margin-bottom: 2rem;
+  margin-top: 1rem;
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: ${({ theme }) => theme.spacing.md};
+  }
+`;
+
 const TabContainer = styled.div`
   display: flex;
   gap: ${({ theme }) => theme.spacing.sm};
@@ -286,11 +297,7 @@ export const Programmes: React.FC = () => {
       <Navigation />
       <PageWrapper>
         <Container>
-          <Flex
-            $justify="space-between"
-            $align="center"
-            style={{ marginBottom: "2rem" }}
-          >
+          <PageHeader $justify="space-between" $align="center">
             <div>
               <PageTitle>Programmes</PageTitle>
               <PageSubtitle>
@@ -300,7 +307,7 @@ export const Programmes: React.FC = () => {
             <Button onClick={() => setShowCreateModal(true)}>
               + New Programme
             </Button>
-          </Flex>
+          </PageHeader>
 
           <TabContainer>
             <Tab
