@@ -34,6 +34,10 @@ const PageTitle = styled.h1`
 const PageSubtitle = styled.p`
   color: ${({ theme }) => theme.colors.textSecondary};
   margin-bottom: ${({ theme }) => theme.spacing["2xl"]};
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
+    margin-bottom: ${({ theme }) => theme.spacing.lg};
+  }
 `;
 
 const PageHeader = styled(Flex)`
@@ -47,11 +51,6 @@ const PageHeader = styled(Flex)`
   }
 `;
 
-const TitleContainer = styled.div`
-  @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
-    margin-bottom: -2rem;
-  }
-`;
 
 const TabContainer = styled.div`
   display: flex;
@@ -304,12 +303,12 @@ export const Programmes: React.FC = () => {
       <PageWrapper>
         <Container>
           <PageHeader $justify="space-between" $align="center">
-            <TitleContainer>
+            <div>
               <PageTitle>Programmes</PageTitle>
               <PageSubtitle>
                 Create and manage your workout programmes
               </PageSubtitle>
-            </TitleContainer>
+            </div>
             <Button onClick={() => setShowCreateModal(true)}>
               + New Programme
             </Button>
