@@ -3,7 +3,7 @@
  * Shared constants used across the application
  */
 
-import { FitnessLevel, FitnessGoal, ExerciseType, MuscleGroup } from "../types";
+import { FitnessLevel, FitnessGoal, ExerciseType, MuscleGroup, Intensity } from "../types";
 
 // Day names for display
 export const DAY_NAMES = [
@@ -50,13 +50,18 @@ export const DIFFICULTY_OPTIONS = [
 
 // Intensity (RPE) options
 export const INTENSITY_OPTIONS = [
-  { value: "", label: "Select..." },
-  { value: "6", label: "RPE 6" },
-  { value: "7", label: "RPE 7" },
-  { value: "8", label: "RPE 8" },
-  { value: "9", label: "RPE 9" },
-  { value: "10", label: "RPE 10" },
-] as const;
+  { value: "", label: "RPE" },
+  { value: Intensity.RPE10.toString(), label: "RPE 10" },
+  { value: Intensity.RPE9.toString(), label: "RPE 9" },
+  { value: Intensity.RPE8.toString(), label: "RPE 8" },
+  { value: Intensity.RPE7.toString(), label: "RPE 7" },
+  { value: Intensity.RPE6.toString(), label: "RPE 6" },
+  { value: Intensity.RPE5.toString(), label: "RPE 5" },
+  { value: Intensity.RPE4.toString(), label: "RPE 4" },
+  { value: Intensity.RPE3.toString(), label: "RPE 3" },
+  { value: Intensity.RPE2.toString(), label: "RPE 2" },
+  { value: Intensity.RPE1.toString(), label: "RPE 1" },
+];
 
 // Fitness level options for registration
 export const FITNESS_LEVEL_OPTIONS = [

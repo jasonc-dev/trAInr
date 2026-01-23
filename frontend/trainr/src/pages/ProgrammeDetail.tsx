@@ -24,25 +24,32 @@ import {
   WorkoutDay,
   WorkoutExercise,
 } from "../types";
-import { DAY_NAMES, getExerciseTypeLabel, getMuscleGroupLabel } from "../utils";
+import { DAY_NAMES, getExerciseTypeLabel, getMuscleGroupLabel, NumberPicker } from "../utils";
 
 const PageTitle = styled.h1`
   font-size: ${({ theme }) => theme.fontSizes["3xl"]};
 `;
 
 const BackButton = styled.button`
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: ${({ theme }) => theme.spacing.xs};
   background: none;
-  border: none;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: ${({ theme }) => theme.radii.sm};
+  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.md};
   color: ${({ theme }) => theme.colors.textSecondary};
   cursor: pointer;
+  margin-top: ${({ theme }) => theme.spacing.lg};
   margin-bottom: ${({ theme }) => theme.spacing.md};
   font-size: ${({ theme }) => theme.fontSizes.sm};
+  width: auto;
+  max-width: max-content;
+  align-self: flex-start;
 
   &:hover {
     color: ${({ theme }) => theme.colors.text};
+    border-color: ${({ theme }) => theme.colors.text};
   }
 `;
 
@@ -91,6 +98,12 @@ const DayCard = styled(Card)<{ $isRestDay?: boolean; $isCompleted?: boolean }>`
       : theme.colors.surface};
   border-color: ${({ $isCompleted, theme }) =>
     $isCompleted ? theme.colors.success : theme.colors.border};
+  max-width: 100%;
+  box-sizing: border-box;
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
+    width: 100%;
+  }
 `;
 
 const DayHeader = styled.div`
@@ -98,6 +111,13 @@ const DayHeader = styled.div`
   justify-content: space-between;
   align-items: center;
   margin-bottom: ${({ theme }) => theme.spacing.md};
+  gap: ${({ theme }) => theme.spacing.sm};
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: ${({ theme }) => theme.spacing.md};
+  }
 `;
 
 const DayName = styled.h4`
@@ -117,7 +137,7 @@ const ExerciseItem = styled.div<{
 }>`
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.md};
   background: ${({ theme }) => theme.colors.backgroundSecondary};
   border-radius: ${({ $supersetPosition }) =>
@@ -150,6 +170,13 @@ const ExerciseItem = styled.div<{
       : "transparent"};
   margin-bottom: ${({ $hasGap, theme }) => ($hasGap ? theme.spacing.sm : "0")};
   cursor: ${({ $isDraggable }) => ($isDraggable ? "grab" : "default")};
+  min-width: 0; /* Allow flex items to shrink below their content size */
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: ${({ theme }) => theme.spacing.sm};
+  }
 
   &:hover {
     background: ${({ theme }) => theme.colors.surfaceHover};
@@ -185,6 +212,24 @@ const ExerciseOrderHandle = styled.div`
   }
 `;
 
+const ExerciseActionButtons = styled(Flex)`
+  @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
+    display: none;
+  }
+`;
+
+const WeekActionButtons = styled(Flex).attrs({
+  direction: "column",
+  $align: "flex-end"
+})`
+  min-width: 0;
+
+  @media (min-width: ${({ theme }) => theme.breakpoints.md}) {
+    flex-direction: row;
+    align-items: center;
+  }
+`;
+
 const Modal = styled.div`
   position: fixed;
   inset: 0;
@@ -201,6 +246,30 @@ const ModalContent = styled(Card)`
   max-width: 600px;
   max-height: 90vh;
   overflow-y: auto;
+  position: relative;
+`;
+
+const ModalCloseButton = styled.button`
+  position: absolute;
+  top: ${({ theme }) => theme.spacing.md};
+  right: ${({ theme }) => theme.spacing.md};
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  cursor: pointer;
+  padding: ${({ theme }) => theme.spacing.xs};
+  border-radius: ${({ theme }) => theme.radii.sm};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.surfaceHover};
+    color: ${({ theme }) => theme.colors.text};
+  }
 `;
 
 const ExerciseSearchList = styled.div`
@@ -363,7 +432,6 @@ export const ProgrammeDetail: React.FC = () => {
   }, []);
 
   const getDayNameFromDate = useCallback((date: Date | string): string => {
-    console.log('Date:', date);
     const dateObj = typeof date === "string" ? new Date(date) : date;
     if (!(dateObj instanceof Date) || isNaN(dateObj.getTime())) {
       return "Invalid Date";
@@ -862,10 +930,11 @@ export const ProgrammeDetail: React.FC = () => {
                     style={{ marginBottom: "1.5rem" }}
                   >
                     <h3>Week {currentWeek.weekNumber} Workouts</h3>
-                    <Flex $gap="0.5rem">
+                    <WeekActionButtons>
                       <Button
                         size="sm"
                         onClick={() => setShowAddDayModal(true)}
+                        style={{ width: 'auto', whiteSpace: 'nowrap' }}
                       >
                         + Add Day
                       </Button>
@@ -877,11 +946,12 @@ export const ProgrammeDetail: React.FC = () => {
                           title={`Copy all exercises from Week ${
                             currentWeek.weekNumber - 1
                           }`}
+                          style={{ width: 'auto', whiteSpace: 'nowrap' }}
                         >
                           📋 Copy from Week {currentWeek.weekNumber - 1}
                         </Button>
                       )}
-                    </Flex>
+                    </WeekActionButtons>
                   </Flex>
 
                   {currentWeek.workoutDays.length === 0 ? (
@@ -925,11 +995,7 @@ export const ProgrammeDetail: React.FC = () => {
                                     color: "#64748B",
                                   }}
                                 >
-                                  {(() => {
-                                    console.log('Day:', day);
-                                    console.log('Scheduled Date:', getDayNameFromDate(day.scheduledDate));
-                                    return getDayNameFromDate(day.scheduledDate);
-                                  })()}
+                                  {getDayNameFromDate(day.scheduledDate)}
                                 </span>
                               </div>
                               <Flex $gap="0.5rem">
@@ -1103,6 +1169,9 @@ export const ProgrammeDetail: React.FC = () => {
                                                 style={{
                                                   flex: 1,
                                                   cursor: "pointer",
+                                                  minWidth: 0,
+                                                  wordBreak: "break-word",
+                                                  overflowWrap: "break-word",
                                                 }}
                                                 onClick={() =>
                                                   handleOpenExerciseDetails(
@@ -1114,17 +1183,26 @@ export const ProgrammeDetail: React.FC = () => {
                                                   style={{
                                                     fontWeight: 500,
                                                     display: "flex",
-                                                    alignItems: "center",
+                                                    alignItems: "flex-start",
                                                     gap: "0.5rem",
+                                                    flexWrap: "wrap",
                                                   }}
                                                 >
-                                                  <span>
+                                                  <span
+                                                    style={{
+                                                      flex: 1,
+                                                      minWidth: 0,
+                                                      wordBreak: "break-word",
+                                                      overflowWrap: "break-word",
+                                                    }}
+                                                  >
                                                     {exercise.exerciseName}
                                                   </span>
                                                   {exercise.supersetGroupId && (
                                                     <Flex
                                                       $align="center"
                                                       $gap="0.25rem"
+                                                      $wrap
                                                     >
                                                       <Badge $variant="primary">
                                                         {createSupersetLabel(
@@ -1146,22 +1224,12 @@ export const ProgrammeDetail: React.FC = () => {
                                                           padding:
                                                             "0.125rem 0.25rem",
                                                           fontSize: "0.625rem",
+                                                          flexShrink: 0,
                                                         }}
                                                       >
                                                         ✕
                                                       </Button>
                                                     </Flex>
-                                                  )}
-                                                  {exercise.targetRpe && (
-                                                    <Badge
-                                                      style={{
-                                                        fontSize: "0.65rem",
-                                                        padding:
-                                                          "0.125rem 0.375rem",
-                                                      }}
-                                                    >
-                                                      RPE {exercise.targetRpe}
-                                                    </Badge>
                                                   )}
                                                 </div>
                                                 <div
@@ -1169,6 +1237,8 @@ export const ProgrammeDetail: React.FC = () => {
                                                     fontSize: "0.75rem",
                                                     color: "#64748B",
                                                     marginTop: "0.25rem",
+                                                    wordBreak: "break-word",
+                                                    overflowWrap: "break-word",
                                                   }}
                                                 >
                                                   {exercise.targetSets} sets ×{" "}
@@ -1189,6 +1259,8 @@ export const ProgrammeDetail: React.FC = () => {
                                                       color: "#94A3B8",
                                                       fontStyle: "italic",
                                                       marginTop: "0.25rem",
+                                                      wordBreak: "break-word",
+                                                      overflowWrap: "break-word",
                                                     }}
                                                   >
                                                     💡 {exercise.notes}
@@ -1196,7 +1268,14 @@ export const ProgrammeDetail: React.FC = () => {
                                                 )}
                                               </div>
                                             </Flex>
-                                            <Flex $gap="0.25rem">
+                                            <ExerciseActionButtons
+                                              $gap="0.25rem"
+                                              $justify="flex-end"
+                                              style={{
+                                                flexShrink: 0,
+                                                alignSelf: 'flex-start'
+                                              }}
+                                            >
                                               <Button
                                                 variant="ghost"
                                                 size="sm"
@@ -1223,7 +1302,7 @@ export const ProgrammeDetail: React.FC = () => {
                                               >
                                                 ×
                                               </Button>
-                                            </Flex>
+                                            </ExerciseActionButtons>
                                           </ExerciseItem>
                                         );
                                       })
@@ -1462,68 +1541,63 @@ export const ProgrammeDetail: React.FC = () => {
               />
 
               <Flex $gap="1rem" style={{ marginTop: "1rem" }}>
-                <Input
+                <NumberPicker
                   label="Sets"
-                  type="number"
+                  type="sets"
                   value={newExercise.targetSets}
-                  onChange={(e) =>
+                  onChange={(value) =>
                     setNewExercise({
                       ...newExercise,
-                      targetSets: parseInt(e.target.value) || 3,
+                      targetSets: value,
                     })
                   }
                 />
-                <Input
+                <NumberPicker
                   label="Reps"
-                  type="number"
+                  type="reps"
                   value={newExercise.targetReps}
-                  onChange={(e) =>
+                  onChange={(value) =>
                     setNewExercise({
                       ...newExercise,
-                      targetReps: parseInt(e.target.value) || 10,
+                      targetReps: value,
                     })
                   }
                 />
-                <Input
+                <NumberPicker
                   label="Weight (kg)"
-                  type="number"
+                  type="weight"
                   value={newExercise.targetWeight}
-                  onChange={(e) =>
+                  onChange={(value) =>
                     setNewExercise({
                       ...newExercise,
-                      targetWeight: parseFloat(e.target.value) || 0,
+                      targetWeight: value,
                     })
                   }
                 />
               </Flex>
 
               <Flex $gap="1rem" style={{ marginTop: "1rem" }}>
-                <Input
+                <NumberPicker
                   label="Rest (seconds)"
-                  type="number"
+                  type="rest"
                   value={newExercise.restSeconds}
-                  onChange={(e) =>
+                  onChange={(value) =>
                     setNewExercise({
                       ...newExercise,
-                      restSeconds: parseInt(e.target.value) || 90,
+                      restSeconds: value,
                     })
                   }
                 />
-                <Input
+                <NumberPicker
                   label="Target RPE (1-10)"
-                  type="number"
-                  min="1"
-                  max="10"
-                  value={newExercise.targetRpe || ""}
-                  onChange={(e) =>
+                  type="rpe"
+                  value={newExercise.targetRpe}
+                  onChange={(value) =>
                     setNewExercise({
                       ...newExercise,
-                      targetRpe: e.target.value
-                        ? parseInt(e.target.value)
-                        : null,
+                      targetRpe: value,
                     })
                   }
-                  placeholder="Optional"
                 />
               </Flex>
 
@@ -1604,68 +1678,63 @@ export const ProgrammeDetail: React.FC = () => {
               </h2>
               <Stack $gap="1rem">
                 <Flex $gap="1rem">
-                  <Input
+                  <NumberPicker
                     label="Sets"
-                    type="number"
+                    type="sets"
                     value={editExercise.targetSets}
-                    onChange={(e) =>
+                    onChange={(value) =>
                       setEditExercise({
                         ...editExercise,
-                        targetSets: parseInt(e.target.value) || 3,
+                        targetSets: value,
                       })
                     }
                   />
-                  <Input
+                  <NumberPicker
                     label="Reps"
-                    type="number"
+                    type="reps"
                     value={editExercise.targetReps}
-                    onChange={(e) =>
+                    onChange={(value) =>
                       setEditExercise({
                         ...editExercise,
-                        targetReps: parseInt(e.target.value) || 10,
+                        targetReps: value,
                       })
                     }
                   />
-                  <Input
+                  <NumberPicker
                     label="Weight (kg)"
-                    type="number"
+                    type="weight"
                     value={editExercise.targetWeight}
-                    onChange={(e) =>
+                    onChange={(value) =>
                       setEditExercise({
                         ...editExercise,
-                        targetWeight: parseFloat(e.target.value) || 0,
+                        targetWeight: value,
                       })
                     }
                   />
                 </Flex>
 
                 <Flex $gap="1rem">
-                  <Input
+                  <NumberPicker
                     label="Rest (seconds)"
-                    type="number"
+                    type="rest"
                     value={editExercise.restSeconds}
-                    onChange={(e) =>
+                    onChange={(value) =>
                       setEditExercise({
                         ...editExercise,
-                        restSeconds: parseInt(e.target.value) || 90,
+                        restSeconds: value,
                       })
                     }
                   />
-                  <Input
+                  <NumberPicker
                     label="Target RPE (1-10)"
-                    type="number"
-                    min="1"
-                    max="10"
-                    value={editExercise.targetRpe || ""}
-                    onChange={(e) =>
+                    type="rpe"
+                    value={editExercise.targetRpe}
+                    onChange={(value) =>
                       setEditExercise({
                         ...editExercise,
-                        targetRpe: e.target.value
-                          ? parseInt(e.target.value)
-                          : null,
+                        targetRpe: value,
                       })
                     }
-                    placeholder="Optional"
                   />
                 </Flex>
 
@@ -1710,7 +1779,10 @@ export const ProgrammeDetail: React.FC = () => {
         {showExerciseDetailsModal && selectedExercise && (
           <Modal onClick={() => setShowExerciseDetailsModal(false)}>
             <ModalContent onClick={(e) => e.stopPropagation()}>
-              <h2 style={{ marginBottom: "1rem" }}>
+              <ModalCloseButton onClick={() => setShowExerciseDetailsModal(false)}>
+                ×
+              </ModalCloseButton>
+              <h2 style={{ marginBottom: "1rem", marginTop: "0.5rem" }}>
                 {selectedExercise.exerciseName}
               </h2>
 
@@ -1853,22 +1925,27 @@ export const ProgrammeDetail: React.FC = () => {
                 </Stack>
               )}
 
-              <Flex $justify="space-between" style={{ marginTop: "1.5rem" }}>
-                <Button
-                  variant="primary"
-                  onClick={() => {
-                    setShowExerciseDetailsModal(false);
-                    handleOpenEditExercise(selectedExercise);
-                  }}
-                >
-                  Edit Exercise
-                </Button>
-                <Button
-                  variant="ghost"
-                  onClick={() => setShowExerciseDetailsModal(false)}
-                >
-                  Close
-                </Button>
+              <Flex $justify="flex-start" style={{ marginTop: "1.5rem" }}>
+                <Flex $gap="1rem">
+                  <Button
+                    variant="primary"
+                    onClick={() => {
+                      setShowExerciseDetailsModal(false);
+                      handleOpenEditExercise(selectedExercise);
+                    }}
+                  >
+                    Edit Exercise
+                  </Button>
+                  <Button
+                    variant="danger"
+                    onClick={() => {
+                      handleRemoveExercise(selectedExercise.id);
+                      setShowExerciseDetailsModal(false);
+                    }}
+                  >
+                    Delete Exercise
+                  </Button>
+                </Flex>
               </Flex>
             </ModalContent>
           </Modal>
@@ -1886,65 +1963,61 @@ export const ProgrammeDetail: React.FC = () => {
                   progression.
                 </p>
                 <Flex $gap="1rem">
-                  <Input
+                  <NumberPicker
                     label="Starting Weight (kg)"
-                    type="number"
+                    type="weight"
                     value={dropSetConfig.startingWeight}
-                    onChange={(e) =>
+                    onChange={(value) =>
                       setDropSetConfig({
                         ...dropSetConfig,
-                        startingWeight: parseFloat(e.target.value) || 0,
+                        startingWeight: value,
                       })
                     }
                   />
-                  <Input
+                  <NumberPicker
                     label="Starting Reps"
-                    type="number"
+                    type="reps"
                     value={dropSetConfig.startingReps}
-                    onChange={(e) =>
+                    onChange={(value) =>
                       setDropSetConfig({
                         ...dropSetConfig,
-                        startingReps: parseInt(e.target.value) || 10,
+                        startingReps: value,
                       })
                     }
                   />
                 </Flex>
                 <Flex $gap="1rem">
-                  <Input
+                  <NumberPicker
                     label="Number of Drops"
-                    type="number"
-                    min="1"
-                    max="5"
+                    type="drops"
                     value={dropSetConfig.numberOfDrops}
-                    onChange={(e) =>
+                    onChange={(value) =>
                       setDropSetConfig({
                         ...dropSetConfig,
-                        numberOfDrops: parseInt(e.target.value) || 2,
+                        numberOfDrops: value,
                       })
                     }
                   />
-                  <Input
+                  <NumberPicker
                     label="Drop Percentage (%)"
-                    type="number"
-                    min="10"
-                    max="50"
+                    type="percentage"
                     value={dropSetConfig.dropPercentage}
-                    onChange={(e) =>
+                    onChange={(value) =>
                       setDropSetConfig({
                         ...dropSetConfig,
-                        dropPercentage: parseFloat(e.target.value) || 20,
+                        dropPercentage: value,
                       })
                     }
                   />
                 </Flex>
-                <Input
+                <NumberPicker
                   label="Reps Increase Per Drop"
-                  type="number"
+                  type="reps"
                   value={dropSetConfig.repsAdjustment}
-                  onChange={(e) =>
+                  onChange={(value) =>
                     setDropSetConfig({
                       ...dropSetConfig,
-                      repsAdjustment: parseInt(e.target.value) || 2,
+                      repsAdjustment: value,
                     })
                   }
                 />
