@@ -47,6 +47,12 @@ const PageHeader = styled(Flex)`
   }
 `;
 
+const TitleContainer = styled.div`
+  @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
+    margin-bottom: -2rem;
+  }
+`;
+
 const TabContainer = styled.div`
   display: flex;
   gap: ${({ theme }) => theme.spacing.sm};
@@ -298,12 +304,12 @@ export const Programmes: React.FC = () => {
       <PageWrapper>
         <Container>
           <PageHeader $justify="space-between" $align="center">
-            <div>
+            <TitleContainer>
               <PageTitle>Programmes</PageTitle>
               <PageSubtitle>
                 Create and manage your workout programmes
               </PageSubtitle>
-            </div>
+            </TitleContainer>
             <Button onClick={() => setShowCreateModal(true)}>
               + New Programme
             </Button>
