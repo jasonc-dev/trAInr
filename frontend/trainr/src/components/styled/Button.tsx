@@ -87,7 +87,7 @@ const variantStyles = {
 export const StyledButton = styled.button<StyledButtonProps>`
   display: inline-flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 0.5rem;
   font-weight: ${({ theme }) => theme.fontWeights.semibold};
   transition: all ${({ theme }) => theme.transitions.normal};
@@ -96,7 +96,7 @@ export const StyledButton = styled.button<StyledButtonProps>`
 
   ${({ $size = "md" }) => sizeStyles[$size]}
   ${({ $variant = "primary" }) => variantStyles[$variant]}
-  
+
   &:active:not(:disabled) {
     transform: scale(0.98);
   }

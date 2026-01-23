@@ -38,12 +38,16 @@ export const PageWrapper = styled.main`
   max-width: 100vw;
   overflow-x: hidden;
   box-sizing: border-box;
+  padding-top: ${({ theme }) => theme.spacing.md};
 `;
 
 export const Grid = styled.div<{ $columns?: number; $gap?: string }>`
   display: grid;
   grid-template-columns: repeat(${({ $columns }) => $columns || 1}, 1fr);
   gap: ${({ $gap, theme }) => $gap || theme.spacing.md};
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 
   @media (max-width: ${({ theme }) => theme.breakpoints.lg}) {
     grid-template-columns: repeat(

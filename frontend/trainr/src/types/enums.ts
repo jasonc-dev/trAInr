@@ -66,6 +66,11 @@ export enum Difficulty {
 }
 
 export enum Intensity {
+  RPE1 = 1,
+  RPE2 = 2,
+  RPE3 = 3,
+  RPE4 = 4,
+  RPE5 = 5,
   RPE6 = 6,
   RPE7 = 7,
   RPE8 = 8,

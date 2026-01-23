@@ -14,10 +14,10 @@ import { Navigation } from "../components/styled/Navigation";
 import { useWorkouts } from "../hooks";
 import {
   WorkoutExercise,
-  Difficulty,
   Intensity,
   CompleteSetRequest,
 } from "../types";
+import { NumberPicker } from "../utils";
 
 const PageTitle = styled.h1`
   font-size: ${({ theme }) => theme.fontSizes["3xl"]};
@@ -77,9 +77,20 @@ const ExerciseHeader = styled.div`
   padding-bottom: ${({ theme }) => theme.spacing.sm};
 `;
 
+const SetNumber = styled.span`
+  font-weight: ${({ theme }) => theme.fontWeights.semibold};
+  color: ${({ theme }) => theme.colors.textSecondary};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
+    font-size: ${({ theme }) => theme.fontSizes.xs};
+  }
+`;
+
+
 const SetRow = styled.div<{ $completed: boolean }>`
   display: grid;
-  grid-template-columns: 60px 1fr 1fr 1fr 1fr auto;
+  grid-template-columns: 60px 1fr 1fr 1fr auto;
   gap: ${({ theme }) => theme.spacing.sm};
   align-items: center;
   padding: ${({ theme }) => theme.spacing.sm} 0;
@@ -87,42 +98,9 @@ const SetRow = styled.div<{ $completed: boolean }>`
   opacity: ${({ $completed }) => ($completed ? 0.6 : 1)};
 
   @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
-    grid-template-columns: 50px 1fr 1fr auto;
-  }
-`;
-
-const SetNumber = styled.span`
-  font-weight: ${({ theme }) => theme.fontWeights.semibold};
-  color: ${({ theme }) => theme.colors.textSecondary};
-`;
-
-const SetInput = styled.input`
-  width: 100%;
-  padding: ${({ theme }) => theme.spacing.sm};
-  background: ${({ theme }) => theme.colors.backgroundSecondary};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${({ theme }) => theme.radii.md};
-  color: ${({ theme }) => theme.colors.text};
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  text-align: center;
-
-  &:focus {
-    outline: none;
-    border-color: ${({ theme }) => theme.colors.primary};
-  }
-`;
-
-const SetSelect = styled.select`
-  padding: 0.5rem;
-  background: ${({ theme }) => theme.colors.backgroundSecondary};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: 0.5rem;
-  color: ${({ theme }) => theme.colors.text};
-  font-size: 0.75rem;
-
-  &:focus {
-    outline: none;
-    border-color: ${({ theme }) => theme.colors.primary};
+    grid-template-columns: 40px 1fr 1fr 1fr auto;
+    gap: ${({ theme }) => theme.spacing.xs};
+    font-size: ${({ theme }) => theme.fontSizes.xs};
   }
 `;
 
@@ -143,12 +121,36 @@ const CompleteButton = styled.button<{ $completed: boolean }>`
   font-size: 1.2rem;
   transition: all ${({ theme }) => theme.transitions.fast};
 
+
   &:hover:not(:disabled) {
     border-color: ${({ theme }) => theme.colors.success};
   }
 
   &:disabled {
     cursor: not-allowed;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
+    width: 32px;
+    height: 32px;
+    font-size: 1rem;
+  }
+`;
+
+const SetHeaderRow = styled.div`
+  display: grid;
+  grid-template-columns: 60px 1fr 1fr 1fr auto;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: #64748B;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding-bottom: 0.5rem;
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
+    grid-template-columns: 40px 1fr 1fr 1fr auto;
+    gap: ${({ theme }) => theme.spacing.xs};
+    font-size: 0.625rem;
   }
 `;
 
@@ -176,28 +178,11 @@ const EmptyState = styled.div`
   }
 `;
 
-const difficultyOptions = [
-  { value: "", label: "Difficulty" },
-  { value: Difficulty.VeryEasy.toString(), label: "Very Easy" },
-  { value: Difficulty.Easy.toString(), label: "Easy" },
-  { value: Difficulty.Moderate.toString(), label: "Moderate" },
-  { value: Difficulty.Hard.toString(), label: "Hard" },
-  { value: Difficulty.VeryHard.toString(), label: "Very Hard" },
-];
 
-const intensityOptions = [
-  { value: "", label: "Intensity" },
-  { value: Intensity.RPE6.toString(), label: "RPE 6" },
-  { value: Intensity.RPE7.toString(), label: "RPE 7" },
-  { value: Intensity.RPE8.toString(), label: "RPE 8" },
-  { value: Intensity.RPE9.toString(), label: "RPE 9" },
-  { value: Intensity.RPE10.toString(), label: "RPE 10" },
-];
 
 interface LocalSetData {
   reps?: number;
   weight?: number;
-  difficulty?: Difficulty;
   intensity?: Intensity;
 }
 
@@ -244,7 +229,6 @@ export const WorkoutDetail: React.FC = () => {
           initialSets[set.id] = {
             reps: set.reps,
             weight: set.weight,
-            difficulty: set.difficulty,
             intensity: set.intensity,
           };
         });
@@ -280,7 +264,6 @@ export const WorkoutDetail: React.FC = () => {
       const request: CompleteSetRequest = {
         reps: localSet.reps,
         weight: localSet.weight,
-        difficulty: localSet.difficulty,
         intensity: localSet.intensity,
       };
       await completeSet(setId, request);
@@ -305,7 +288,7 @@ export const WorkoutDetail: React.FC = () => {
   const updateLocalSet = (
     setId: string,
     field: keyof LocalSetData,
-    value: number | undefined
+    value: number | Intensity | undefined
   ) => {
     setLocalSets((prev) => ({
       ...prev,
@@ -512,114 +495,51 @@ export const WorkoutDetail: React.FC = () => {
 
                     {expandedExercise === exercise.id && (
                       <div style={{ paddingTop: "0.5rem" }}>
-                        <div
-                          style={{
-                            display: "grid",
-                            gridTemplateColumns: "60px 1fr 1fr 1fr 1fr auto",
-                            gap: "0.5rem",
-                            fontSize: "0.75rem",
-                            color: "#64748B",
-                            textTransform: "uppercase",
-                            letterSpacing: "0.05em",
-                            paddingBottom: "0.5rem",
-                          }}
-                        >
+                        <SetHeaderRow>
                           <span>Set</span>
                           <span>Reps</span>
                           <span>Weight</span>
-                          <span>Difficulty</span>
                           <span>Intensity</span>
                           <span></span>
-                        </div>
+                        </SetHeaderRow>
 
                         {exercise.sets
                           .sort((a, b) => a.setNumber - b.setNumber)
                           .map((set) => (
                             <SetRow key={set.id} $completed={set.isCompleted}>
                               <SetNumber>{set.setNumber}</SetNumber>
-                              <SetInput
-                                type="number"
-                                value={
-                                  localSets[set.id]?.reps ?? set.reps ?? ""
-                                }
-                                onChange={(e) =>
-                                  updateLocalSet(
-                                    set.id,
-                                    "reps",
-                                    e.target.value
-                                      ? parseInt(e.target.value)
-                                      : undefined
-                                  )
-                                }
-                                placeholder={exercise.targetReps.toString()}
-                                disabled={set.isCompleted}
-                              />
-                              <SetInput
-                                type="number"
-                                step="0.5"
-                                value={
-                                  localSets[set.id]?.weight ?? set.weight ?? ""
-                                }
-                                onChange={(e) =>
-                                  updateLocalSet(
-                                    set.id,
-                                    "weight",
-                                    e.target.value
-                                      ? parseFloat(e.target.value)
-                                      : undefined
-                                  )
-                                }
-                                placeholder={
-                                  exercise.targetWeight?.toString() || "0"
+                              <NumberPicker
+                                type="reps"
+                                value={localSets[set.id]?.reps ?? set.reps ?? null}
+                                onChange={(value) =>
+                                  updateLocalSet(set.id, "reps", value)
                                 }
                                 disabled={set.isCompleted}
                               />
-                              <SetSelect
+                              <NumberPicker
+                                type="weight"
+                                value={localSets[set.id]?.weight ?? set.weight ?? null}
+                                onChange={(value) =>
+                                  updateLocalSet(set.id, "weight", value)
+                                }
+                                disabled={set.isCompleted}
+                              />
+                              <NumberPicker
+                                type="rpe"
                                 disabled={set.isCompleted}
                                 value={
-                                  localSets[set.id]?.difficulty?.toString() ??
-                                  set.difficulty?.toString() ??
-                                  ""
+                                  localSets[set.id]?.intensity ??
+                                  set.intensity ??
+                                  null
                                 }
-                                onChange={(e) =>
-                                  updateLocalSet(
-                                    set.id,
-                                    "difficulty",
-                                    e.target.value
-                                      ? (parseInt(e.target.value) as Difficulty)
-                                      : undefined
-                                  )
-                                }
-                              >
-                                {difficultyOptions.map((opt) => (
-                                  <option key={opt.value} value={opt.value}>
-                                    {opt.label}
-                                  </option>
-                                ))}
-                              </SetSelect>
-                              <SetSelect
-                                disabled={set.isCompleted}
-                                value={
-                                  localSets[set.id]?.intensity?.toString() ??
-                                  set.intensity?.toString() ??
-                                  ""
-                                }
-                                onChange={(e) =>
+                                onChange={(value) =>
                                   updateLocalSet(
                                     set.id,
                                     "intensity",
-                                    e.target.value
-                                      ? (parseInt(e.target.value) as Intensity)
-                                      : undefined
+                                    value ? (value as Intensity) : undefined
                                   )
                                 }
-                              >
-                                {intensityOptions.map((opt) => (
-                                  <option key={opt.value} value={opt.value}>
-                                    {opt.label}
-                                  </option>
-                                ))}
-                              </SetSelect>
+                              />
                               <CompleteButton
                                 $completed={set.isCompleted}
                                 onClick={() =>

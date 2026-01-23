@@ -55,7 +55,6 @@ export const useProgrammes = (athleteId: string | undefined) => {
         setActiveProgramme(fullResponse.data);
       }
     } catch (err) {
-      console.log("No active programme found");
       setActiveProgramme(null);
     }
   }, [athleteId]);
