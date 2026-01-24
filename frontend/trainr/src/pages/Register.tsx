@@ -10,8 +10,9 @@ import {
   Stack,
   Flex,
 } from "../components/styled";
-import { FitnessLevel, FitnessGoal, RegisterRequest } from "../types";
+import { RegisterRequest } from "../types";
 import { useAuth } from "../hooks/useAuth";
+import { FITNESS_GOAL_OPTIONS, FITNESS_LEVEL_OPTIONS, WORKOUT_DAYS_OPTIONS } from "../utils";
 
 const fadeIn = keyframes`
   from { opacity: 0; transform: translateY(20px); }
@@ -113,7 +114,7 @@ const OptionCard = styled.button<{ $selected: boolean }>`
     $selected ? theme.colors.primaryGhost : theme.colors.surface};
   border: 2px solid
     ${({ theme, $selected }) =>
-      $selected ? theme.colors.primary : theme.colors.border};
+    $selected ? theme.colors.primary : theme.colors.border};
   border-radius: ${({ theme }) => theme.radii.lg};
   text-align: left;
   cursor: pointer;
@@ -176,74 +177,6 @@ const PasswordHint = styled.span`
   margin-top: 4px;
 `;
 
-const fitnessLevelOptions = [
-  {
-    value: FitnessLevel.Beginner,
-    label: "Beginner",
-    icon: "🌱",
-    desc: "New to fitness or returning after a break",
-  },
-  {
-    value: FitnessLevel.Intermediate,
-    label: "Intermediate",
-    icon: "💪",
-    desc: "1-3 years of consistent training",
-  },
-  {
-    value: FitnessLevel.Advanced,
-    label: "Advanced",
-    icon: "🔥",
-    desc: "3+ years with solid foundation",
-  },
-  {
-    value: FitnessLevel.Elite,
-    label: "Elite",
-    icon: "⚡",
-    desc: "Competitive or professional athlete",
-  },
-];
-
-const fitnessGoalOptions = [
-  {
-    value: FitnessGoal.BuildMuscle,
-    label: "Build Muscle",
-    icon: "🏋️",
-    desc: "Increase size and strength",
-  },
-  {
-    value: FitnessGoal.LoseWeight,
-    label: "Lose Weight",
-    icon: "🎯",
-    desc: "Reduce body fat percentage",
-  },
-  {
-    value: FitnessGoal.ImproveEndurance,
-    label: "Improve Endurance",
-    icon: "🏃",
-    desc: "Better stamina and cardio",
-  },
-  {
-    value: FitnessGoal.IncreaseStrength,
-    label: "Increase Strength",
-    icon: "💎",
-    desc: "Lift heavier weights",
-  },
-  {
-    value: FitnessGoal.GeneralFitness,
-    label: "General Fitness",
-    icon: "✨",
-    desc: "Overall health and wellness",
-  },
-];
-
-const daysOptions = [
-  { value: "2", label: "2 days per week" },
-  { value: "3", label: "3 days per week" },
-  { value: "4", label: "4 days per week" },
-  { value: "5", label: "5 days per week" },
-  { value: "6", label: "6 days per week" },
-];
-
 export const Register: React.FC = () => {
   const navigate = useNavigate();
   const { register, loading, error, clearError } = useAuth();
@@ -255,8 +188,8 @@ export const Register: React.FC = () => {
     firstName: "",
     lastName: "",
     dateOfBirth: "", // ISO date string (YYYY-MM-DD)
-    fitnessLevel: FitnessLevel.Beginner,
-    primaryGoal: FitnessGoal.GeneralFitness,
+    fitnessLevel: undefined,
+    primaryGoal: undefined,
     workoutDaysPerWeek: 3,
   });
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -282,11 +215,11 @@ export const Register: React.FC = () => {
 
   const handleInputChange =
     (field: keyof RegisterRequest) =>
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      clearError();
-      // dateOfBirth is stored as ISO string (YYYY-MM-DD)
-      setFormData({ ...formData, [field]: e.target.value });
-    };
+      (e: React.ChangeEvent<HTMLInputElement>) => {
+        clearError();
+        // dateOfBirth is stored as ISO string (YYYY-MM-DD)
+        setFormData({ ...formData, [field]: e.target.value });
+      };
 
   const passwordsMatch = formData.password === confirmPassword;
   const passwordLongEnough = formData.password.length >= 6;
@@ -303,7 +236,7 @@ export const Register: React.FC = () => {
           formData.email.trim() &&
           formData.firstName.trim() &&
           formData.lastName.trim() &&
-          formData.dateOfBirth.trim() // Ensure date is selected
+          formData.dateOfBirth.trim()
         );
       case 2:
         return formData.fitnessLevel && formData.primaryGoal;
@@ -435,7 +368,7 @@ export const Register: React.FC = () => {
                     What's your fitness level?
                   </h4>
                   <OptionGrid>
-                    {fitnessLevelOptions.map((option) => (
+                    {FITNESS_LEVEL_OPTIONS.map((option) => (
                       <OptionCard
                         key={option.value}
                         type="button"
@@ -446,7 +379,7 @@ export const Register: React.FC = () => {
                       >
                         <div className="icon">{option.icon}</div>
                         <div className="title">{option.label}</div>
-                        <div className="description">{option.desc}</div>
+                        <div className="description">{option.description}</div>
                       </OptionCard>
                     ))}
                   </OptionGrid>
@@ -456,7 +389,7 @@ export const Register: React.FC = () => {
                     What's your primary goal?
                   </h4>
                   <OptionGrid>
-                    {fitnessGoalOptions.map((option) => (
+                    {FITNESS_GOAL_OPTIONS.map((option) => (
                       <OptionCard
                         key={option.value}
                         type="button"
@@ -467,7 +400,7 @@ export const Register: React.FC = () => {
                       >
                         <div className="icon">{option.icon}</div>
                         <div className="title">{option.label}</div>
-                        <div className="description">{option.desc}</div>
+                        <div className="description">{option.description}</div>
                       </OptionCard>
                     ))}
                   </OptionGrid>
@@ -484,7 +417,7 @@ export const Register: React.FC = () => {
                     How many days can you train?
                   </h4>
                   <Select
-                    options={daysOptions}
+                    options={WORKOUT_DAYS_OPTIONS}
                     value={formData.workoutDaysPerWeek.toString()}
                     onChange={(e) =>
                       setFormData({
@@ -513,14 +446,14 @@ export const Register: React.FC = () => {
                     <br />
                     <strong>Level:</strong>{" "}
                     {
-                      fitnessLevelOptions.find(
+                      FITNESS_LEVEL_OPTIONS.find(
                         (o) => o.value === formData.fitnessLevel
                       )?.label
                     }
                     <br />
                     <strong>Goal:</strong>{" "}
                     {
-                      fitnessGoalOptions.find(
+                      FITNESS_GOAL_OPTIONS.find(
                         (o) => o.value === formData.primaryGoal
                       )?.label
                     }

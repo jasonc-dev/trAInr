@@ -101,18 +101,9 @@ const EmptyState = styled.div`
   }
 `;
 
-// const formatDuration = (duration: string): string => {
-//   // Parse ISO duration or time string
-//   const hours = Math.floor(parseInt(duration) / 3600) || 0;
-//   const minutes = Math.floor((parseInt(duration) % 3600) / 60) || 0;
-//   if (hours > 0) return `${hours}h ${minutes}m`;
-//   return `${minutes}m`;
-// };
-
 export const Dashboard: React.FC = () => {
   const { user } = useUser();
   const { dashboard, loading } = useDashboard(user?.id);
-  // const { activeProgramme } = useProgrammes(user?.id);
 
   if (loading) {
     return (
@@ -395,7 +386,7 @@ export const Dashboard: React.FC = () => {
                   </CardHeader>
                   <CardContent>
                     {dashboard?.topExercises &&
-                    dashboard.topExercises.length > 0 ? (
+                      dashboard.topExercises.length > 0 ? (
                       <div>
                         {dashboard.topExercises.slice(0, 5).map((exercise) => (
                           <ExerciseItem key={exercise.exerciseId}>

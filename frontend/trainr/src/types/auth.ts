@@ -14,9 +14,9 @@ export interface RegisterRequest {
   email: string;
   firstName: string;
   lastName: string;
-  dateOfBirth: string;
-  fitnessLevel: number;
-  primaryGoal: number;
+  dateOfBirth: string;  
+  fitnessLevel: number | undefined;
+  primaryGoal: number | undefined;
   workoutDaysPerWeek: number;
 }
 

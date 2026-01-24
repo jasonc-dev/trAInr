@@ -67,15 +67,15 @@ const WeekTab = styled.button<{ $active: boolean; $completed: boolean }>`
     $active
       ? theme.colors.primary
       : $completed
-      ? theme.colors.successLight
-      : theme.colors.surface};
+        ? theme.colors.successLight
+        : theme.colors.surface};
   color: ${({ $active, theme }) =>
     $active ? theme.colors.background : theme.colors.text};
   border: 1px solid
     ${({ $active, $completed, theme }) =>
-      $active
-        ? theme.colors.primary
-        : $completed
+    $active
+      ? theme.colors.primary
+      : $completed
         ? theme.colors.success
         : theme.colors.border};
   border-radius: ${({ theme }) => theme.radii.lg};
@@ -89,13 +89,13 @@ const WeekTab = styled.button<{ $active: boolean; $completed: boolean }>`
   }
 `;
 
-const DayCard = styled(Card)<{ $isRestDay?: boolean; $isCompleted?: boolean }>`
+const DayCard = styled(Card) <{ $isRestDay?: boolean; $isCompleted?: boolean }>`
   background: ${({ $isRestDay, $isCompleted, theme }) =>
     $isRestDay
       ? theme.colors.backgroundSecondary
       : $isCompleted
-      ? "rgba(0, 214, 143, 0.1)"
-      : theme.colors.surface};
+        ? "rgba(0, 214, 143, 0.1)"
+        : theme.colors.surface};
   border-color: ${({ $isCompleted, theme }) =>
     $isCompleted ? theme.colors.success : theme.colors.border};
   max-width: 100%;
@@ -144,30 +144,30 @@ const ExerciseItem = styled.div<{
     $supersetPosition === "first"
       ? "0.5rem 0.5rem 0 0"
       : $supersetPosition === "last"
-      ? "0 0 0.5rem 0.5rem"
-      : $supersetPosition === "middle"
-      ? "0"
-      : "0.5rem"};
+        ? "0 0 0.5rem 0.5rem"
+        : $supersetPosition === "middle"
+          ? "0"
+          : "0.5rem"};
   transition: all ${({ theme }) => theme.transitions.fast};
   border: 1px solid
     ${({ $isInSuperset, theme }) =>
-      $isInSuperset ? theme.colors.border : "transparent"};
+    $isInSuperset ? theme.colors.border : "transparent"};
   border-bottom: ${({ $supersetPosition, $isInSuperset, theme }) =>
     $isInSuperset && $supersetPosition === "first"
       ? "none"
       : $isInSuperset && $supersetPosition === "middle"
-      ? "none"
-      : $isInSuperset
-      ? theme.colors.border
-      : "transparent"};
+        ? "none"
+        : $isInSuperset
+          ? theme.colors.border
+          : "transparent"};
   border-top: ${({ $supersetPosition, $isInSuperset, theme }) =>
     $isInSuperset && $supersetPosition === "middle"
       ? "none"
       : $isInSuperset && $supersetPosition === "last"
-      ? "none"
-      : $isInSuperset
-      ? theme.colors.border
-      : "transparent"};
+        ? "none"
+        : $isInSuperset
+          ? theme.colors.border
+          : "transparent"};
   margin-bottom: ${({ $hasGap, theme }) => ($hasGap ? theme.spacing.sm : "0")};
   cursor: ${({ $isDraggable }) => ($isDraggable ? "grab" : "default")};
   min-width: 0; /* Allow flex items to shrink below their content size */
@@ -181,17 +181,17 @@ const ExerciseItem = styled.div<{
   &:hover {
     background: ${({ theme }) => theme.colors.surfaceHover};
     border-color: ${({ $isInSuperset, theme }) =>
-      $isInSuperset ? theme.colors.primary : theme.colors.border};
+    $isInSuperset ? theme.colors.primary : theme.colors.border};
     border-bottom-color: ${({ $supersetPosition, $isInSuperset, theme }) =>
-      $isInSuperset &&
+    $isInSuperset &&
       ($supersetPosition === "first" || $supersetPosition === "middle")
-        ? theme.colors.primary
-        : theme.colors.border};
+      ? theme.colors.primary
+      : theme.colors.border};
     border-top-color: ${({ $supersetPosition, $isInSuperset, theme }) =>
-      $isInSuperset &&
+    $isInSuperset &&
       ($supersetPosition === "middle" || $supersetPosition === "last")
-        ? theme.colors.primary
-        : theme.colors.border};
+      ? theme.colors.primary
+      : theme.colors.border};
   }
 `;
 
@@ -943,9 +943,8 @@ export const ProgrammeDetail: React.FC = () => {
                           size="sm"
                           variant="secondary"
                           onClick={handleCopyWeek()}
-                          title={`Copy all exercises from Week ${
-                            currentWeek.weekNumber - 1
-                          }`}
+                          title={`Copy all exercises from Week ${currentWeek.weekNumber - 1
+                            }`}
                           style={{ width: 'auto', whiteSpace: 'nowrap' }}
                         >
                           📋 Copy from Week {currentWeek.weekNumber - 1}
@@ -1048,7 +1047,7 @@ export const ProgrammeDetail: React.FC = () => {
                                           !exercise.supersetGroupId ||
                                           !nextExercise?.supersetGroupId ||
                                           exercise.supersetGroupId !==
-                                            nextExercise.supersetGroupId;
+                                          nextExercise.supersetGroupId;
                                         const isInSuperset =
                                           !!exercise.supersetGroupId;
                                         const isDraggable =
@@ -1100,16 +1099,16 @@ export const ProgrammeDetail: React.FC = () => {
                                             onDragStart={
                                               isDraggable
                                                 ? () =>
-                                                    handleDragStart(exercise.id)
+                                                  handleDragStart(exercise.id)
                                                 : undefined
                                             }
                                             onDragOver={
                                               isDraggable
                                                 ? (e) =>
-                                                    handleDragOver(
-                                                      e,
-                                                      exercise.id
-                                                    )
+                                                  handleDragOver(
+                                                    e,
+                                                    exercise.id
+                                                  )
                                                 : undefined
                                             }
                                             onDragEnd={
@@ -1120,11 +1119,11 @@ export const ProgrammeDetail: React.FC = () => {
                                             onDrop={
                                               isDraggable
                                                 ? (e) =>
-                                                    handleDrop(
-                                                      e,
-                                                      day.id,
-                                                      exercise.id
-                                                    )
+                                                  handleDrop(
+                                                    e,
+                                                    day.id,
+                                                    exercise.id
+                                                  )
                                                 : undefined
                                             }
                                             style={{
@@ -1136,8 +1135,8 @@ export const ProgrammeDetail: React.FC = () => {
                                                 dragOverExercise === exercise.id
                                                   ? "#3B82F6"
                                                   : isInSuperset
-                                                  ? "rgba(59, 130, 246, 0.3)"
-                                                  : "transparent",
+                                                    ? "rgba(59, 130, 246, 0.3)"
+                                                    : "transparent",
                                             }}
                                           >
                                             <Flex $align="center" $gap="0.5rem">
@@ -1339,8 +1338,8 @@ export const ProgrammeDetail: React.FC = () => {
                                         {selectedExercises.size === 2
                                           ? "Superset"
                                           : selectedExercises.size === 3
-                                          ? "Triset"
-                                          : "Giant Set"}{" "}
+                                            ? "Triset"
+                                            : "Giant Set"}{" "}
                                         ({selectedExercises.size})
                                       </Button>
                                     )}
@@ -1542,6 +1541,7 @@ export const ProgrammeDetail: React.FC = () => {
 
               <Flex $gap="1rem" style={{ marginTop: "1rem" }}>
                 <NumberPicker
+                  $size="lg"
                   label="Sets"
                   type="sets"
                   value={newExercise.targetSets}
@@ -1554,6 +1554,7 @@ export const ProgrammeDetail: React.FC = () => {
                 />
                 <NumberPicker
                   label="Reps"
+                  $size="lg"
                   type="reps"
                   value={newExercise.targetReps}
                   onChange={(value) =>
@@ -1565,6 +1566,7 @@ export const ProgrammeDetail: React.FC = () => {
                 />
                 <NumberPicker
                   label="Weight (kg)"
+                  $size="lg"
                   type="weight"
                   value={newExercise.targetWeight}
                   onChange={(value) =>
@@ -1579,6 +1581,7 @@ export const ProgrammeDetail: React.FC = () => {
               <Flex $gap="1rem" style={{ marginTop: "1rem" }}>
                 <NumberPicker
                   label="Rest (seconds)"
+                  $size="lg"
                   type="rest"
                   value={newExercise.restSeconds}
                   onChange={(value) =>
@@ -1590,6 +1593,7 @@ export const ProgrammeDetail: React.FC = () => {
                 />
                 <NumberPicker
                   label="Target RPE (1-10)"
+                  $size="lg"
                   type="rpe"
                   value={newExercise.targetRpe}
                   onChange={(value) =>
@@ -1680,6 +1684,7 @@ export const ProgrammeDetail: React.FC = () => {
                 <Flex $gap="1rem">
                   <NumberPicker
                     label="Sets"
+                    $size="lg"
                     type="sets"
                     value={editExercise.targetSets}
                     onChange={(value) =>
@@ -1691,6 +1696,7 @@ export const ProgrammeDetail: React.FC = () => {
                   />
                   <NumberPicker
                     label="Reps"
+                    $size="lg"
                     type="reps"
                     value={editExercise.targetReps}
                     onChange={(value) =>
@@ -1702,6 +1708,7 @@ export const ProgrammeDetail: React.FC = () => {
                   />
                   <NumberPicker
                     label="Weight (kg)"
+                    $size="lg"
                     type="weight"
                     value={editExercise.targetWeight}
                     onChange={(value) =>
@@ -1716,6 +1723,7 @@ export const ProgrammeDetail: React.FC = () => {
                 <Flex $gap="1rem">
                   <NumberPicker
                     label="Rest (seconds)"
+                    $size="lg"
                     type="rest"
                     value={editExercise.restSeconds}
                     onChange={(value) =>
@@ -1727,6 +1735,7 @@ export const ProgrammeDetail: React.FC = () => {
                   />
                   <NumberPicker
                     label="Target RPE (1-10)"
+                    $size="lg"
                     type="rpe"
                     value={editExercise.targetRpe}
                     onChange={(value) =>
@@ -1813,7 +1822,7 @@ export const ProgrammeDetail: React.FC = () => {
                         Secondary:{" "}
                         {
                           MuscleGroup[
-                            selectedExercise.details.secondaryMuscleGroup
+                          selectedExercise.details.secondaryMuscleGroup
                           ]
                         }
                       </Badge>
