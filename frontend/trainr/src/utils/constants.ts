@@ -33,10 +33,7 @@ export const WORKOUT_DAYS_OPTIONS = [
   { value: "4", label: "4 days per week" },
   { value: "5", label: "5 days per week" },
   { value: "6", label: "6 days per week" },
-] as const;
-
-// Alias for backwards compatibility
-export const DAYS_PER_WEEK_OPTIONS = WORKOUT_DAYS_OPTIONS;
+];
 
 // Difficulty options for sets
 export const DIFFICULTY_OPTIONS = [

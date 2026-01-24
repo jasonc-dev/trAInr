@@ -25,32 +25,9 @@ import {
   ProgrammeSummary,
   UpdateProgrammeRequest,
 } from "../types";
-
-const PageTitle = styled.h1`
-  font-size: ${({ theme }) => theme.fontSizes["3xl"]};
-  margin-bottom: ${({ theme }) => theme.spacing.xs};
-`;
-
-const PageSubtitle = styled.p`
-  color: ${({ theme }) => theme.colors.textSecondary};
-  margin-bottom: ${({ theme }) => theme.spacing["2xl"]};
-
-  @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
-    margin-bottom: ${({ theme }) => theme.spacing.lg};
-  }
-`;
-
-const PageHeader = styled(Flex)`
-  margin-bottom: ${({ theme }) => theme.spacing.xl};
-  margin-top: 1rem;
-
-  @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: ${({ theme }) => theme.spacing.md};
-  }
-`;
-
+import { PageTitle } from "../components/styled/PageTitle";
+import { PageSubtitle } from "../components/styled/PageSubtitle";
+import { PageHeader } from "../components";
 
 const TabContainer = styled.div`
   display: flex;
@@ -78,7 +55,7 @@ const Tab = styled.button<{ $active: boolean }>`
   }
 `;
 
-const ProgrammeCard = styled(Card)<{ $isActive?: boolean }>`
+const ProgrammeCard = styled(Card) <{ $isActive?: boolean }>`
   ${({ $isActive, theme }) =>
     $isActive &&
     `
@@ -283,9 +260,9 @@ export const Programmes: React.FC = () => {
     try {
       setCloning(true);
       const programme = await cloneProgramme(selectedTemplate.id, {
-          athleteId: user?.id || "",
-          startDate: startDate
-        });
+        athleteId: user?.id || "",
+        startDate: startDate
+      });
       setShowCloneModal(false);
       setSelectedTemplate(null);
       setStartDate("");
@@ -308,10 +285,10 @@ export const Programmes: React.FC = () => {
               <PageSubtitle>
                 Create and manage your workout programmes
               </PageSubtitle>
+              <Button onClick={() => setShowCreateModal(true)}>
+                + New Programme
+              </Button>
             </div>
-            <Button onClick={() => setShowCreateModal(true)}>
-              + New Programme
-            </Button>
           </PageHeader>
 
           <TabContainer>

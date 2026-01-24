@@ -156,6 +156,7 @@ const SetHeaderRow = styled.div`
 
 const BackButton = styled(Button)`
   margin-bottom: ${({ theme }) => theme.spacing.lg};
+  flex-start: flex-start;
 `;
 
 const EmptyState = styled.div`
@@ -385,13 +386,6 @@ export const WorkoutDetail: React.FC = () => {
                 )}
               </PageSubtitle>
             </div>
-            {currentWorkout.isCompleted ? (
-              <Badge $variant="success">Completed!</Badge>
-            ) : (
-              <Button onClick={handleCompleteWorkout} disabled={workoutLoading}>
-                {workoutLoading ? "Saving..." : "Complete Workout"}
-              </Button>
-            )}
           </Flex>
 
           {currentWorkout.exercises.length === 0 ? (
@@ -573,6 +567,17 @@ export const WorkoutDetail: React.FC = () => {
                 );
               })
           )}
+          <div style={{ marginBottom: "3rem" }}>
+          <Flex $align="center" $justify="center">
+              {currentWorkout.isCompleted ? (
+              <Badge $variant="success">Completed!</Badge>
+            ) : (
+              <Button onClick={handleCompleteWorkout} disabled={workoutLoading}>
+                {workoutLoading ? "Saving..." : "Complete Workout"}
+              </Button>
+            )}
+            </Flex>
+            </div>
         </Container>
       </PageWrapper>
     </>

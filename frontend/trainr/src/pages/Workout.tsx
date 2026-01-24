@@ -9,20 +9,13 @@ import {
   Badge,
 } from "../components/styled";
 import { Navigation } from "../components/styled/Navigation";
-import { useUser, useProgrammes, useWorkouts } from "../hooks";
+import { useUser, useProgrammes } from "../hooks";
 import { WorkoutDay } from "../types";
 import { DAY_NAMES } from "../utils";
 import { Tooltip } from "../components/styled/Tooltip";
-
-const PageTitle = styled.h1`
-  font-size: ${({ theme }) => theme.fontSizes["3xl"]};
-  margin-bottom: ${({ theme }) => theme.spacing.xs};
-`;
-
-const PageSubtitle = styled.p`
-  color: ${({ theme }) => theme.colors.textSecondary};
-  margin-bottom: ${({ theme }) => theme.spacing["2xl"]};
-`;
+import { PageTitle } from "../components/styled/PageTitle";
+import { PageSubtitle } from "../components/styled/PageSubtitle";
+import { PageHeader } from "../components";
 
 const EmptyState = styled.div`
   text-align: center;
@@ -97,9 +90,9 @@ const DateHeader = styled.div<{ $isPast?: boolean; $isToday?: boolean }>`
   padding-bottom: ${({ theme }) => theme.spacing.sm};
   border-bottom: 2px solid
     ${({ $isToday, $isPast, theme }) =>
-      $isToday
-        ? theme.colors.primary
-        : $isPast
+    $isToday
+      ? theme.colors.primary
+      : $isPast
         ? theme.colors.border
         : theme.colors.border};
 
@@ -107,7 +100,7 @@ const DateHeader = styled.div<{ $isPast?: boolean; $isToday?: boolean }>`
     font-size: ${({ theme }) => theme.fontSizes.lg};
     font-weight: ${({ theme }) => theme.fontWeights.semibold};
     color: ${({ $isToday, theme }) =>
-      $isToday ? theme.colors.primary : theme.colors.text};
+    $isToday ? theme.colors.primary : theme.colors.text};
   }
 
   .day-name {
@@ -118,19 +111,19 @@ const DateHeader = styled.div<{ $isPast?: boolean; $isToday?: boolean }>`
   }
 `;
 
-const WorkoutCard = styled(Card)<{ $isCompleted?: boolean; $isPast?: boolean }>`
+const WorkoutCard = styled(Card) <{ $isCompleted?: boolean; $isPast?: boolean }>`
   margin-bottom: ${({ theme }) => theme.spacing.md};
   opacity: ${({ $isCompleted, $isPast }) =>
     $isCompleted && $isPast ? 0.8 : 1};
   border-left: 4px solid
     ${({ $isCompleted, theme }) =>
-      $isCompleted ? theme.colors.success : theme.colors.border};
+    $isCompleted ? theme.colors.success : theme.colors.border};
   cursor: pointer;
   transition: all ${({ theme }) => theme.transitions.normal};
 
   &:hover {
     border-left-color: ${({ $isCompleted, theme }) =>
-      $isCompleted ? theme.colors.success : theme.colors.primary};
+    $isCompleted ? theme.colors.success : theme.colors.primary};
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   }
 `;
@@ -224,15 +217,10 @@ export const Workout: React.FC = () => {
   const { user } = useUser();
   const { activeProgramme } = useProgrammes(user?.id);
 
-  const { completeWorkout, loading: workoutLoading } = useWorkouts();
-
   const [allWorkoutDays, setAllWorkoutDays] = useState<
     WorkoutDayWithWeekNumber[]
   >([]);
   const [loading, setLoading] = useState(true);
-  const [completingWorkout, setCompletingWorkout] = useState<string | null>(
-    null
-  );
   const todaysWorkoutsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -307,26 +295,6 @@ export const Workout: React.FC = () => {
       });
     }
   }, [groupedWorkouts.today]);
-
-  const handleCompleteWorkout = async (workoutId: string) => {
-    try {
-      setCompletingWorkout(workoutId);
-      await completeWorkout(workoutId, new Date());
-
-      // Refresh the workouts list
-      setAllWorkoutDays((prev) =>
-        prev.map((w) =>
-          w.id === workoutId
-            ? { ...w, isCompleted: true, completedDate: new Date() }
-            : w
-        )
-      );
-    } catch (err) {
-      console.error("Failed to complete workout:", err);
-    } finally {
-      setCompletingWorkout(null);
-    }
-  };
 
   const handleViewWorkout = (workoutId: string) => {
     navigate(`/workout/${workoutId}`);
@@ -475,21 +443,8 @@ export const Workout: React.FC = () => {
             </WorkoutMeta>
           </WorkoutInfo>
           <WorkoutActions>
-            {workout.isCompleted ? (
+            {workout.isCompleted && (
               <Badge $variant="success">✓ Completed</Badge>
-            ) : (
-              <Button
-                size="sm"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleCompleteWorkout(workout.id);
-                }}
-                disabled={completingWorkout === workout.id || workoutLoading}
-              >
-                {completingWorkout === workout.id
-                  ? "Completing..."
-                  : "Mark Complete"}
-              </Button>
             )}
           </WorkoutActions>
         </WorkoutHeader>
@@ -502,12 +457,14 @@ export const Workout: React.FC = () => {
       <Navigation />
       <PageWrapper>
         <Container>
-          <div style={{ marginBottom: "2rem" }}>
-            <PageTitle>Workout Timeline</PageTitle>
-            <PageSubtitle>
-              {activeProgramme.name} - Track your progress over time
-            </PageSubtitle>
-          </div>
+          <PageHeader $justify="space-between" $align="center">
+            <div>
+              <PageTitle>Workout Timeline</PageTitle>
+              <PageSubtitle>
+                {activeProgramme.name}
+              </PageSubtitle>
+            </div>
+          </PageHeader>
 
           <TimelineContainer>
             {/* Past Workouts */}
@@ -520,14 +477,7 @@ export const Workout: React.FC = () => {
                       <DateHeader $isPast={true}>
                         <div className="date-text">{dateKey}</div>
                         <div className="day-name">
-                          {
-                            DAY_NAMES[
-                              workouts[0].isCompleted &&
-                              workouts[0].completedDate
-                                ? new Date(workouts[0].completedDate).getDay()
-                                : new Date(workouts[0].scheduledDate).getDay()
-                            ]
-                          }
+                          {DAY_NAMES[new Date(workouts[0].scheduledDate).getDay()]}
                         </div>
                       </DateHeader>
                       {workouts.map((workout) => {
@@ -569,10 +519,10 @@ export const Workout: React.FC = () => {
                         <div className="day-name">
                           {
                             DAY_NAMES[
-                              workouts[0].isCompleted &&
+                            workouts[0].isCompleted &&
                               workouts[0].completedDate
-                                ? new Date(workouts[0].completedDate).getDay()
-                                : new Date(workouts[0].scheduledDate).getDay()
+                              ? new Date(workouts[0].completedDate).getDay()
+                              : new Date(workouts[0].scheduledDate).getDay()
                             ]
                           }
                         </div>
@@ -587,7 +537,7 @@ export const Workout: React.FC = () => {
             )}
           </TimelineContainer>
         </Container>
-      </PageWrapper>
+      </PageWrapper >
     </>
   );
 };

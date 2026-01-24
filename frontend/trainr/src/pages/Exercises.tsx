@@ -16,18 +16,11 @@ import {
 import { Navigation } from "../components/styled/Navigation";
 import { useExercises } from "../hooks";
 import { Exercise, ExerciseType, MuscleGroup } from "../types";
-import { EXERCISE_TYPES, getExerciseIcon } from "../utils";
+import { EXERCISE_TYPES, getExerciseIcon, MUSCLE_GROUPS } from "../utils";
 import { ExerciseIcon } from "../components/styled";
-
-const PageTitle = styled.h1`
-  font-size: ${({ theme }) => theme.fontSizes["3xl"]};
-  margin-bottom: ${({ theme }) => theme.spacing.xs};
-`;
-
-const PageSubtitle = styled.p`
-  color: ${({ theme }) => theme.colors.textSecondary};
-  margin-bottom: ${({ theme }) => theme.spacing["2xl"]};
-`;
+import { PageHeader } from "../components";
+import { PageTitle } from "../components/styled/PageTitle";
+import { PageSubtitle } from "../components/styled/PageSubtitle";
 
 const FilterSection = styled.div`
   margin-bottom: ${({ theme }) => theme.spacing.xl};
@@ -81,21 +74,6 @@ const getMuscleGroupLabel = (group: MuscleGroup) => {
   return MuscleGroup[group] || "Unknown";
 };
 
-const muscleGroups = [
-  { value: null, label: "All Muscles" },
-  { value: MuscleGroup.Chest, label: "Chest" },
-  { value: MuscleGroup.Back, label: "Back" },
-  { value: MuscleGroup.Shoulders, label: "Shoulders" },
-  { value: MuscleGroup.Biceps, label: "Biceps" },
-  { value: MuscleGroup.Triceps, label: "Triceps" },
-  { value: MuscleGroup.Core, label: "Core" },
-  { value: MuscleGroup.Quadriceps, label: "Quadriceps" },
-  { value: MuscleGroup.Hamstrings, label: "Hamstrings" },
-  { value: MuscleGroup.Glutes, label: "Glutes" },
-  { value: MuscleGroup.Calves, label: "Calves" },
-  { value: MuscleGroup.FullBody, label: "Full Body" },
-];
-
 export const Exercises: React.FC = () => {
   const { exercises, loading, searchExercises } = useExercises();
   const [searchQuery, setSearchQuery] = useState("");
@@ -133,10 +111,14 @@ export const Exercises: React.FC = () => {
       <Navigation />
       <PageWrapper>
         <Container>
-          <PageTitle>Exercise Library</PageTitle>
-          <PageSubtitle>
-            Browse and learn about different exercises
-          </PageSubtitle>
+          <PageHeader>
+            <div>
+              <PageTitle>Exercise Library</PageTitle>
+              <PageSubtitle>
+                Browse and learn about different exercises
+              </PageSubtitle>
+            </div>
+          </PageHeader>
 
           <FilterSection>
             <Input
@@ -161,7 +143,7 @@ export const Exercises: React.FC = () => {
 
             <FilterLabel>Muscle Group</FilterLabel>
             <ChipGroup>
-              {muscleGroups.map((group) => (
+              {MUSCLE_GROUPS.map((group) => (
                 <Chip
                   key={group.label}
                   $active={selectedMuscle === group.value}
