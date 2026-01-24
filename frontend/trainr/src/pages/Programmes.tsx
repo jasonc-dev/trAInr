@@ -170,8 +170,8 @@ export const Programmes: React.FC = () => {
     updateProgramme,
     deleteProgramme,
     cloneProgramme,
+    loading,
   } = useProgrammes(user?.id);
-
   const [activeTab, setActiveTab] = useState<"my" | "templates">("my");
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -314,7 +314,14 @@ export const Programmes: React.FC = () => {
           {/* My Programmes Tab */}
           {activeTab === "my" && (
             <>
-              {programmes.length === 0 ? (
+              {loading ? (
+                <Card>
+                  <EmptyState>
+                    <div className="icon">🔄</div>
+                    <h4>Loading your programmes...</h4>
+                  </EmptyState>
+                </Card>
+              ) : programmes.length === 0 ? (
                 <Card>
                   <EmptyState>
                     <div className="icon">📋</div>

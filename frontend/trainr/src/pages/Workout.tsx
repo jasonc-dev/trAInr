@@ -226,7 +226,6 @@ export const Workout: React.FC = () => {
   useEffect(() => {
     const loadAllWorkouts = async () => {
       if (!activeProgramme || !activeProgramme.startDate) {
-        setLoading(false);
         return;
       }
 
