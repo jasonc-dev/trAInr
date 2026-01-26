@@ -68,7 +68,6 @@ public class AiProgramGeneratorService : IAiProgramGeneratorService
         {
             e.Id,
             e.Name,
-            e.Description,
             e.MovementPattern,
             e.PrimaryMuscleGroup,
             e.SecondaryMuscleGroup,
