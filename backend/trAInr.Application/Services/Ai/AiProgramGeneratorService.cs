@@ -87,7 +87,7 @@ USER REQUEST:
 - Target Focus: {request.Description}
 
 AVAILABLE EXERCISES (YOU MUST ONLY USE EXERCISES FROM THIS LIST):
-{exerciseJson}
+{exerciseJson}. Check the 'Id' exists in the list before selecting any exercises.
 
 INSTRUCTIONS:
 1. Create a {request.DurationWeeks}-week program with the specified workout days
@@ -96,6 +96,8 @@ INSTRUCTIONS:
 4. Include proper progression across weeks (increasing sets, reps, or intensity)
 5. Assign appropriate sets (3-5), reps (6-15 for strength, 12-20 for hypertrophy), rest times (60-180 seconds), and RPE (6-9)
 6. Focus on appropriate structure for an exercise day, that is compound exercises before isolation exercises.
+7. CRITICAL: For rest days (isRestDay: true), the exercises array MUST be empty [] - do not include any exercises on rest days
+8. CRITICAL: For workout days (isRestDay: false), ALL exercises MUST have non-null values for targetSets and targetReps - these are required fields
 
 RESPONSE FORMAT (JSON):
 {{
@@ -205,8 +207,8 @@ Generate the complete program now:";
                         ProgramTemplateWorkoutDayId = workoutDay.Id,
                         ExerciseDefinitionId = exerciseData.ExerciseDefinitionId,
                         OrderIndex = exerciseData.OrderIndex,
-                        TargetSets = exerciseData.TargetSets,
-                        TargetReps = exerciseData.TargetReps,
+                        TargetSets = exerciseData.TargetSets ?? 0,
+                        TargetReps = exerciseData.TargetReps ?? 0,
                         TargetWeight = exerciseData.TargetWeight,
                         TargetDurationSeconds = exerciseData.TargetDurationSeconds,
                         TargetDistance = exerciseData.TargetDistance,
