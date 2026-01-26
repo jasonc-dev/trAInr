@@ -17,7 +17,7 @@ public class ExerciseDefinition
     }
 
     public ExerciseDefinition(
-        Guid id,
+        int id,
         string name,
         string description,
         ExerciseType type,
@@ -48,7 +48,7 @@ public class ExerciseDefinition
         CreatedAt = DateTime.UtcNow;
     }
 
-    public Guid Id { get; private set; }
+    public int Id { get; private set; }
     public string Name { get; private set; } = string.Empty;
     public string Description { get; private set; } = string.Empty;
     public ExerciseType Type { get; private set; }

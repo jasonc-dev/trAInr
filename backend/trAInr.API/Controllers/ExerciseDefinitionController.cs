@@ -35,8 +35,8 @@ public class ExerciseDefinitionController(IExerciseDefinitionService exerciseDef
     /// <summary>
     ///     Get exercise definition by ID
     /// </summary>
-    [HttpGet("{id:guid}")]
-    public async Task<ActionResult<ExerciseResponse>> GetById(Guid id)
+    [HttpGet("{id:int}")]
+    public async Task<ActionResult<ExerciseResponse>> GetById(int id)
     {
         var exercise = await exerciseDefinitionService.GetByIdAsync(id);
         if (exercise is null) return NotFound();

@@ -11,7 +11,7 @@ namespace trAInr.Infrastructure.Repositories;
 /// </summary>
 public class ExerciseDefinitionRepository(TrainrDbContext context) : IExerciseDefinitionRepository
 {
-    public async Task<ExerciseDefinition?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<ExerciseDefinition?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
         return await context.ExerciseDefinitions
             .FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
@@ -75,7 +75,7 @@ public class ExerciseDefinitionRepository(TrainrDbContext context) : IExerciseDe
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<bool> ExistsAsync(int id, CancellationToken cancellationToken = default)
     {
         return await context.ExerciseDefinitions
             .AnyAsync(e => e.Id == id, cancellationToken);

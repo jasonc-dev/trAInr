@@ -8,7 +8,7 @@ public class WorkoutExercise
 {
     public Guid Id { get; set; }
     public Guid WorkoutDayId { get; set; }
-    public Guid ExerciseDefinitionId { get; set; }
+    public int ExerciseDefinitionId { get; set; }
     public int OrderIndex { get; set; }
     public string? Notes { get; set; }
     public int TargetSets { get; set; }

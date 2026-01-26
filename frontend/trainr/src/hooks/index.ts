@@ -10,3 +10,4 @@ export { useWorkouts } from './useWorkouts';
 export { useExercises } from './useExercises';
 export { useDashboard } from './useDashboard';
 export { useAthletes } from './useAthletes';
+export { useProgramGenerator } from './useProgramGenerator';

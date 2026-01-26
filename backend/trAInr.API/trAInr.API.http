@@ -1,2 +1,54 @@
 @trAInr.API_HostAddress = http://localhost:5293
+@token = your_jwt_token_here
 
+### Generate Program - Beginner
+POST {{trAInr.API_HostAddress}}/api/ProgramGenerator
+Content-Type: application/json
+
+{
+  "programName": "Beginner Strength Program",
+  "description": "A 4-week program designed for beginners to build foundational strength",
+  "durationWeeks": 4,
+  "experienceLevel": 1,
+  "workoutDayNames": ["Monday", "Wednesday", "Friday"]
+}
+
+### Generate Program - Intermediate
+POST {{trAInr.API_HostAddress}}/api/ProgramGenerator
+Content-Type: application/json
+
+{
+  "programName": "Intermediate Hypertrophy Program",
+  "description": "A 6-week program focused on muscle growth for intermediate lifters",
+  "durationWeeks": 6,
+  "experienceLevel": 2,
+  "workoutDayNames": ["Monday", "Tuesday", "Thursday", "Friday"]
+}
+
+### Generate Program - Advanced
+POST {{trAInr.API_HostAddress}}/api/ProgramGenerator
+Content-Type: application/json
+
+{
+  "programName": "Advanced Powerlifting Program",
+  "description": "An 8-week program for advanced lifters focusing on strength and power",
+  "durationWeeks": 8,
+  "experienceLevel": 3,
+  "workoutDayNames": ["Monday", "Tuesday", "Thursday", "Friday", "Saturday"]
+}
+
+### Generate Program - With Authentication (if needed)
+POST {{trAInr.API_HostAddress}}/api/ProgramGenerator
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "programName": "Custom Program",
+  "description": "A personalized training program",
+  "durationWeeks": 4,
+  "experienceLevel": 2,
+  "workoutDayNames": ["Monday", "Wednesday", "Friday"]
+}
+
+### Test Endpoint
+GET {{trAInr.API_HostAddress}}/api/ProgramGenerator/test

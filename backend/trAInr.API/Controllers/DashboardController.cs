@@ -37,7 +37,7 @@ public class DashboardController(IDashboardService dashboardService, IAthleteSer
     [HttpGet("athlete/{athleteId:guid}/exercises")]
     public async Task<ActionResult<IEnumerable<ExerciseMetrics>>> GetExerciseMetrics(
         Guid athleteId,
-        [FromQuery] Guid? exerciseId = null)
+        [FromQuery] int? exerciseId = null)
     {
         if (!await athleteService.ExistsAsync(athleteId)) return NotFound("Athlete not found");
 

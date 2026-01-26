@@ -29,7 +29,7 @@ const PageSubtitle = styled.p`
   margin-bottom: ${({ theme }) => theme.spacing["2xl"]};
 `;
 
-const ExerciseCard = styled(Card)<{
+const ExerciseCard = styled(Card) <{
   $expanded: boolean;
   $hasGap?: boolean;
   $isInSuperset?: boolean;
@@ -40,32 +40,32 @@ const ExerciseCard = styled(Card)<{
     $expanded
       ? theme.colors.primary
       : $isInSuperset
-      ? theme.colors.border
-      : theme.colors.border};
+        ? theme.colors.border
+        : theme.colors.border};
   border-radius: ${({ $supersetPosition }) =>
     $supersetPosition === "first"
       ? "0.5rem 0.5rem 0 0"
       : $supersetPosition === "last"
-      ? "0 0 0.5rem 0.5rem"
-      : $supersetPosition === "middle"
-      ? "0"
-      : "0.5rem"};
+        ? "0 0 0.5rem 0.5rem"
+        : $supersetPosition === "middle"
+          ? "0"
+          : "0.5rem"};
   border-bottom: ${({ $supersetPosition, $isInSuperset, theme }) =>
     $isInSuperset && $supersetPosition === "first"
       ? "none"
       : $isInSuperset && $supersetPosition === "middle"
-      ? "none"
-      : `1px solid ${theme.colors.border}`};
+        ? "none"
+        : `1px solid ${theme.colors.border}`};
   border-top: ${({ $supersetPosition, $isInSuperset, theme }) =>
     $isInSuperset && $supersetPosition === "middle"
       ? "none"
       : $isInSuperset && $supersetPosition === "last"
-      ? "none"
-      : `1px solid ${theme.colors.border}`};
+        ? "none"
+        : `1px solid ${theme.colors.border}`};
 
   &:hover {
     border-color: ${({ $isInSuperset, theme }) =>
-      $isInSuperset ? theme.colors.primary : theme.colors.border};
+    $isInSuperset ? theme.colors.primary : theme.colors.border};
   }
 `;
 
@@ -110,7 +110,7 @@ const CompleteButton = styled.button<{ $completed: boolean }>`
   border-radius: 50%;
   border: 2px solid
     ${({ $completed, theme }) =>
-      $completed ? theme.colors.success : theme.colors.border};
+    $completed ? theme.colors.success : theme.colors.border};
   background: ${({ $completed, theme }) =>
     $completed ? theme.colors.success : "transparent"};
   color: ${({ $completed }) => ($completed ? "white" : "inherit")};
@@ -200,7 +200,7 @@ export const WorkoutDetail: React.FC = () => {
   } = useWorkouts();
 
   const [loading, setLoading] = useState(true);
-  const [expandedExercise, setExpandedExercise] = useState<string | null>(null);
+  const [expandedExercise, setExpandedExercise] = useState<number | null>(null);
   const [localSets, setLocalSets] = useState<Record<string, LocalSetData>>({});
   const [completingSet, setCompletingSet] = useState<string | null>(null);
 
@@ -239,7 +239,7 @@ export const WorkoutDetail: React.FC = () => {
   }, [currentWorkout]);
 
   const handleAddSet = async (
-    workoutExerciseId: string,
+    workoutExerciseId: number,
     exercise: WorkoutExercise
   ) => {
     const setNumber = exercise.sets.length + 1;
@@ -546,8 +546,8 @@ export const WorkoutDetail: React.FC = () => {
                                 {set.isCompleted
                                   ? "✓"
                                   : completingSet === set.id
-                                  ? "..."
-                                  : ""}
+                                    ? "..."
+                                    : ""}
                               </CompleteButton>
                             </SetRow>
                           ))}
@@ -568,16 +568,16 @@ export const WorkoutDetail: React.FC = () => {
               })
           )}
           <div style={{ marginBottom: "3rem" }}>
-          <Flex $align="center" $justify="center">
+            <Flex $align="center" $justify="center">
               {currentWorkout.isCompleted ? (
-              <Badge $variant="success">Completed!</Badge>
-            ) : (
-              <Button onClick={handleCompleteWorkout} disabled={workoutLoading}>
-                {workoutLoading ? "Saving..." : "Complete Workout"}
-              </Button>
-            )}
+                <Badge $variant="success">Completed!</Badge>
+              ) : (
+                <Button onClick={handleCompleteWorkout} disabled={workoutLoading}>
+                  {workoutLoading ? "Saving..." : "Complete Workout"}
+                </Button>
+              )}
             </Flex>
-            </div>
+          </div>
         </Container>
       </PageWrapper>
     </>

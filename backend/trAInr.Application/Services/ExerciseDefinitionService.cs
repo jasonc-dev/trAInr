@@ -14,7 +14,7 @@ public class ExerciseDefinitionService(
     ILogger<ExerciseDefinitionService> logger)
     : IExerciseDefinitionService
 {
-    public async Task<ExerciseResponse?> GetByIdAsync(Guid id)
+    public async Task<ExerciseResponse?> GetByIdAsync(int id)
     {
         var exerciseDefinition = await exerciseDefinitionRepository.GetByIdAsync(id);
         return exerciseDefinition is null ? null : MapToResponse(exerciseDefinition);
@@ -45,8 +45,12 @@ public class ExerciseDefinitionService(
         // Map ExerciseType to MovementPattern (simplified mapping)
         var movementPattern = MapExerciseTypeToMovementPattern(request.Type);
 
+        // Get next available ID (since we're using int now, need to get max + 1)
+        var allExercises = await exerciseDefinitionRepository.GetAllAsync();
+        var nextId = allExercises.Any() ? allExercises.Max(e => e.Id) + 1 : 1;
+
         var exerciseDefinition = new ExerciseDefinition(
-            Guid.NewGuid(),
+            nextId,
             request.Name,
             request.Description,
             request.Type,
@@ -65,7 +69,7 @@ public class ExerciseDefinitionService(
         return MapToResponse(exerciseDefinition);
     }
 
-    public async Task<ExerciseResponse?> UpdateAsync(Guid id, UpdateExerciseRequest request)
+    public async Task<ExerciseResponse?> UpdateAsync(int id, UpdateExerciseRequest request)
     {
         var exerciseDefinition = await exerciseDefinitionRepository.GetByIdAsync(id);
         if (exerciseDefinition is null) return null;
@@ -90,7 +94,7 @@ public class ExerciseDefinitionService(
         }
     }
 
-    public async Task<bool> DeleteAsync(Guid id)
+    public async Task<bool> DeleteAsync(int id)
     {
         var exerciseDefinition = await exerciseDefinitionRepository.GetByIdAsync(id);
         if (exerciseDefinition is null || exerciseDefinition.IsSystemExercise) return false;

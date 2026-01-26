@@ -303,8 +303,8 @@ export const ProgrammeDetail: React.FC = () => {
   const [programme, setProgramme] = useState<Programme | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedWeek, setSelectedWeek] = useState(0);
-  const [draggedExercise, setDraggedExercise] = useState<string | null>(null);
-  const [dragOverExercise, setDragOverExercise] = useState<string | null>(null);
+  const [draggedExercise, setDraggedExercise] = useState<number | null>(null);
+  const [dragOverExercise, setDragOverExercise] = useState<number | null>(null);
 
   // Modal states
   const [showAddDayModal, setShowAddDayModal] = useState(false);
@@ -318,7 +318,7 @@ export const ProgrammeDetail: React.FC = () => {
     string | null
   >(null);
   const [selectedExercise, setSelectedExercise] = useState<any | null>(null);
-  const [selectedExercises, setSelectedExercises] = useState<Set<string>>(
+  const [selectedExercises, setSelectedExercises] = useState<Set<number>>(
     new Set()
   );
   const [showDropSetModal, setShowDropSetModal] = useState(false);
@@ -343,7 +343,7 @@ export const ProgrammeDetail: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<ExerciseSummary[]>([]);
   const [newExercise, setNewExercise] = useState({
-    exerciseId: "",
+    exerciseId: undefined as number | undefined,
     targetSets: 3,
     targetReps: 10,
     targetWeight: 0,
@@ -354,8 +354,8 @@ export const ProgrammeDetail: React.FC = () => {
   });
 
   const [editExercise, setEditExercise] = useState({
-    id: "",
-    exerciseId: "",
+    id: undefined as number | undefined,
+    exerciseId: undefined,
     targetSets: 3,
     targetReps: 10,
     targetWeight: 0,
@@ -367,7 +367,7 @@ export const ProgrammeDetail: React.FC = () => {
   });
 
   const [dropSetConfig, setDropSetConfig] = useState({
-    exerciseId: "",
+    exerciseId: undefined,
     startingWeight: 20,
     startingReps: 10,
     numberOfDrops: 2,
@@ -562,7 +562,7 @@ export const ProgrammeDetail: React.FC = () => {
     }
   };
 
-  const handleAddExercise = async (exerciseId: string) => {
+  const handleAddExercise = async (exerciseId: number) => {
     if (!selectedWorkoutDayId) return;
 
     try {
@@ -590,7 +590,7 @@ export const ProgrammeDetail: React.FC = () => {
       setSearchResults([]);
       // Reset form
       setNewExercise({
-        exerciseId: "",
+        exerciseId: undefined,
         targetSets: 3,
         targetReps: 10,
         targetWeight: 0,
@@ -655,11 +655,11 @@ export const ProgrammeDetail: React.FC = () => {
     }
   };
 
-  const handleDragStart = (exerciseId: string) => {
+  const handleDragStart = (exerciseId: number) => {
     setDraggedExercise(exerciseId);
   };
 
-  const handleDragOver = (e: React.DragEvent, exerciseId: string) => {
+  const handleDragOver = (e: React.DragEvent, exerciseId: number) => {
     e.preventDefault();
     setDragOverExercise(exerciseId);
   };
@@ -672,7 +672,7 @@ export const ProgrammeDetail: React.FC = () => {
   const handleDrop = async (
     e: React.DragEvent,
     workoutDayId: string,
-    targetExerciseId: string
+    targetExerciseId: number
   ) => {
     e.preventDefault();
 
@@ -718,7 +718,7 @@ export const ProgrammeDetail: React.FC = () => {
     }
   };
 
-  const handleRemoveExercise = async (workoutExerciseId: string) => {
+  const handleRemoveExercise = async (workoutExerciseId: number) => {
     try {
       await workoutsApi.removeExercise(workoutExerciseId);
       const response = await programmesApi.getById(programme!.id);
@@ -728,7 +728,7 @@ export const ProgrammeDetail: React.FC = () => {
     }
   };
 
-  const handleToggleExerciseSelection = (exerciseId: string) => {
+  const handleToggleExerciseSelection = (exerciseId: number) => {
     setSelectedExercises((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(exerciseId)) {

@@ -7,11 +7,13 @@ using trAInr.API.Middleware;
 using trAInr.Application.Interfaces;
 using trAInr.Application.Interfaces.Repositories;
 using trAInr.Application.Interfaces.Services;
+using trAInr.Application.Interfaces.Services.AI;
 using trAInr.Application.Services;
+using trAInr.Application.Services.AI;
+using trAInr.Infrastructure.Api;
 using trAInr.Infrastructure.Data;
 using trAInr.Infrastructure.Repositories;
 using trAInr.Infrastructure.Services;
-
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -79,6 +81,13 @@ builder.Services.AddScoped<IAssignedProgrammeService, AssignedProgrammeService>(
 builder.Services.AddScoped<IExerciseDefinitionService, ExerciseDefinitionService>();
 builder.Services.AddScoped<IWorkoutSessionService, WorkoutSessionService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
+builder.Services.AddScoped<IAiProgramGeneratorService, AiProgramGeneratorService>();
+
+// Register OpenAI client
+builder.Services.AddHttpClient<IOpenAiClient, OpenAiClient>(options =>
+{
+    options.Timeout = TimeSpan.FromMinutes(5);
+});
 
 // Configure CORS for frontend
 var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ?? new[] { "http://localhost:3000" };

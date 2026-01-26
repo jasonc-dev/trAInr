@@ -47,9 +47,9 @@ export interface CompleteWorkoutRequest {
 }
 
 export interface WorkoutExercise {
-  id: string;
+  id: number;
   workoutDayId: string;
-  exerciseId: string;
+  exerciseId: number;
   exerciseName: string;
   orderIndex: number;
   targetSets: number;
@@ -65,7 +65,7 @@ export interface WorkoutExercise {
 
 export interface WorkoutExerciseSummary {
   id: string;
-  exerciseId: string;
+  exerciseId: number;
   exerciseName: string;
   orderIndex: number;
   targetSets: number;
@@ -74,7 +74,7 @@ export interface WorkoutExerciseSummary {
 }
 
 export interface AddWorkoutExerciseRequest {
-  exerciseId: string;
+  exerciseId: number;
   orderIndex: number;
   targetSets: number;
   targetReps: number;
@@ -100,7 +100,7 @@ export interface UpdateWorkoutExerciseRequest {
 
 export interface ExerciseSet {
   id: string;
-  workoutExerciseId: string;
+  workoutExerciseId: number;
   setNumber: number;
   reps?: number;
   weight?: number;
@@ -140,7 +140,7 @@ export interface CompleteSetRequest {
 }
 
 export interface GroupSupersetRequest {
-  exerciseIds: string[];
+  exerciseIds: number[];
   supersetRestSeconds?: number;
 }
 
