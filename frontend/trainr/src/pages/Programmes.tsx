@@ -19,7 +19,7 @@ import {
   ProgressBar,
 } from "../components/styled";
 import { Navigation } from "../components/styled/Navigation";
-import { useUser, useProgrammes } from "../hooks";
+import { useUser, useProgrammes, useProgramGenerator, useAthletes } from "../hooks";
 import {
   CreateProgrammeRequest,
   ProgrammeSummary,
@@ -126,6 +126,62 @@ const EmptyState = styled.div`
   }
 `;
 
+const LoadingOverlay = styled.div`
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  border-radius: ${({ theme }) => theme.radii.md};
+`;
+
+const Spinner = styled.div`
+  width: 60px;
+  height: 60px;
+  border: 4px solid ${({ theme }) => theme.colors.surface};
+  border-top-color: ${({ theme }) => theme.colors.primary};
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+`;
+
+const UserInfoCard = styled.div`
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
+  border-radius: ${({ theme }) => theme.radii.md};
+  padding: ${({ theme }) => theme.spacing.lg};
+  margin-bottom: ${({ theme }) => theme.spacing.lg};
+`;
+
+const UserInfoRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: ${({ theme }) => theme.spacing.sm} 0;
+  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  .label {
+    color: ${({ theme }) => theme.colors.textSecondary};
+    font-size: ${({ theme }) => theme.fontSizes.sm};
+  }
+
+  .value {
+    color: ${({ theme }) => theme.colors.text};
+    font-weight: ${({ theme }) => theme.fontWeights.medium};
+  }
+`;
+
 const durationOptions = [
   { value: "4", label: "4 weeks" },
   { value: "5", label: "5 weeks" },
@@ -163,6 +219,7 @@ const startDateOptions = generateStartDateOptions();
 export const Programmes: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useUser();
+  const { currentAthlete, getAthlete } = useAthletes();
   const {
     programmes,
     preMadeProgrammes,
@@ -172,10 +229,12 @@ export const Programmes: React.FC = () => {
     cloneProgramme,
     loading,
   } = useProgrammes(user?.id);
+  const { generateProgram, loading: generating } = useProgramGenerator();
   const [activeTab, setActiveTab] = useState<"my" | "templates">("my");
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showCloneModal, setShowCloneModal] = useState(false);
+  const [showAiGenerateModal, setShowAiGenerateModal] = useState(false);
   const [selectedTemplate, setSelectedTemplate] =
     useState<ProgrammeSummary | null>(null);
   const [selectedProgramme, setSelectedProgramme] =
@@ -190,6 +249,11 @@ export const Programmes: React.FC = () => {
     name: "",
     description: "",
     isActive: false,
+  });
+  const [aiFormData, setAiFormData] = useState({
+    programName: "",
+    description: "",
+    durationWeeks: 6,
   });
   const [creating, setCreating] = useState(false);
   const [updating, setUpdating] = useState(false);
@@ -272,6 +336,61 @@ export const Programmes: React.FC = () => {
     } finally {
       setCloning(false);
     }
+  };
+
+  const handleOpenAiGenerate = () => {
+    getAthlete(user?.id || "");
+
+    setAiFormData({
+      programName: "",
+      description: "",
+      durationWeeks: 6,
+    });
+    setShowAiGenerateModal(true);
+  };
+
+  const handleGenerateAiProgram = async () => {
+    if (!user || !aiFormData.programName) return;
+
+    try {
+      const workoutDayNames = getWorkoutDayNames(currentAthlete?.workoutDaysPerWeek || 0);
+
+      await generateProgram({
+        programName: aiFormData.programName,
+        description: aiFormData.description,
+        durationWeeks: aiFormData.durationWeeks,
+        experienceLevel: currentAthlete?.fitnessLevel || 0,
+        workoutDayNames,
+      });
+
+      setShowAiGenerateModal(false);
+      setAiFormData({
+        programName: "",
+        description: "",
+        durationWeeks: 6,
+      });
+
+      // Refresh the programmes list to show the new AI-generated programme
+      // Since it's a template, it will show in the templates tab
+      window.location.reload();
+    } catch (err) {
+      console.error("Failed to generate AI program:", err);
+    }
+  };
+
+  const getWorkoutDayNames = (daysPerWeek: number): string[] => {
+    const allDays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+    return allDays.slice(0, daysPerWeek);
+  };
+
+  const getFitnessLevelLabel = (level: number): string => {
+    const labels = ["Beginner", "Intermediate", "Advanced", "Elite"];
+    return labels[level] || "Unknown";
+  };
+
+  const getFitnessGoalLabel = (goal: number): string => {
+    const labels = ["Build Muscle", "Lose Weight", "Improve Endurance", "Increase Strength", "General Fitness"];
+    return labels[goal] || "Unknown";
   };
 
   return (
@@ -448,6 +567,15 @@ export const Programmes: React.FC = () => {
           {/* Templates Tab */}
           {activeTab === "templates" && (
             <>
+              <Flex $justify="flex-Start" $gap="1rem" style={{ marginBottom: "1.5rem" }}>
+                <Button
+                  variant="secondary"
+                  onClick={handleOpenAiGenerate}
+                >
+                  🤖 Generate AI Program
+                </Button>
+              </Flex>
+
               {preMadeProgrammes.length === 0 ? (
                 <Card>
                   <EmptyState>
@@ -457,6 +585,9 @@ export const Programmes: React.FC = () => {
                       Pre-made programme templates will appear here when
                       available
                     </p>
+                    <Button onClick={handleOpenAiGenerate}>
+                      🤖 Generate AI Program
+                    </Button>
                   </EmptyState>
                 </Card>
               ) : (
@@ -706,6 +837,123 @@ export const Programmes: React.FC = () => {
                   </Button>
                   <Button onClick={handleConfirmClone} disabled={cloning}>
                     {cloning ? "Starting..." : "Start Programme"}
+                  </Button>
+                </Flex>
+              </Stack>
+            </ModalContent>
+          </Modal>
+        )}
+
+        {/* AI Program Generator Modal */}
+        {showAiGenerateModal && currentAthlete && (
+          <Modal onClick={!generating ? () => setShowAiGenerateModal(false) : undefined}>
+            <ModalContent onClick={(e) => e.stopPropagation()} style={{ position: "relative" }}>
+              {generating && (
+                <LoadingOverlay>
+                  <Spinner />
+                  <p style={{ marginTop: "1.5rem", color: "#A0AEC0" }}>
+                    Generating your AI program...
+                  </p>
+                  <p style={{ marginTop: "0.5rem", fontSize: "0.875rem", color: "#64748B" }}>
+                    This may take a minute
+                  </p>
+                </LoadingOverlay>
+              )}
+
+              <ModalTitle>Generate AI Program</ModalTitle>
+
+              <UserInfoCard>
+                <h4 style={{ marginBottom: "1rem", fontSize: "1rem" }}>
+                  Your Information
+                </h4>
+                <UserInfoRow>
+                  <span className="label">Fitness Level</span>
+                  <span className="value">{getFitnessLevelLabel(currentAthlete?.fitnessLevel || 0)}</span>
+                </UserInfoRow>
+                <UserInfoRow>
+                  <span className="label">Primary Goal</span>
+                  <span className="value">{getFitnessGoalLabel(currentAthlete?.primaryGoal || 0)}</span>
+                </UserInfoRow>
+                <UserInfoRow>
+                  <span className="label">Workout Days per Week</span>
+                  <span className="value">{currentAthlete?.workoutDaysPerWeek} days</span>
+                </UserInfoRow>
+              </UserInfoCard>
+
+              <Stack $gap="1.25rem">
+                <Input
+                  label="Program Name"
+                  placeholder="e.g., My AI Strength Program"
+                  value={aiFormData.programName}
+                  onChange={(e) =>
+                    setAiFormData({ ...aiFormData, programName: e.target.value })
+                  }
+                  disabled={generating}
+                />
+
+                <Select
+                  label="Duration"
+                  options={durationOptions}
+                  value={aiFormData.durationWeeks.toString()}
+                  onChange={(e) =>
+                    setAiFormData({
+                      ...aiFormData,
+                      durationWeeks: parseInt(e.target.value),
+                    })
+                  }
+                  disabled={generating}
+                />
+
+                <div>
+                  <label
+                    style={{
+                      display: "block",
+                      marginBottom: "0.5rem",
+                      fontSize: "0.875rem",
+                      color: "#A0AEC0",
+                    }}
+                  >
+                    Additional Requirements (Optional)
+                  </label>
+                  <textarea
+                    placeholder="e.g., Focus on compound movements, include cardio on rest days, avoid exercises that require a spotter..."
+                    value={aiFormData.description}
+                    onChange={(e) =>
+                      setAiFormData({ ...aiFormData, description: e.target.value })
+                    }
+                    disabled={generating}
+                    style={{
+                      width: "100%",
+                      minHeight: "120px",
+                      padding: "0.75rem",
+                      background: "#1E293B",
+                      border: "1px solid #2D3748",
+                      borderRadius: "0.5rem",
+                      color: "#E2E8F0",
+                      fontSize: "0.875rem",
+                      resize: "vertical",
+                      fontFamily: "inherit",
+                    }}
+                  />
+                </div>
+
+                <Flex
+                  $justify="flex-end"
+                  $gap="1rem"
+                  style={{ marginTop: "1rem" }}
+                >
+                  <Button
+                    variant="ghost"
+                    onClick={() => setShowAiGenerateModal(false)}
+                    disabled={generating}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleGenerateAiProgram}
+                    disabled={!aiFormData.programName || generating}
+                  >
+                    {generating ? "Generating..." : "Generate Program"}
                   </Button>
                 </Flex>
               </Stack>

@@ -111,7 +111,7 @@ public class DashboardService(
         return metrics;
     }
 
-    public async Task<IEnumerable<ExerciseMetrics>> GetExerciseMetricsAsync(Guid userId, Guid? exerciseId = null)
+    public async Task<IEnumerable<ExerciseMetrics>> GetExerciseMetricsAsync(Guid userId, int? exerciseId = null)
     {
         var workoutSessions = await workoutSessionRepository.GetByAthleteIdAsync(userId);
         var completedSessions = workoutSessions.Where(s => s.IsCompleted).ToList();

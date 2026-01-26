@@ -6,7 +6,7 @@ public interface IDashboardService
 {
     Task<DashboardResponse> GetDashboardAsync(Guid userId);
     Task<IEnumerable<WeeklyMetrics>> GetWeeklyProgressAsync(Guid programmeId);
-    Task<IEnumerable<ExerciseMetrics>> GetExerciseMetricsAsync(Guid userId, Guid? exerciseId = null);
+    Task<IEnumerable<ExerciseMetrics>> GetExerciseMetricsAsync(Guid userId, int? exerciseId = null);
     Task<OverallStats> GetOverallStatsAsync(Guid userId);
     Task<IEnumerable<IntensityTrend>> GetIntensityTrendsAsync(Guid programmeId);
     Task<IEnumerable<VolumeComparison>> GetVolumeComparisonAsync(Guid programmeId);

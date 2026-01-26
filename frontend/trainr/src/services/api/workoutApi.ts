@@ -28,7 +28,7 @@ export const workoutApi = {
 
   getWorkoutWeeks: (programmeId: string) =>
     apiClient.get<ProgrammeWeek[]>(
-      `/workoutsession/programme/${programmeId}/weeks`
+      `/workoutsession/programme/${programmeId}/weeks`,
     ),
 
   getWorkoutDays: (weekId: string) =>
@@ -50,29 +50,29 @@ export const workoutApi = {
   addExercise: (workoutDayId: string, request: AddWorkoutExerciseRequest) =>
     apiClient.post<WorkoutExercise>(
       `/workoutsession/days/${workoutDayId}/exercises`,
-      request
+      request,
     ),
 
-  updateExercise: (exerciseId: string, request: UpdateWorkoutExerciseRequest) =>
+  updateExercise: (exerciseId: number, request: UpdateWorkoutExerciseRequest) =>
     apiClient.put<WorkoutExercise>(
       `/workoutsession/exercises/${exerciseId}`,
-      request
+      request,
     ),
 
-  removeExercise: (exerciseId: string) =>
+  removeExercise: (exerciseId: number) =>
     apiClient.delete(`/workoutsession/exercises/${exerciseId}`),
 
-  reorderExercises: (workoutDayId: string, exerciseIds: string[]) =>
+  reorderExercises: (workoutDayId: string, exerciseIds: number[]) =>
     apiClient.put(
       `/workoutsession/days/${workoutDayId}/exercises/reorder`,
-      exerciseIds
+      exerciseIds,
     ),
 
   // Set operations
-  addSet: (workoutExerciseId: string, request: CreateExerciseSetRequest) =>
+  addSet: (workoutExerciseId: number, request: CreateExerciseSetRequest) =>
     apiClient.post<ExerciseSet>(
       `/workoutsession/exercises/${workoutExerciseId}/sets`,
-      request
+      request,
     ),
 
   updateSet: (setId: string, request: UpdateExerciseSetRequest) =>
@@ -81,7 +81,7 @@ export const workoutApi = {
   completeSet: (setId: string, request: CompleteSetRequest) =>
     apiClient.post<ExerciseSet>(
       `/workoutsession/sets/${setId}/complete`,
-      request
+      request,
     ),
 
   deleteSet: (setId: string) =>
@@ -91,7 +91,7 @@ export const workoutApi = {
   groupSuperset: (workoutDayId: string, request: GroupSupersetRequest) =>
     apiClient.put<WorkoutExercise[]>(
       `/workoutsession/days/${workoutDayId}/exercises/superset`,
-      request
+      request,
     ),
 
   ungroupSuperset: (supersetGroupId: string) =>
@@ -99,11 +99,11 @@ export const workoutApi = {
 
   // Drop set operations
   createDropSetSequence: (
-    workoutExerciseId: string,
-    request: CreateDropSetRequest
+    workoutExerciseId: number,
+    request: CreateDropSetRequest,
   ) =>
     apiClient.post<ExerciseSet[]>(
       `/workoutsession/exercises/${workoutExerciseId}/dropsets`,
-      request
+      request,
     ),
 };

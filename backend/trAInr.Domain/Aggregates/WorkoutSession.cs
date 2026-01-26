@@ -96,7 +96,7 @@ public class WorkoutSession
     ///     Adds an exercise instance to the session.
     /// </summary>
     public ExerciseInstance AddExerciseInstance(
-        Guid exerciseDefinitionId,
+        int exerciseDefinitionId,
         string exerciseName,
         int orderIndex,
         int targetSets,
@@ -173,7 +173,7 @@ public class ExerciseInstance
     public ExerciseInstance(
         Guid id,
         Guid workoutSessionId,
-        Guid exerciseDefinitionId,
+        int exerciseDefinitionId,
         string exerciseName,
         int orderIndex,
         int targetSets,
@@ -199,7 +199,7 @@ public class ExerciseInstance
 
     public Guid Id { get; }
     public Guid WorkoutSessionId { get; private set; }
-    public Guid ExerciseDefinitionId { get; private set; }
+    public int ExerciseDefinitionId { get; private set; }
     public string ExerciseName { get; private set; } = string.Empty;
     public int OrderIndex { get; private set; }
     public int TargetSets { get; private set; }

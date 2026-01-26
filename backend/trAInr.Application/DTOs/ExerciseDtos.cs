@@ -19,7 +19,7 @@ public record UpdateExerciseRequest(
     string? VideoUrl);
 
 public record ExerciseResponse(
-    Guid Id,
+    int Id,
     string Name,
     string Description,
     ExerciseType Type,
@@ -30,7 +30,7 @@ public record ExerciseResponse(
     bool IsSystemExercise);
 
 public record ExerciseSummaryResponse(
-    Guid Id,
+    int Id,
     string Name,
     ExerciseType Type,
     MuscleGroup PrimaryMuscleGroup,

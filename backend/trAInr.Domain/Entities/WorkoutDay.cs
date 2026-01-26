@@ -35,7 +35,7 @@ public class WorkoutDay
     }
 
     public WorkoutExercise AddExercise(
-        Guid exerciseId,
+        int exerciseDefinitionId,
         int orderIndex,
         int targetSets,
         int targetReps,
@@ -52,7 +52,7 @@ public class WorkoutDay
         {
             Id = Guid.NewGuid(),
             WorkoutDayId = Id,
-            ExerciseDefinitionId = exerciseId,
+            ExerciseDefinitionId = exerciseDefinitionId,
             OrderIndex = nextOrderIndex,
             Notes = notes,
             TargetSets = targetSets,

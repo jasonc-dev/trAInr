@@ -29,7 +29,7 @@ public record WeeklyMetrics(
 ///     Metrics for a specific exercise across the programme
 /// </summary>
 public record ExerciseMetrics(
-    Guid ExerciseId,
+    int ExerciseId,
     string ExerciseName,
     ExerciseType ExerciseType,
     decimal TotalVolume,

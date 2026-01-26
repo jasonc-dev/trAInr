@@ -14,7 +14,7 @@ import {
 export const exerciseApi = {
   getAll: () => apiClient.get<Exercise[]>("/exercisedefinition"),
 
-  getById: (id: string) => apiClient.get<Exercise>(`/exercisedefinition/${id}`),
+  getById: (id: number) => apiClient.get<Exercise>(`/exercisedefinition/${id}`),
 
   search: (query?: string, type?: ExerciseType, muscleGroup?: MuscleGroup) => {
     const params = new URLSearchParams();
@@ -23,7 +23,7 @@ export const exerciseApi = {
     if (muscleGroup !== undefined)
       params.append("muscleGroup", muscleGroup.toString());
     return apiClient.get<ExerciseSummary[]>(
-      `/exercisedefinition/search?${params.toString()}`
+      `/exercisedefinition/search?${params.toString()}`,
     );
   },
 
@@ -32,6 +32,6 @@ export const exerciseApi = {
 
   getByMuscleGroup: (muscleGroup: MuscleGroup) =>
     apiClient.get<ExerciseSummary[]>(
-      `/exercisedefinition/muscle-group/${muscleGroup}`
+      `/exercisedefinition/muscle-group/${muscleGroup}`,
     ),
 };

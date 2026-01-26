@@ -3,7 +3,7 @@
  * Types related to dashboard analytics and metrics
  */
 
-import { ProgrammeSummary } from './programme';
+import { ProgrammeSummary } from "./programme";
 
 export interface Dashboard {
   athleteId: string;
@@ -27,7 +27,7 @@ export interface WeeklyMetrics {
 }
 
 export interface ExerciseMetrics {
-  exerciseId: string;
+  exerciseId: number;
   exerciseName: string;
   totalSets: number;
   totalReps: number;

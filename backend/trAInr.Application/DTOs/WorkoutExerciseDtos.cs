@@ -1,7 +1,7 @@
 namespace trAInr.Application.DTOs;
 
 public record AddWorkoutExerciseRequest(
-    Guid ExerciseId,
+    int ExerciseId,
     int OrderIndex,
     string? Notes,
     int TargetSets,
@@ -29,7 +29,7 @@ public record UpdateWorkoutExerciseRequest(
 
 public record WorkoutExerciseResponse(
     Guid Id,
-    Guid ExerciseId,
+    int ExerciseId,
     string ExerciseName,
     int OrderIndex,
     string? Notes,

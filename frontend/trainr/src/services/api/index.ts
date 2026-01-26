@@ -10,6 +10,7 @@ export { programmeApi } from "./programmeApi";
 export { workoutApi } from "./workoutApi";
 export { exerciseApi } from "./exerciseApi";
 export { dashboardApi } from "./dashboardApi";
+export { programGeneratorApi } from "./programGeneratorApi";
 
 // Aliases for backwards compatibility
 export { programmeApi as programmesApi } from "./programmeApi";

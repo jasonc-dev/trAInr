@@ -6,7 +6,7 @@
 import { ExerciseType, MuscleGroup } from "./enums";
 
 export interface Exercise {
-  id: string;
+  id: number;
   name: string;
   description: string;
   instructions?: string;
@@ -19,7 +19,7 @@ export interface Exercise {
 }
 
 export interface ExerciseSummary {
-  id: string;
+  id: number;
   name: string;
   type: ExerciseType;
   primaryMuscleGroup: MuscleGroup;

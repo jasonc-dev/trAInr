@@ -39,32 +39,32 @@ export const useDashboard = (athleteId: string | undefined) => {
   }, [loadDashboard]);
 
   const getWeeklyProgress = async (
-    programmeId: string
+    programmeId: string,
   ): Promise<WeeklyMetrics[]> => {
     const response = await dashboardApi.getWeeklyProgress(programmeId);
     return response.data;
   };
 
   const getExerciseMetrics = async (
-    exerciseId?: string
+    exerciseId?: number,
   ): Promise<ExerciseMetrics[]> => {
     if (!athleteId) throw new Error("Athlete not authenticated");
     const response = await dashboardApi.getExerciseMetrics(
       athleteId,
-      exerciseId
+      exerciseId,
     );
     return response.data;
   };
 
   const getVolumeComparison = async (
-    programmeId: string
+    programmeId: string,
   ): Promise<VolumeComparison[]> => {
     const response = await dashboardApi.getVolumeComparison(programmeId);
     return response.data;
   };
 
   const getIntensityTrends = async (
-    programmeId: string
+    programmeId: string,
   ): Promise<IntensityTrend[]> => {
     const response = await dashboardApi.getIntensityTrends(programmeId);
     return response.data;
