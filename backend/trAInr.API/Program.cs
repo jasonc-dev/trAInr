@@ -72,6 +72,7 @@ builder.Services.AddScoped<IExerciseDefinitionRepository, ExerciseDefinitionRepo
 builder.Services.AddScoped<IAssignedProgramRepository, AssignedProgramRepository>();
 builder.Services.AddScoped<IProgramTemplateRepository, ProgramTemplateRepository>();
 builder.Services.AddScoped<IWorkoutSessionRepository, WorkoutSessionRepository>();
+builder.Services.AddScoped<IJobRepository, JobRepository>();
 
 // Register Application services
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
@@ -82,6 +83,8 @@ builder.Services.AddScoped<IExerciseDefinitionService, ExerciseDefinitionService
 builder.Services.AddScoped<IWorkoutSessionService, WorkoutSessionService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<IAiProgramGeneratorService, AiProgramGeneratorService>();
+
+builder.Services.AddHostedService<AiProgramGenerationService>();
 
 // Register OpenAI client
 builder.Services.AddHttpClient<IOpenAiClient, OpenAiClient>(options =>
