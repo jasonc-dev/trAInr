@@ -44,6 +44,7 @@ public class TrainrDbContext(DbContextOptions<TrainrDbContext> options) : DbCont
     public DbSet<ProgramTemplateWorkoutExercise> ProgramTemplateWorkoutExercises => Set<ProgramTemplateWorkoutExercise>();
     public DbSet<ExerciseSet> ExerciseSets => Set<ExerciseSet>();
     public DbSet<Exercise> Exercises => Set<Exercise>();
+    public DbSet<AiGenerationJob> AiGenerationJobs => Set<AiGenerationJob>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -66,6 +67,7 @@ public class TrainrDbContext(DbContextOptions<TrainrDbContext> options) : DbCont
         ConfigureProgramTemplateWorkoutExercise(modelBuilder);
         ConfigureExerciseSet(modelBuilder);
         ConfigureExercise(modelBuilder);
+        ConfigureAiGenerationJob(modelBuilder);
     }
 
     private static void ConfigureAthlete(ModelBuilder modelBuilder)
@@ -355,6 +357,22 @@ public class TrainrDbContext(DbContextOptions<TrainrDbContext> options) : DbCont
                 .WithMany()
                 .HasForeignKey(ptwe => ptwe.ExerciseDefinitionId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+    }
+
+    private static void ConfigureAiGenerationJob(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<AiGenerationJob>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Status).HasMaxLength(20).IsRequired();
+            entity.Property(e => e.RequestData).IsRequired();
+            entity.Property(e => e.ErrorMessage).HasMaxLength(2000);
+            entity.HasIndex(e => e.Status);
+            entity.HasIndex(e => e.CreatedAt);
+            entity.Property(e => e.CreatedAt).HasColumnType("timestamp with time zone");
+            entity.Property(e => e.UpdatedAt).HasColumnType("timestamp with time zone");
+            entity.Property(e => e.CompletedAt).HasColumnType("timestamp with time zone");
         });
     }
 }

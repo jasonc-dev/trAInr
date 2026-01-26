@@ -25,7 +25,25 @@ export interface ProgramTemplateResponse {
   weeks: any[];
 }
 
+export interface JobResponse {
+  jobId: string;
+  status: string;
+  createdAt: string;
+}
+
+export interface JobStatusResponse {
+  jobId: string;
+  status: string; // "Pending" | "Processing" | "Completed" | "Failed"
+  result?: ProgramTemplateResponse;
+  errorMessage?: string;
+  createdAt: string;
+  completedAt?: string;
+}
+
 export const programGeneratorApi = {
   generateProgram: (request: GenerateProgramRequest) =>
-    apiClient.post<ProgramTemplateResponse>("/programgenerator", request),
+    apiClient.post<JobResponse>("/programgenerator", request),
+  
+  getJobStatus: (jobId: string) =>
+    apiClient.get<JobStatusResponse>(`/programgenerator/jobs/${jobId}`),
 };

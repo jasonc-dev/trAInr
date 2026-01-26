@@ -32,17 +32,17 @@ public class AiProgramGeneratorService : IAiProgramGeneratorService
     public async Task<ProgramTemplateResponse> GenerateProgramAsync(GenerateProgamRequest request, CancellationToken cancellationToken = default)
     {
         // 1. Get all available exercise definitions from DB
-        var availableExercises = await _exerciseDefinitionRepository.GetAllAsync(cancellationToken);
+        var filteredExerciseDefinitions = (await _exerciseDefinitionRepository.GetAllAsync(cancellationToken))
+            .Where(e => e.LevelOfDifficulty <= (LevelOfDifficulty)request.ExperienceLevel && e.Type != ExerciseType.Flexibility)
+            .ToList();
 
-        var exerciseDefinitions = availableExercises as ExerciseDefinition[] ?? [.. availableExercises];
-
-        if (!exerciseDefinitions.Any())
+        if (!filteredExerciseDefinitions.Any())
         {
             throw new InvalidOperationException("No exercise definitions found.");
         }
 
         // 2. Build AI prompt with available exercise definitions
-        var prompt = BuildPrompt(request, exerciseDefinitions);
+        var prompt = BuildPrompt(request, filteredExerciseDefinitions);
 
         // 3. Call OpenAI API to generate program
         var aiResponse = await _openAiClient.GenerateProgramTemplate(prompt, cancellationToken);
@@ -51,7 +51,7 @@ public class AiProgramGeneratorService : IAiProgramGeneratorService
         var programStructure = ParseAiResponse(aiResponse);
 
         // 5. Validate that all exercise IDs exist in our DB
-        ValidateExerciseIds(programStructure, exerciseDefinitions);
+        ValidateExerciseIds(programStructure, filteredExerciseDefinitions);
 
         // 6. Create ProgramTemplate entity
         var programTemplate = BuildProgramTemplate(request, programStructure);
@@ -116,7 +116,7 @@ RESPONSE FORMAT (JSON):
               ""orderIndex"": 1,
               ""targetSets"": 4,
               ""targetReps"": 8,
-              ""targetWeight"": null,
+              ""targetWeight"": 50,
               ""restSeconds"": 120,
               ""targetRpe"": 7,
               ""supersetGroupId"": null,

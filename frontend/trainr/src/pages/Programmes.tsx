@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import {
@@ -28,6 +28,7 @@ import {
 import { PageTitle } from "../components/styled/PageTitle";
 import { PageSubtitle } from "../components/styled/PageSubtitle";
 import { PageHeader } from "../components";
+import { programGeneratorApi } from "../services/api/programGeneratorApi";
 
 const TabContainer = styled.div`
   display: flex;
@@ -80,6 +81,34 @@ const TemplateCard = styled(Card)`
       ${({ theme }) => theme.colors.primary} 0%,
       ${({ theme }) => theme.colors.accent} 100%
     );
+  }
+`;
+
+const GeneratingCard = styled(Card)`
+  position: relative;
+  overflow: hidden;
+  border: 2px dashed ${({ theme }) => theme.colors.primary};
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(
+      90deg,
+      ${({ theme }) => theme.colors.primary} 0%,
+      ${({ theme }) => theme.colors.accent} 100%
+    );
+    animation: shimmer 2s infinite;
+  }
+
+  @keyframes shimmer {
+    0% { opacity: 0.5; }
+    50% { opacity: 1; }
+    100% { opacity: 0.5; }
   }
 `;
 
@@ -229,7 +258,7 @@ export const Programmes: React.FC = () => {
     cloneProgramme,
     loading,
   } = useProgrammes(user?.id);
-  const { generateProgram, loading: generating } = useProgramGenerator();
+  const { loading: generating } = useProgramGenerator();
   const [activeTab, setActiveTab] = useState<"my" | "templates">("my");
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -259,6 +288,12 @@ export const Programmes: React.FC = () => {
   const [updating, setUpdating] = useState(false);
   const [cloning, setCloning] = useState(false);
   const [startDate, setStartDate] = useState<string>("");
+  const [generatingJobs, setGeneratingJobs] = useState<Array<{
+    jobId: string;
+    programName: string;
+    durationWeeks: number;
+    status: string;
+  }>>([]);
 
   const handleCreateProgramme = async () => {
     try {
@@ -355,7 +390,7 @@ export const Programmes: React.FC = () => {
     try {
       const workoutDayNames = getWorkoutDayNames(currentAthlete?.workoutDaysPerWeek || 0);
 
-      await generateProgram({
+      const response = await programGeneratorApi.generateProgram({
         programName: aiFormData.programName,
         description: aiFormData.description,
         durationWeeks: aiFormData.durationWeeks,
@@ -363,6 +398,21 @@ export const Programmes: React.FC = () => {
         workoutDayNames,
       });
 
+      // Store the job in localStorage and state
+      const job = {
+        jobId: response.data.jobId,
+        programName: aiFormData.programName,
+        durationWeeks: aiFormData.durationWeeks,
+        status: response.data.status,
+      };
+
+      const existingJobs = JSON.parse(localStorage.getItem("generatingJobs") || "[]");
+      existingJobs.push(job);
+      localStorage.setItem("generatingJobs", JSON.stringify(existingJobs));
+
+      setGeneratingJobs([...generatingJobs, job]);
+
+      // Close modal immediately
       setShowAiGenerateModal(false);
       setAiFormData({
         programName: "",
@@ -370,9 +420,8 @@ export const Programmes: React.FC = () => {
         durationWeeks: 6,
       });
 
-      // Refresh the programmes list to show the new AI-generated programme
-      // Since it's a template, it will show in the templates tab
-      window.location.reload();
+      // Switch to templates tab to show the generating placeholder
+      setActiveTab("templates");
     } catch (err) {
       console.error("Failed to generate AI program:", err);
     }
@@ -392,6 +441,50 @@ export const Programmes: React.FC = () => {
     const labels = ["Build Muscle", "Lose Weight", "Improve Endurance", "Increase Strength", "General Fitness"];
     return labels[goal] || "Unknown";
   };
+
+  // Check job statuses on mount and update
+  useEffect(() => {
+    const checkJobStatuses = async () => {
+      const storedJobs = JSON.parse(localStorage.getItem("generatingJobs") || "[]");
+      
+      if (storedJobs.length === 0) {
+        setGeneratingJobs([]);
+        return;
+      }
+
+      const updatedJobs = [];
+      
+      for (const job of storedJobs) {
+        try {
+          const response = await programGeneratorApi.getJobStatus(job.jobId);
+          const status = response.data.status;
+
+          // If completed or failed, remove from localStorage
+          if (status === "Completed" || status === "Failed") {
+            // Job is done, refresh programmes to show new template
+            if (status === "Completed") {
+              window.location.reload();
+            }
+          } else {
+            // Still pending or processing, keep it
+            updatedJobs.push({
+              ...job,
+              status,
+            });
+          }
+        } catch (err) {
+          console.error(`Failed to check status for job ${job.jobId}:`, err);
+          // Keep the job in the list if we can't check status
+          updatedJobs.push(job);
+        }
+      }
+
+      setGeneratingJobs(updatedJobs);
+      localStorage.setItem("generatingJobs", JSON.stringify(updatedJobs));
+    };
+
+    checkJobStatuses();
+  }, []);
 
   return (
     <>
@@ -576,7 +669,7 @@ export const Programmes: React.FC = () => {
                 </Button>
               </Flex>
 
-              {preMadeProgrammes.length === 0 ? (
+              {preMadeProgrammes.length === 0 && generatingJobs.length === 0 ? (
                 <Card>
                   <EmptyState>
                     <div className="icon">📚</div>
@@ -592,6 +685,66 @@ export const Programmes: React.FC = () => {
                 </Card>
               ) : (
                 <Grid $columns={3} $gap="1.5rem">
+                  {/* Generating job placeholders */}
+                  {generatingJobs.map((job) => (
+                    <GeneratingCard key={job.jobId}>
+                      <CardHeader>
+                        <div>
+                          <CardTitle>{job.programName}</CardTitle>
+                          <Badge
+                            $variant="warning"
+                            style={{ marginTop: "0.5rem" }}
+                          >
+                            {job.status === "Pending" ? "🔄 Queued" : "⚙️ Generating..."}
+                          </Badge>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <p
+                          style={{
+                            color: "#A0AEC0",
+                            fontSize: "0.875rem",
+                            marginBottom: "1rem",
+                            minHeight: "2.5rem",
+                          }}
+                        >
+                          AI is generating your custom program...
+                        </p>
+                        <Stack $gap="0.5rem">
+                          <Flex
+                            $justify="space-between"
+                            style={{ fontSize: "0.875rem" }}
+                          >
+                            <span style={{ color: "#64748B" }}>Duration</span>
+                            <span>{job.durationWeeks} weeks</span>
+                          </Flex>
+                          <Flex
+                            $justify="space-between"
+                            style={{ fontSize: "0.875rem" }}
+                          >
+                            <span style={{ color: "#64748B" }}>Status</span>
+                            <span style={{ color: "#00CFC1" }}>
+                              {job.status === "Pending" ? "Queued" : "Processing"}
+                            </span>
+                          </Flex>
+                        </Stack>
+                        <div style={{ marginTop: "1rem", fontSize: "0.75rem", color: "#64748B", fontStyle: "italic" }}>
+                          Refresh the page to check if generation is complete
+                        </div>
+                      </CardContent>
+                      <CardFooter>
+                        <Button
+                          variant="ghost"
+                          fullWidth
+                          onClick={() => window.location.reload()}
+                        >
+                          🔄 Refresh Status
+                        </Button>
+                      </CardFooter>
+                    </GeneratingCard>
+                  ))}
+
+                  {/* Existing templates */}
                   {preMadeProgrammes.map((template) => (
                     <TemplateCard key={template.id} $interactive>
                       <CardHeader>
