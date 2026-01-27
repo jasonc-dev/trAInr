@@ -230,8 +230,7 @@ namespace trAInr.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("CreatedBy")
-                        .HasColumnType("uuid")
-                        .IsRequired(false);
+                        .HasColumnType("uuid");
 
                     b.Property<bool>("IsUserGenerated")
                         .HasColumnType("boolean");
