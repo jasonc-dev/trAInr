@@ -19,13 +19,6 @@ namespace trAInr.Infrastructure.Migrations
                 nullable: true,
                 defaultValue: null);
 
-            migrationBuilder.AddColumn<bool>(
-                name: "IsUserGenerated",
-                table: "ProgramTemplates",
-                type: "boolean",
-                nullable: false,
-                defaultValue: false);
-
             migrationBuilder.AddColumn<Guid>(
                 name: "CreatedBy",
                 table: "AiGenerationJobs",
