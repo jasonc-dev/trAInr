@@ -21,8 +21,11 @@ export const useProgrammes = (athleteId: string | undefined) => {
   const [preMadeProgrammes, setPreMadeProgrammes] = useState<
     ProgrammeSummary[]
   >([]);
+  const [createdProgrammes, setCreatedProgrammes] = useState<
+    ProgrammeSummary[]
+  >([]);
   const [activeProgramme, setActiveProgramme] = useState<Programme | null>(
-    null
+    null,
   );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -50,7 +53,7 @@ export const useProgrammes = (athleteId: string | undefined) => {
       const summaryResponse = await programmeApi.getActiveByAthlete(athleteId);
       if (summaryResponse.data) {
         const fullResponse = await programmeApi.getById(
-          summaryResponse.data.id
+          summaryResponse.data.id,
         );
         setActiveProgramme(fullResponse.data);
       }
@@ -68,11 +71,27 @@ export const useProgrammes = (athleteId: string | undefined) => {
     }
   }, []);
 
+  const loadCreatedProgrammes = useCallback(async () => {
+    if (!athleteId) return;
+    try {
+      const response = await programmeApi.getCreatedByAthlete(athleteId);
+      setCreatedProgrammes(response.data);
+    } catch (err) {
+      console.error("Failed to load created programmes:", err);
+    }
+  }, [athleteId]);
+
   useEffect(() => {
     loadProgrammes();
     loadActiveProgramme();
     loadPreMadeProgrammes();
-  }, [loadProgrammes, loadActiveProgramme, loadPreMadeProgrammes]);
+    loadCreatedProgrammes();
+  }, [
+    loadProgrammes,
+    loadActiveProgramme,
+    loadPreMadeProgrammes,
+    loadCreatedProgrammes,
+  ]);
 
   const getProgramme = useCallback(async (id: string): Promise<Programme> => {
     const response = await programmeApi.getById(id);
@@ -97,7 +116,7 @@ export const useProgrammes = (athleteId: string | undefined) => {
         setLoading(false);
       }
     },
-    [athleteId, loadProgrammes]
+    [athleteId, loadProgrammes],
   );
 
   const updateProgramme = useCallback(
@@ -118,7 +137,7 @@ export const useProgrammes = (athleteId: string | undefined) => {
         setLoading(false);
       }
     },
-    [loadProgrammes, activeProgramme?.id]
+    [loadProgrammes, activeProgramme?.id],
   );
 
   const deleteProgramme = useCallback(
@@ -135,11 +154,14 @@ export const useProgrammes = (athleteId: string | undefined) => {
         throw new Error(message);
       }
     },
-    [loadProgrammes, activeProgramme?.id]
+    [loadProgrammes, activeProgramme?.id],
   );
 
   const cloneProgramme = useCallback(
-    async (programmeId: string, request: CloneProgrammeRequest): Promise<Programme> => {
+    async (
+      programmeId: string,
+      request: CloneProgrammeRequest,
+    ): Promise<Programme> => {
       if (!athleteId) throw new Error("Athlete not authenticated");
 
       try {
@@ -156,13 +178,13 @@ export const useProgrammes = (athleteId: string | undefined) => {
         setLoading(false);
       }
     },
-    [athleteId, loadProgrammes]
+    [athleteId, loadProgrammes],
   );
 
   const addWeek = useCallback(
     async (
       programmeId: string,
-      request: CreateProgrammeWeekRequest
+      request: CreateProgrammeWeekRequest,
     ): Promise<ProgrammeWeek> => {
       try {
         const response = await programmeApi.addWeek(programmeId, request);
@@ -176,13 +198,13 @@ export const useProgrammes = (athleteId: string | undefined) => {
         throw new Error(message);
       }
     },
-    [activeProgramme?.id, loadActiveProgramme]
+    [activeProgramme?.id, loadActiveProgramme],
   );
 
   const updateWeek = useCallback(
     async (
       weekId: string,
-      request: UpdateProgrammeWeekRequest
+      request: UpdateProgrammeWeekRequest,
     ): Promise<ProgrammeWeek> => {
       try {
         const response = await programmeApi.updateWeek(weekId, request);
@@ -196,14 +218,14 @@ export const useProgrammes = (athleteId: string | undefined) => {
         throw new Error(message);
       }
     },
-    [activeProgramme, loadActiveProgramme]
+    [activeProgramme, loadActiveProgramme],
   );
 
   const completeWeek = useCallback(
     async (weekId: string): Promise<ProgrammeWeek> => {
       return updateWeek(weekId, { isCompleted: true });
     },
-    [updateWeek]
+    [updateWeek],
   );
 
   const clearError = useCallback(() => {
@@ -214,6 +236,7 @@ export const useProgrammes = (athleteId: string | undefined) => {
     programmes,
     preMadeProgrammes,
     activeProgramme,
+    createdProgrammes,
     loading,
     error,
     createProgramme,
@@ -227,6 +250,7 @@ export const useProgrammes = (athleteId: string | undefined) => {
     refresh: loadProgrammes,
     refreshActive: loadActiveProgramme,
     refreshPreMade: loadPreMadeProgrammes,
+    refreshCreated: loadCreatedProgrammes,
     clearError,
   };
 };

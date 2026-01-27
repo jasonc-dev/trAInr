@@ -31,6 +31,18 @@ public class AssignedProgrammeController(IAssignedProgrammeService assignedProgr
     }
 
     /// <summary>
+    ///     Get all programmes created by an athlete
+    /// </summary>
+    [HttpGet("athlete/{athleteId:guid}/created")]
+    public async Task<ActionResult<IEnumerable<ProgrammeSummaryResponse>>> GetCreatedByAthlete(Guid athleteId)
+    {
+        if (!await athleteService.ExistsAsync(athleteId)) return NotFound("Athlete not found");
+
+        var programmes = await assignedProgramService.GetProgrammesCreatedByAthleteAsync(athleteId);
+        return Ok(programmes);
+    }
+
+    /// <summary>
     ///     Get the active assigned programme for an athlete
     /// </summary>
     [HttpGet("athlete/{athleteId:guid}/active")]

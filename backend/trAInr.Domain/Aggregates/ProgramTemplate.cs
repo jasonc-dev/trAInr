@@ -21,7 +21,9 @@ public class ProgramTemplate
         string name,
         string description,
         int durationWeeks,
-        ExperienceLevel experienceLevel)
+        ExperienceLevel experienceLevel,
+        Guid createdBy,
+        bool isUserGenerated)
     {
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Program template name cannot be empty", nameof(name));
@@ -36,6 +38,8 @@ public class ProgramTemplate
         IsActive = true;
         CreatedAt = DateTime.UtcNow;
         UpdatedAt = DateTime.UtcNow;
+        CreatedBy = createdBy;
+        IsUserGenerated = isUserGenerated;
     }
 
     public Guid Id { get; }
@@ -44,6 +48,8 @@ public class ProgramTemplate
     public int DurationWeeks { get; private set; }
     public ExperienceLevel ExperienceLevel { get; private set; }
     public bool IsActive { get; private set; }
+    public Guid CreatedBy { get; private set; }
+    public bool IsUserGenerated { get; private set; }
     public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; private set; } = DateTime.UtcNow;
 

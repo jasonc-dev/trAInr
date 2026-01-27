@@ -56,7 +56,7 @@ public class AssignedProgrammeService(
         // Automatically create weeks based on durationWeeks
         for (int weekNumber = 1; weekNumber <= request.DurationWeeks; weekNumber++)
         {
-            assignedProgram.AddWeek(weekNumber, null);
+            assignedProgram.AddWeek(weekNumber);
         }
 
         await assignedProgramRepository.AddAsync(assignedProgram);
@@ -138,6 +138,12 @@ public class AssignedProgrammeService(
         return programTemplates.Select(MapTemplateToSummary);
     }
 
+    public async Task<IEnumerable<ProgrammeSummaryResponse>> GetProgrammesCreatedByAthleteAsync(Guid athleteId)
+    {
+        var programTemplates = await programTemplateRepository.GetProgrammesCreatedByAthleteAsync(athleteId);
+        return programTemplates.Select(MapTemplateToSummary);
+    }
+
     public async Task<ProgrammeResponse?> CloneProgrammeAsync(Guid programmeId, CloneProgrammeRequest request)
     {
         var programmeTemplate = await programTemplateRepository.GetByIdAsync(programmeId);
@@ -167,10 +173,10 @@ public class AssignedProgrammeService(
             DateOnly weekStartDate = request.StartDate.AddDays((sourceWeek.WeekNumber - 1) * 7);
             ProgrammeWeek clonedWeek = clonedAssignedProgram.AddWeek(sourceWeek.WeekNumber, sourceWeek.Notes);
             clonedWeek.WeekStartDate = weekStartDate;
-            clonedWeek.IsCompleted = false; 
-            
+            clonedWeek.IsCompleted = false;
+
             await assignedProgramRepository.AddProgrammeWeekAsync(clonedWeek);
-            
+
             var exerciseDays = sourceWeek.WorkoutDays.Where(wd => !wd.IsRestDay).OrderBy(wd => wd.Name).ToList();
 
             foreach (ProgramTemplateWorkoutDay sourceWorkoutDay in sourceWeek.WorkoutDays.OrderBy(wd => wd.Name))
@@ -541,7 +547,7 @@ public class AssignedProgrammeService(
             progressPercentage);
     }
 
-    private static ProgrammeSummaryResponse MapTemplateToSummary(Domain.Aggregates.ProgramTemplate programTemplate)
+    private static ProgrammeSummaryResponse MapTemplateToSummary(ProgramTemplate programTemplate)
     {
         return new ProgrammeSummaryResponse(
             programTemplate.Id,

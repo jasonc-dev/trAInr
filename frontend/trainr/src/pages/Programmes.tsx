@@ -29,6 +29,7 @@ import { PageTitle } from "../components/styled/PageTitle";
 import { PageSubtitle } from "../components/styled/PageSubtitle";
 import { PageHeader } from "../components";
 import { programGeneratorApi } from "../services/api/programGeneratorApi";
+import { DURATION_OPTIONS, getFitnessGoalLabel, getFitnessLevelLabel, getWorkoutDayNames } from "../utils";
 
 const TabContainer = styled.div`
   display: flex;
@@ -211,16 +212,6 @@ const UserInfoRow = styled.div`
   }
 `;
 
-const durationOptions = [
-  { value: "4", label: "4 weeks" },
-  { value: "5", label: "5 weeks" },
-  { value: "6", label: "6 weeks" },
-  { value: "7", label: "7 weeks" },
-  { value: "8", label: "8 weeks" },
-  { value: "9", label: "9 weeks" },
-  { value: "10", label: "10 weeks" },
-];
-
 const generateStartDateOptions = () => {
   const options = [];
   const today = new Date();
@@ -252,6 +243,7 @@ export const Programmes: React.FC = () => {
   const {
     programmes,
     preMadeProgrammes,
+    createdProgrammes,
     createProgramme,
     updateProgramme,
     deleteProgramme,
@@ -259,7 +251,7 @@ export const Programmes: React.FC = () => {
     loading,
   } = useProgrammes(user?.id);
   const { loading: generating } = useProgramGenerator();
-  const [activeTab, setActiveTab] = useState<"my" | "templates">("my");
+  const [activeTab, setActiveTab] = useState<"my" | "templates" | "created">("my");
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showCloneModal, setShowCloneModal] = useState(false);
@@ -396,6 +388,7 @@ export const Programmes: React.FC = () => {
         durationWeeks: aiFormData.durationWeeks,
         experienceLevel: currentAthlete?.fitnessLevel || 0,
         workoutDayNames,
+        createdBy: currentAthlete?.id || "",
       });
 
       // Store the job in localStorage and state
@@ -427,33 +420,18 @@ export const Programmes: React.FC = () => {
     }
   };
 
-  const getWorkoutDayNames = (daysPerWeek: number): string[] => {
-    const allDays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-    return allDays.slice(0, daysPerWeek);
-  };
-
-  const getFitnessLevelLabel = (level: number): string => {
-    const labels = ["Beginner", "Intermediate", "Advanced", "Elite"];
-    return labels[level] || "Unknown";
-  };
-
-  const getFitnessGoalLabel = (goal: number): string => {
-    const labels = ["Build Muscle", "Lose Weight", "Improve Endurance", "Increase Strength", "General Fitness"];
-    return labels[goal] || "Unknown";
-  };
-
   // Check job statuses on mount and update
   useEffect(() => {
     const checkJobStatuses = async () => {
       const storedJobs = JSON.parse(localStorage.getItem("generatingJobs") || "[]");
-      
+
       if (storedJobs.length === 0) {
         setGeneratingJobs([]);
         return;
       }
 
       const updatedJobs = [];
-      
+
       for (const job of storedJobs) {
         try {
           const response = await programGeneratorApi.getJobStatus(job.jobId);
@@ -511,6 +489,17 @@ export const Programmes: React.FC = () => {
               My Programmes
             </Tab>
             <Tab
+              $active={activeTab === "created"}
+              onClick={() => setActiveTab("created")}
+            >
+              Your templates
+              {createdProgrammes.length > 0 && (
+                <Badge $variant="primary" style={{ marginLeft: "0.5rem" }}>
+                  {createdProgrammes.length}
+                </Badge>
+              )}
+            </Tab>
+            <Tab
               $active={activeTab === "templates"}
               onClick={() => setActiveTab("templates")}
             >
@@ -546,9 +535,17 @@ export const Programmes: React.FC = () => {
                       <Button onClick={() => setShowCreateModal(true)}>
                         Create Programme
                       </Button>
-                      {preMadeProgrammes.length > 0 && (
+                      {createdProgrammes.length > 0 && (
                         <Button
                           variant="secondary"
+                          onClick={() => setActiveTab("created")}
+                        >
+                          Generate AI Program
+                        </Button>
+                      )}
+                      {preMadeProgrammes.length > 0 && (
+                        <Button
+                          variant="ghost"
                           onClick={() => setActiveTab("templates")}
                         >
                           Browse Templates
@@ -657,8 +654,8 @@ export const Programmes: React.FC = () => {
             </>
           )}
 
-          {/* Templates Tab */}
-          {activeTab === "templates" && (
+          {/* Your templates Tab */}
+          {activeTab === "created" && (
             <>
               <Flex $justify="flex-Start" $gap="1rem" style={{ marginBottom: "1.5rem" }}>
                 <Button
@@ -669,13 +666,13 @@ export const Programmes: React.FC = () => {
                 </Button>
               </Flex>
 
-              {preMadeProgrammes.length === 0 && generatingJobs.length === 0 ? (
+              {createdProgrammes.length === 0 && generatingJobs.length === 0 ? (
                 <Card>
                   <EmptyState>
                     <div className="icon">📚</div>
-                    <h3>No Templates Available</h3>
+                    <h3>No Created Templates Available</h3>
                     <p>
-                      Pre-made programme templates will appear here when
+                      Your created programme templates will appear here when
                       available
                     </p>
                     <Button onClick={handleOpenAiGenerate}>
@@ -744,6 +741,73 @@ export const Programmes: React.FC = () => {
                     </GeneratingCard>
                   ))}
 
+                  {/* Existing templates */}
+                  {createdProgrammes.map((template) => (
+                    <TemplateCard key={template.id} $interactive>
+                      <CardHeader>
+                        <div>
+                          <CardTitle>{template.name}</CardTitle>
+                          <Badge
+                            $variant="info"
+                            style={{ marginTop: "0.5rem" }}
+                          >
+                            Template
+                          </Badge>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <p
+                          style={{
+                            color: "#A0AEC0",
+                            fontSize: "0.875rem",
+                            marginBottom: "1rem",
+                            minHeight: "2.5rem",
+                          }}
+                        >
+                          {template.description || "No description"}
+                        </p>
+                        <Stack $gap="0.5rem">
+                          <Flex
+                            $justify="space-between"
+                            style={{ fontSize: "0.875rem" }}
+                          >
+                            <span style={{ color: "#64748B" }}>Duration</span>
+                            <span>{template.durationWeeks} weeks</span>
+                          </Flex>
+                        </Stack>
+                      </CardContent>
+                      <CardFooter>
+                        <Button
+                          variant="primary"
+                          fullWidth
+                          onClick={() => handleCloneTemplate(template)}
+                        >
+                          Use This Template
+                        </Button>
+                      </CardFooter>
+                    </TemplateCard>
+                  ))}
+                </Grid>
+              )}
+            </>
+          )}
+
+          {/* Templates Tab */}
+          {activeTab === "templates" && (
+            <>
+              {preMadeProgrammes.length === 0 && generatingJobs.length === 0 ? (
+                <Card>
+                  <EmptyState>
+                    <div className="icon">📚</div>
+                    <h3>No Templates Available</h3>
+                    <p>
+                      Pre-made programme templates will appear here when
+                      available
+                    </p>
+                  </EmptyState>
+                </Card>
+              ) : (
+                <Grid $columns={3} $gap="1.5rem">
                   {/* Existing templates */}
                   {preMadeProgrammes.map((template) => (
                     <TemplateCard key={template.id} $interactive>
@@ -820,7 +884,7 @@ export const Programmes: React.FC = () => {
                 />
                 <Select
                   label="Duration"
-                  options={durationOptions}
+                  options={DURATION_OPTIONS}
                   value={formData.durationWeeks.toString()}
                   onChange={(e) =>
                     setFormData({
@@ -1046,7 +1110,7 @@ export const Programmes: React.FC = () => {
 
                 <Select
                   label="Duration"
-                  options={durationOptions}
+                  options={DURATION_OPTIONS}
                   value={aiFormData.durationWeeks.toString()}
                   onChange={(e) =>
                     setAiFormData({

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using trAInr.Infrastructure.Data;
@@ -11,9 +12,11 @@ using trAInr.Infrastructure.Data;
 namespace trAInr.Infrastructure.Migrations
 {
     [DbContext(typeof(TrainrDbContext))]
-    partial class TrainrDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260126210104_ProgramTemplateAddCreatedBy")]
+    partial class ProgramTemplateAddCreatedBy
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -227,7 +230,11 @@ namespace trAInr.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("CreatedBy")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .IsRequired(false);
+
+                    b.Property<bool>("IsUserGenerated")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -241,9 +248,6 @@ namespace trAInr.Infrastructure.Migrations
                         .HasColumnType("integer");
 
                     b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsUserGenerated")
                         .HasColumnType("boolean");
 
                     b.Property<string>("Name")

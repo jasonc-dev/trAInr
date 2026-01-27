@@ -6,3 +6,4 @@
 export * from "./constants";
 export * from "./formatters";
 export * from "./numberPicker";
+export * from "./labelHelpers";
