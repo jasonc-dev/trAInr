@@ -1,5 +1,1 @@
-# Render.com SPA routing configuration
-# This file tells Render to serve index.html for all routes
-# This fixes 404 errors when refreshing the page on any route
-
 /*    /index.html   200
