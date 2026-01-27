@@ -132,9 +132,6 @@ app.UseCors("AllowFrontend");
 // Placed after CORS to ensure CORS headers are available for error responses
 app.UseGlobalExceptionHandler();
 
-// Only use HTTPS redirection in production
-if (!app.Environment.IsDevelopment()) app.UseHttpsRedirection();
-
 // Add JWT authentication middleware
 app.UseJwtAuthentication();
 

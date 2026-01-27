@@ -72,6 +72,7 @@ public class AssignedProgramRepository(TrainrDbContext context) : IAssignedProgr
             .ThenInclude(w => w.WorkoutDays)
             .ThenInclude(d => d.Exercises)
             .ThenInclude(e => e.Sets)
+            .AsSplitQuery()
             .FirstOrDefaultAsync(p => p.Weeks.Any(w => w.WorkoutDays.Any(d => d.Id == workoutDayId)), cancellationToken);
     }
 
@@ -86,6 +87,7 @@ public class AssignedProgramRepository(TrainrDbContext context) : IAssignedProgr
             .ThenInclude(w => w.WorkoutDays)
             .ThenInclude(d => d.Exercises)
             .ThenInclude(e => e.Sets)
+            .AsSplitQuery()
             .FirstOrDefaultAsync(p => p.Weeks.Any(w => w.WorkoutDays.Any(d => d.Exercises.Any(e => e.Id == workoutExerciseId))), cancellationToken);
     }
 
@@ -100,6 +102,7 @@ public class AssignedProgramRepository(TrainrDbContext context) : IAssignedProgr
             .ThenInclude(w => w.WorkoutDays)
             .ThenInclude(d => d.Exercises)
             .ThenInclude(e => e.Sets)
+            .AsSplitQuery()
             .FirstOrDefaultAsync(p => p.Weeks.Any(w => w.WorkoutDays.Any(d => d.Exercises.Any(e => e.Sets.Any(s => s.Id == exerciseSetId)))), cancellationToken);
     }
 
@@ -114,6 +117,7 @@ public class AssignedProgramRepository(TrainrDbContext context) : IAssignedProgr
             .ThenInclude(w => w.WorkoutDays)
             .ThenInclude(d => d.Exercises)
             .ThenInclude(e => e.Sets)
+            .AsSplitQuery()
             .FirstOrDefaultAsync(p => p.Weeks.Any(w => w.WorkoutDays.Any(d => d.Exercises.Any(e => e.SupersetGroupId == supersetGroupId))), cancellationToken);
     }
 
@@ -137,7 +141,7 @@ public class AssignedProgramRepository(TrainrDbContext context) : IAssignedProgr
     }
 
     public async Task UpdateAsync(AssignedProgram assignedProgram, CancellationToken cancellationToken = default)
-    { 
+    {
         context.AssignedPrograms.Update(assignedProgram);
         await Task.CompletedTask;
     }
