@@ -13,6 +13,7 @@ public interface IAssignedProgrammeService
     Task<ProgrammeWeekResponse?> AddWeekAsync(Guid programmeId, CreateProgrammeWeekRequest request);
     Task<ProgrammeWeekResponse?> UpdateWeekAsync(Guid weekId, UpdateProgrammeWeekRequest request);
     Task<IEnumerable<ProgrammeSummaryResponse>> GetPreMadeProgrammesAsync();
+    Task<IEnumerable<ProgrammeSummaryResponse>> GetProgrammesCreatedByAthleteAsync(Guid athleteId);
     Task<ProgrammeResponse?> CloneProgrammeAsync(Guid programmeId, CloneProgrammeRequest request);
     Task<ProgrammeWeekResponse?> CopyWeekAsync(Guid sourceWeekId, int targetWeekNumber);
     Task<ProgrammeWeekResponse?> CopyWeekContentAsync(Guid sourceWeekId, Guid targetWeekId);

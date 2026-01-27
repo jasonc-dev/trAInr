@@ -11,6 +11,7 @@ export interface GenerateProgramRequest {
   durationWeeks: number;
   experienceLevel: number;
   workoutDayNames: string[];
+  createdBy: string;
 }
 
 export interface ProgramTemplateResponse {
@@ -43,7 +44,7 @@ export interface JobStatusResponse {
 export const programGeneratorApi = {
   generateProgram: (request: GenerateProgramRequest) =>
     apiClient.post<JobResponse>("/programgenerator", request),
-  
+
   getJobStatus: (jobId: string) =>
     apiClient.get<JobStatusResponse>(`/programgenerator/jobs/${jobId}`),
 };

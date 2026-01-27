@@ -180,7 +180,14 @@ Generate the complete program now:";
 
     private static ProgramTemplate BuildProgramTemplate(GenerateProgamRequest request, AiProgramStructure programStructure)
     {
-        var template = new ProgramTemplate(Guid.NewGuid(), request.ProgramName, programStructure.Description ?? request.Description, request.DurationWeeks, request.ExperienceLevel);
+        var template = new ProgramTemplate(
+            Guid.NewGuid(),
+            request.ProgramName,
+            programStructure.Description ?? request.Description,
+            request.DurationWeeks,
+            request.ExperienceLevel,
+            request.CreatedBy,
+            false);
 
         foreach (var weekData in programStructure.Weeks.OrderBy(w => w.WeekNumber))
         {

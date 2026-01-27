@@ -121,10 +121,11 @@ public class AiProgramGenerationService : IHostedService
             job.ResultData = JsonSerializer.Serialize(result);
             job.CompletedAt = DateTime.UtcNow;
             job.UpdatedAt = DateTime.UtcNow;
+            job.CreatedBy = request.CreatedBy;
             jobRepository.Update(job);
             await unitOfWork.SaveChangesAsync(cancellationToken);
 
-            _logger.LogInformation("Job {JobId} completed successfully. ProgramTemplateId: {ProgramTemplateId}", 
+            _logger.LogInformation("Job {JobId} completed successfully. ProgramTemplateId: {ProgramTemplateId}",
                 job.Id, result.Id);
         }
         catch (Exception ex)

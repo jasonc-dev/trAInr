@@ -3,7 +3,13 @@
  * Shared constants used across the application
  */
 
-import { FitnessLevel, FitnessGoal, ExerciseType, MuscleGroup, Intensity } from "../types";
+import {
+  FitnessLevel,
+  FitnessGoal,
+  ExerciseType,
+  MuscleGroup,
+  Intensity,
+} from "../types";
 
 // Day names for display
 export const DAY_NAMES = [
@@ -24,7 +30,7 @@ export const DURATION_OPTIONS = [
   { value: "10", label: "10 weeks" },
   { value: "12", label: "12 weeks" },
   { value: "16", label: "16 weeks" },
-] as const;
+];
 
 // Workout days per week options
 export const WORKOUT_DAYS_OPTIONS = [

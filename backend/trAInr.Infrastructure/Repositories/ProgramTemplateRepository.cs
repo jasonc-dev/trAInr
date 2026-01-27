@@ -20,11 +20,26 @@ public class ProgramTemplateRepository(TrainrDbContext context) : IProgramTempla
     public async Task<IEnumerable<ProgramTemplate>> GetAllActiveAsync()
     {
         return await context.ProgramTemplates
-            .Where(pt => pt.IsActive)
+            .Where(pt => pt.IsActive && !pt.IsUserGenerated)
             .Include(pt => pt.Weeks)
                 .ThenInclude(w => w.WorkoutDays)
                     .ThenInclude(wd => wd.Exercises)
                         .ThenInclude(we => we.ExerciseDefinition)
+                        .AsSplitQuery()
+            .AsNoTracking()
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<ProgramTemplate>> GetProgrammesCreatedByAthleteAsync(Guid athleteId)
+    {
+        return await context.ProgramTemplates
+            .Where(pt => pt.IsActive && pt.IsUserGenerated && pt.CreatedBy == athleteId)
+            .Include(pt => pt.Weeks)
+                .ThenInclude(w => w.WorkoutDays)
+                    .ThenInclude(wd => wd.Exercises)
+                        .ThenInclude(we => we.ExerciseDefinition)
+                        .AsSplitQuery()
+            .AsNoTracking()
             .ToListAsync();
     }
 

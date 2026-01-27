@@ -22,21 +22,26 @@ export const programmeApi = {
 
   getByAthlete: (athleteId: string) =>
     apiClient.get<ProgrammeSummary[]>(
-      `/assignedprogramme/athlete/${athleteId}`
+      `/assignedprogramme/athlete/${athleteId}`,
     ),
 
   getActiveByAthlete: (athleteId: string) =>
     apiClient.get<ProgrammeSummary>(
-      `/assignedprogramme/athlete/${athleteId}/active`
+      `/assignedprogramme/athlete/${athleteId}/active`,
     ),
 
   getPreMade: () =>
     apiClient.get<ProgrammeSummary[]>("/assignedprogramme/premade"),
 
+  getCreatedByAthlete: (athleteId: string) =>
+    apiClient.get<ProgrammeSummary[]>(
+      `/assignedprogramme/athlete/${athleteId}/created`,
+    ),
+
   create: (athleteId: string, request: CreateProgrammeRequest) =>
     apiClient.post<Programme>(
       `/assignedprogramme/athlete/${athleteId}`,
-      request
+      request,
     ),
 
   update: (id: string, request: UpdateProgrammeRequest) =>
@@ -47,14 +52,14 @@ export const programmeApi = {
   clone: (programmeId: string, request: CloneProgrammeRequest) =>
     apiClient.post<Programme>(
       `/assignedprogramme/${programmeId}/clone`,
-      request
+      request,
     ),
 
   // Week operations
   addWeek: (programmeId: string, request: CreateProgrammeWeekRequest) =>
     apiClient.post<ProgrammeWeek>(
       `/assignedprogramme/${programmeId}/weeks`,
-      request
+      request,
     ),
 
   updateWeek: (weekId: string, request: UpdateProgrammeWeekRequest) =>
@@ -63,11 +68,11 @@ export const programmeApi = {
   copyWeek: (weekId: string, request: CopyWeekRequest) =>
     apiClient.post<ProgrammeWeek>(
       `/assignedprogramme/weeks/${weekId}/copy`,
-      request
+      request,
     ),
 
   copyWeekContent: (sourceWeekId: string, targetWeekId: string) =>
     apiClient.post<ProgrammeWeek>(
-      `/assignedprogramme/weeks/${sourceWeekId}/copy-to/${targetWeekId}`
+      `/assignedprogramme/weeks/${sourceWeekId}/copy-to/${targetWeekId}`,
     ),
 };
