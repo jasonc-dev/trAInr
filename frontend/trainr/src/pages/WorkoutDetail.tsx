@@ -13,7 +13,7 @@ import {
 import { Navigation } from "../components/styled/Navigation";
 import { useWorkouts } from "../hooks";
 import {
-  WorkoutExercise,
+  WorkoutExerciseResponse,
   Intensity,
   CompleteSetRequest,
 } from "../types";
@@ -200,7 +200,7 @@ export const WorkoutDetail: React.FC = () => {
   } = useWorkouts();
 
   const [loading, setLoading] = useState(true);
-  const [expandedExercise, setExpandedExercise] = useState<number | null>(null);
+  const [expandedExercise, setExpandedExercise] = useState<string | null>(null);
   const [localSets, setLocalSets] = useState<Record<string, LocalSetData>>({});
   const [completingSet, setCompletingSet] = useState<string | null>(null);
 
@@ -239,8 +239,8 @@ export const WorkoutDetail: React.FC = () => {
   }, [currentWorkout]);
 
   const handleAddSet = async (
-    workoutExerciseId: number,
-    exercise: WorkoutExercise
+    workoutExerciseId: string,
+    exercise: WorkoutExerciseResponse
   ) => {
     const setNumber = exercise.sets.length + 1;
 
@@ -346,7 +346,7 @@ export const WorkoutDetail: React.FC = () => {
     0
   );
 
-  function createSupersetLabel(exercise: WorkoutExercise): React.ReactNode {
+  function createSupersetLabel(exercise: WorkoutExerciseResponse): React.ReactNode {
     if (!currentWorkout) return "";
     const supersetCount = currentWorkout.exercises.filter(
       (e) => e.supersetGroupId === exercise.supersetGroupId

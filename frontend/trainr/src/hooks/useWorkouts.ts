@@ -6,10 +6,10 @@
 import { useState, useCallback } from "react";
 import { workoutApi, programmeApi } from "../services";
 import {
-  WorkoutDay,
-  WorkoutExercise,
+  WorkoutDayResponse,
+  WorkoutExerciseResponse,
   ProgrammeWeek,
-  ExerciseSet,
+  ExerciseSetResponse,
   CreateWorkoutDayRequest,
   UpdateWorkoutDayRequest,
   AddWorkoutExerciseRequest,
@@ -22,13 +22,14 @@ import {
 } from "../types";
 
 export const useWorkouts = () => {
-  const [currentWorkout, setCurrentWorkout] = useState<WorkoutDay | null>(null);
+  const [currentWorkout, setCurrentWorkout] =
+    useState<WorkoutDayResponse | null>(null);
   const [workoutWeeks, setWorkoutWeeks] = useState<ProgrammeWeek[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const loadWorkout = useCallback(
-    async (workoutDayId: string): Promise<WorkoutDay> => {
+    async (workoutDayId: string): Promise<WorkoutDayResponse> => {
       try {
         setLoading(true);
         setError(null);
@@ -67,7 +68,7 @@ export const useWorkouts = () => {
     async (
       weekId: string,
       request: CreateWorkoutDayRequest,
-    ): Promise<WorkoutDay> => {
+    ): Promise<WorkoutDayResponse> => {
       try {
         setLoading(true);
         setError(null);
@@ -88,7 +89,7 @@ export const useWorkouts = () => {
     async (
       id: string,
       request: UpdateWorkoutDayRequest,
-    ): Promise<WorkoutDay> => {
+    ): Promise<WorkoutDayResponse> => {
       try {
         setLoading(true);
         setError(null);
@@ -132,7 +133,7 @@ export const useWorkouts = () => {
     async (
       workoutDayId: string,
       completedAt: Date = new Date(),
-    ): Promise<WorkoutDay> => {
+    ): Promise<WorkoutDayResponse> => {
       try {
         setLoading(true);
         setError(null);
@@ -158,7 +159,7 @@ export const useWorkouts = () => {
     async (
       workoutDayId: string,
       request: AddWorkoutExerciseRequest,
-    ): Promise<WorkoutExercise> => {
+    ): Promise<WorkoutExerciseResponse> => {
       try {
         const response = await workoutApi.addExercise(workoutDayId, request);
         if (currentWorkout?.id === workoutDayId) {
@@ -178,7 +179,7 @@ export const useWorkouts = () => {
     async (
       exerciseId: number,
       request: UpdateWorkoutExerciseRequest,
-    ): Promise<WorkoutExercise> => {
+    ): Promise<WorkoutExerciseResponse> => {
       try {
         const response = await workoutApi.updateExercise(exerciseId, request);
         if (currentWorkout) {
@@ -195,7 +196,7 @@ export const useWorkouts = () => {
   );
 
   const removeExercise = useCallback(
-    async (exerciseId: number): Promise<void> => {
+    async (exerciseId: string): Promise<void> => {
       try {
         await workoutApi.removeExercise(exerciseId);
         if (currentWorkout) {
@@ -211,7 +212,7 @@ export const useWorkouts = () => {
   );
 
   const reorderExercises = useCallback(
-    async (workoutDayId: string, exerciseIds: number[]): Promise<void> => {
+    async (workoutDayId: string, exerciseIds: string[]): Promise<void> => {
       try {
         await workoutApi.reorderExercises(workoutDayId, exerciseIds);
         if (currentWorkout?.id === workoutDayId) {
@@ -228,9 +229,9 @@ export const useWorkouts = () => {
 
   const addSet = useCallback(
     async (
-      workoutExerciseId: number,
+      workoutExerciseId: string,
       request: CreateExerciseSetRequest,
-    ): Promise<ExerciseSet> => {
+    ): Promise<ExerciseSetResponse> => {
       try {
         const response = await workoutApi.addSet(workoutExerciseId, request);
         if (currentWorkout) {
@@ -250,7 +251,7 @@ export const useWorkouts = () => {
     async (
       setId: string,
       request: UpdateExerciseSetRequest,
-    ): Promise<ExerciseSet> => {
+    ): Promise<ExerciseSetResponse> => {
       try {
         const response = await workoutApi.updateSet(setId, request);
         if (currentWorkout) {
@@ -270,7 +271,7 @@ export const useWorkouts = () => {
     async (
       setId: string,
       request: CompleteSetRequest,
-    ): Promise<ExerciseSet> => {
+    ): Promise<ExerciseSetResponse> => {
       try {
         const response = await workoutApi.completeSet(setId, request);
         if (currentWorkout) {
@@ -310,7 +311,7 @@ export const useWorkouts = () => {
     async (
       workoutDayId: string,
       request: GroupSupersetRequest,
-    ): Promise<WorkoutExercise[]> => {
+    ): Promise<WorkoutExerciseResponse[]> => {
       try {
         const response = await workoutApi.groupSuperset(workoutDayId, request);
         if (currentWorkout) {
@@ -347,7 +348,7 @@ export const useWorkouts = () => {
     async (
       workoutExerciseId: number,
       request: CreateDropSetRequest,
-    ): Promise<ExerciseSet[]> => {
+    ): Promise<ExerciseSetResponse[]> => {
       try {
         const response = await workoutApi.createDropSetSequence(
           workoutExerciseId,

@@ -86,9 +86,9 @@ public class WorkoutDay
         return true;
     }
 
-    public bool ReorderExercises(IEnumerable<Guid> exerciseIds)
+    public bool ReorderExercises(IEnumerable<Guid> workoutExerciseIds)
     {
-        var idList = exerciseIds.ToList();
+        var idList = workoutExerciseIds.ToList();
         if (idList.Count != Exercises.Count) return false;
 
         var lookup = Exercises.ToDictionary(e => e.Id);
@@ -102,7 +102,7 @@ public class WorkoutDay
         return true;
     }
 
-        private static List<ExerciseSet> CreateSets(int targetSets, int targetReps, decimal? targetWeight, int? targetDurationSeconds, string? notes)
+    private static List<ExerciseSet> CreateSets(int targetSets, int targetReps, decimal? targetWeight, int? targetDurationSeconds, string? notes)
     {
         var sets = new List<ExerciseSet>();
         for (var i = 0; i < targetSets; i++)
@@ -110,7 +110,7 @@ public class WorkoutDay
             var set = new ExerciseSet()
             {
                 Id = Guid.NewGuid(),
-                WorkoutExerciseId = new Guid(),
+                WorkoutExerciseId = Guid.NewGuid(),
                 SetNumber = i + 1,
                 Reps = targetReps,
                 Weight = targetWeight,

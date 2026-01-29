@@ -118,9 +118,9 @@ public class WorkoutSessionController(IWorkoutSessionService workoutSessionServi
     [HttpPut("days/{workoutDayId:guid}/exercises/reorder")]
     public async Task<ActionResult> ReorderExercises(
         Guid workoutDayId,
-        [FromBody] List<Guid> exerciseIds)
+        [FromBody] List<Guid> workoutExerciseIds)
     {
-        var reordered = await workoutSessionService.ReorderExercisesAsync(workoutDayId, exerciseIds);
+        var reordered = await workoutSessionService.ReorderExercisesAsync(workoutDayId, workoutExerciseIds);
         if (!reordered) return BadRequest();
         return NoContent();
     }

@@ -20,14 +20,14 @@ public interface IWorkoutSessionService
         UpdateWorkoutExerciseRequest request);
 
     Task<bool> RemoveExerciseFromWorkoutAsync(Guid workoutExerciseId);
-    
-    Task<bool> ReorderExercisesAsync(Guid workoutDayId, List<Guid> exerciseIds);
+
+    Task<bool> ReorderExercisesAsync(Guid workoutDayId, List<Guid> workoutExerciseIds);
 
     Task<ExerciseSetResponse?> AddSetAsync(Guid workoutExerciseId, CreateExerciseSetRequest request);
     Task<ExerciseSetResponse?> UpdateSetAsync(Guid setId, UpdateExerciseSetRequest request);
     Task<ExerciseSetResponse?> CompleteSetAsync(Guid setId, CompleteSetRequest request);
     Task<bool> DeleteSetAsync(Guid setId);
-    
+
     // Superset and Drop Set Operations
     Task<IEnumerable<WorkoutExerciseResponse>?> GroupExercisesInSupersetAsync(Guid workoutDayId, GroupSupersetRequest request);
     Task<bool> UngroupExercisesFromSupersetAsync(Guid supersetGroupId);

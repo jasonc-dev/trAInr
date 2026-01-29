@@ -10,7 +10,7 @@ import {
 } from "../components/styled";
 import { Navigation } from "../components/styled/Navigation";
 import { useUser, useProgrammes } from "../hooks";
-import { WorkoutDay } from "../types";
+import { WorkoutDayResponse } from "../types";
 import { DAY_NAMES } from "../utils";
 import { Tooltip } from "../components/styled/Tooltip";
 import { PageTitle } from "../components/styled/PageTitle";
@@ -179,7 +179,7 @@ const RestDayCard = styled(Card)`
   }
 `;
 
-interface WorkoutDayWithWeekNumber extends WorkoutDay {
+interface WorkoutDayWithWeekNumber extends WorkoutDayResponse {
   weekNumber: number;
 }
 

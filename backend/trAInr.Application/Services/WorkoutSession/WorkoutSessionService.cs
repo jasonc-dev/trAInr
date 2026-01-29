@@ -5,7 +5,7 @@ using trAInr.Application.Interfaces.Services;
 using trAInr.Domain.Aggregates;
 using trAInr.Domain.Entities;
 
-namespace trAInr.Application.Services;
+namespace trAInr.Application.Services.WorkoutSession;
 
 /// <summary>
 ///     Service for managing workout days, exercises, and sets within assigned programs.
@@ -39,8 +39,8 @@ public class WorkoutSessionService(
         var week = assignedProgram.GetWeekById(weekId);
         if (week is null) return null;
 
-        DateOnly? scheduledDate = request.scheduledDate is not null
-                ? new DateOnly(request.scheduledDate.Value.Year, request.scheduledDate.Value.Month, request.scheduledDate.Value.Day)
+        DateOnly? scheduledDate = request.ScheduledDate is not null
+                ? new DateOnly(request.ScheduledDate.Value.Year, request.ScheduledDate.Value.Month, request.ScheduledDate.Value.Day)
                 : null;
 
         var workoutDay = new WorkoutDay
@@ -73,8 +73,8 @@ public class WorkoutSessionService(
 
         if (workoutDay is null) return null;
 
-        DateOnly? scheduledDate = request.scheduledDate is not null
-            ? new DateOnly(request.scheduledDate.Value.Year, request.scheduledDate.Value.Month, request.scheduledDate.Value.Day)
+        DateOnly? scheduledDate = request.ScheduledDate is not null
+            ? new DateOnly(request.ScheduledDate.Value.Year, request.ScheduledDate.Value.Month, request.ScheduledDate.Value.Day)
             : null;
 
         workoutDay.Name = request.Name;
@@ -85,8 +85,6 @@ public class WorkoutSessionService(
 
         var week = assignedProgram.Weeks.FirstOrDefault(w => w.WorkoutDays.Any(d => d.Id == workoutDayId));
         if (week is null) return null;
-
-        var updatedWeek = assignedProgram.UpdateWeek(week.Id, request.IsCompleted);
 
         await assignedProgramRepository.UpdateAsync(assignedProgram);
         await unitOfWork.SaveChangesAsync();
@@ -149,11 +147,11 @@ public class WorkoutSessionService(
         if (workoutDay is null) return null;
 
         // Verify exercise exists
-        var exerciseDefinition = await exerciseDefinitionRepository.GetByIdAsync(request.ExerciseId);
+        var exerciseDefinition = await exerciseDefinitionRepository.GetByIdAsync(request.ExerciseDefinitionId);
         if (exerciseDefinition is null) return null;
 
         var workoutExercise = workoutDay.AddExercise(
-            request.ExerciseId,
+            request.ExerciseDefinitionId,
             request.OrderIndex,
             request.TargetSets,
             request.TargetReps,
@@ -220,7 +218,7 @@ public class WorkoutSessionService(
         return true;
     }
 
-    public async Task<bool> ReorderExercisesAsync(Guid workoutDayId, List<Guid> exerciseIds)
+    public async Task<bool> ReorderExercisesAsync(Guid workoutDayId, List<Guid> workoutExerciseIds)
     {
         var assignedProgram = await assignedProgramRepository.GetByWorkoutDayIdAsync(workoutDayId);
         if (assignedProgram is null) return false;
@@ -231,7 +229,7 @@ public class WorkoutSessionService(
 
         if (workoutDay is null) return false;
 
-        var reordered = workoutDay.ReorderExercises(exerciseIds);
+        var reordered = workoutDay.ReorderExercises(workoutExerciseIds);
         if (!reordered) return false;
 
         await assignedProgramRepository.UpdateAsync(assignedProgram);
@@ -471,8 +469,8 @@ public class WorkoutSessionService(
         var currentReps = request.StartingReps;
 
         // Determine starting set number (append to existing sets)
-        var startingSetNumber = workoutExercise.Sets.Any() 
-            ? workoutExercise.Sets.Max(s => s.SetNumber) + 1 
+        var startingSetNumber = workoutExercise.Sets.Any()
+            ? workoutExercise.Sets.Max(s => s.SetNumber) + 1
             : 1;
 
         for (int i = 0; i <= request.NumberOfDrops; i++)
@@ -482,7 +480,7 @@ public class WorkoutSessionService(
                 Id = Guid.NewGuid(),
                 WorkoutExerciseId = workoutExerciseId,
                 SetNumber = startingSetNumber + i,
-                Reps = (int)currentReps,
+                Reps = currentReps,
                 Weight = currentWeight,
                 SetType = i == 0 ? SetType.Normal : SetType.DropSet,
                 DropPercentage = i == 0 ? null : request.DropPercentage,
@@ -531,7 +529,7 @@ public class WorkoutSessionService(
         return new WorkoutExerciseResponse(
             exercise.Id,
             exercise.ExerciseDefinitionId,
-            exerciseNameOverride ?? exercise.ExerciseDefinition?.Name ?? "Unknown Exercise",
+            exerciseNameOverride ?? exercise.ExerciseDefinition.Name,
             exercise.OrderIndex,
             exercise.Notes,
             exercise.TargetSets,

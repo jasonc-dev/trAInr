@@ -3,7 +3,7 @@
  * Types related to training programmes and weeks
  */
 
-import { WorkoutDay, WorkoutDaySummary } from "./workout";
+import { WorkoutDayResponse, WorkoutDaySummary } from "./workout";
 
 export interface Programme {
   id: string;
@@ -41,7 +41,7 @@ export interface ProgrammeWeek {
   weekStartDate: string;
   notes?: string;
   isCompleted: boolean;
-  workoutDays: WorkoutDay[];
+  workoutDays: WorkoutDayResponse[];
 }
 
 export interface ProgrammeWeekSummary {

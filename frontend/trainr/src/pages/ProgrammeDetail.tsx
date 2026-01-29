@@ -21,8 +21,8 @@ import {
   ExerciseSummary,
   ExerciseType,
   MuscleGroup,
-  WorkoutDay,
-  WorkoutExercise,
+  WorkoutDayResponse,
+  WorkoutExerciseResponse,
 } from "../types";
 import { DAY_NAMES, getExerciseTypeLabel, getMuscleGroupLabel, NumberPicker } from "../utils";
 
@@ -303,8 +303,8 @@ export const ProgrammeDetail: React.FC = () => {
   const [programme, setProgramme] = useState<Programme | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedWeek, setSelectedWeek] = useState(0);
-  const [draggedExercise, setDraggedExercise] = useState<number | null>(null);
-  const [dragOverExercise, setDragOverExercise] = useState<number | null>(null);
+  const [draggedExercise, setDraggedExercise] = useState<string | null>(null);
+  const [dragOverExercise, setDragOverExercise] = useState<string | null>(null);
 
   // Modal states
   const [showAddDayModal, setShowAddDayModal] = useState(false);
@@ -318,7 +318,7 @@ export const ProgrammeDetail: React.FC = () => {
     string | null
   >(null);
   const [selectedExercise, setSelectedExercise] = useState<any | null>(null);
-  const [selectedExercises, setSelectedExercises] = useState<Set<number>>(
+  const [selectedExercises, setSelectedExercises] = useState<Set<string>>(
     new Set()
   );
   const [showDropSetModal, setShowDropSetModal] = useState(false);
@@ -655,11 +655,11 @@ export const ProgrammeDetail: React.FC = () => {
     }
   };
 
-  const handleDragStart = (exerciseId: number) => {
+  const handleDragStart = (exerciseId: string) => {
     setDraggedExercise(exerciseId);
   };
 
-  const handleDragOver = (e: React.DragEvent, exerciseId: number) => {
+  const handleDragOver = (e: React.DragEvent, exerciseId: string) => {
     e.preventDefault();
     setDragOverExercise(exerciseId);
   };
@@ -672,7 +672,7 @@ export const ProgrammeDetail: React.FC = () => {
   const handleDrop = async (
     e: React.DragEvent,
     workoutDayId: string,
-    targetExerciseId: number
+    targetExerciseId: string
   ) => {
     e.preventDefault();
 
@@ -701,7 +701,7 @@ export const ProgrammeDetail: React.FC = () => {
       const [removed] = exercises.splice(draggedIndex, 1);
       exercises.splice(targetIndex, 0, removed);
 
-      // Get the ordered exercise IDs
+      // Get the ordered workout exercise IDs (not exerciseDefinitionId)
       const orderedIds = exercises.map((e) => e.id);
 
       // Call the reorder API
@@ -718,7 +718,7 @@ export const ProgrammeDetail: React.FC = () => {
     }
   };
 
-  const handleRemoveExercise = async (workoutExerciseId: number) => {
+  const handleRemoveExercise = async (workoutExerciseId: string) => {
     try {
       await workoutsApi.removeExercise(workoutExerciseId);
       const response = await programmesApi.getById(programme!.id);
@@ -728,7 +728,7 @@ export const ProgrammeDetail: React.FC = () => {
     }
   };
 
-  const handleToggleExerciseSelection = (exerciseId: number) => {
+  const handleToggleExerciseSelection = (exerciseId: string) => {
     setSelectedExercises((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(exerciseId)) {
@@ -858,8 +858,8 @@ export const ProgrammeDetail: React.FC = () => {
     ) ?? false;
 
   const createSupersetLabel = (
-    day: WorkoutDay,
-    exercise: WorkoutExercise
+    day: WorkoutDayResponse,
+    exercise: WorkoutExerciseResponse
   ): React.ReactNode => {
     const supersetCount = day.exercises
       .map((e) => e.supersetGroupId)

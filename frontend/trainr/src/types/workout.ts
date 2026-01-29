@@ -5,16 +5,16 @@
 
 import { DayOfWeek, Difficulty, Intensity, SetType } from "./enums";
 
-export interface WorkoutDay {
+export interface WorkoutDayResponse {
   id: string;
-  weekId: string;
+  programmeWeekId: string;
   name: string;
   description?: string;
-  isRestDay: boolean;
-  isCompleted: boolean;
   scheduledDate: Date;
   completedDate?: Date;
-  exercises: WorkoutExercise[];
+  isCompleted: boolean;
+  isRestDay: boolean;
+  exercises: WorkoutExerciseResponse[];
 }
 
 export interface WorkoutDaySummary {
@@ -46,21 +46,22 @@ export interface CompleteWorkoutRequest {
   notes?: string;
 }
 
-export interface WorkoutExercise {
-  id: number;
-  workoutDayId: string;
-  exerciseId: number;
+export interface WorkoutExerciseResponse {
+  id: string;
+  exerciseDefinitionId: number;
   exerciseName: string;
   orderIndex: number;
+  notes?: string;
   targetSets: number;
   targetReps: number;
   targetWeight?: number;
+  targetDurationSeconds?: number;
+  targetDistance?: number;
   restSeconds?: number;
   targetRpe?: number;
-  notes?: string;
   supersetGroupId?: string;
   supersetRestSeconds?: number;
-  sets: ExerciseSet[];
+  sets: ExerciseSetResponse[];
 }
 
 export interface WorkoutExerciseSummary {
@@ -98,19 +99,20 @@ export interface UpdateWorkoutExerciseRequest {
   supersetRestSeconds?: number;
 }
 
-export interface ExerciseSet {
+export interface ExerciseSetResponse {
   id: string;
-  workoutExerciseId: number;
   setNumber: number;
   reps?: number;
   weight?: number;
-  setType: SetType;
-  dropPercentage?: number;
-  isCompleted: boolean;
-  completedAt?: string;
+  durationSeconds?: number;
+  distance?: number;
   difficulty?: Difficulty;
   intensity?: Intensity;
+  isCompleted: boolean;
+  setType: SetType;
+  dropPercentage?: number;
   notes?: string;
+  completedAt?: Date;
 }
 
 export interface CreateExerciseSetRequest {
@@ -140,7 +142,7 @@ export interface CompleteSetRequest {
 }
 
 export interface GroupSupersetRequest {
-  exerciseIds: number[];
+  exerciseIds: string[];
   supersetRestSeconds?: number;
 }
 

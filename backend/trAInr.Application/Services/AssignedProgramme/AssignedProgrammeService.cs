@@ -6,7 +6,7 @@ using trAInr.Application.Interfaces.Services;
 using trAInr.Domain.Aggregates;
 using trAInr.Domain.Entities;
 
-namespace trAInr.Application.Services;
+namespace trAInr.Application.Services.AssignedProgramme;
 
 public class AssignedProgrammeService(
     IAssignedProgramRepository assignedProgramRepository,
