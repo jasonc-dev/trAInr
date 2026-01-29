@@ -10,6 +10,9 @@ using trAInr.Application.Interfaces.Services;
 using trAInr.Application.Interfaces.Services.AI;
 using trAInr.Application.Services;
 using trAInr.Application.Services.AI;
+using trAInr.Application.Services.AssignedProgramme;
+using trAInr.Application.Services.Exercise;
+using trAInr.Application.Services.WorkoutSession;
 using trAInr.Infrastructure.Api;
 using trAInr.Infrastructure.Data;
 using trAInr.Infrastructure.Repositories;
@@ -57,11 +60,17 @@ else
 
 builder.Services.AddDbContext<TrainrDbContext>(options =>
 {
-    options.UseNpgsql(connectionString, npgsqlOptions =>
+    options.UseNpgsql(connectionString, _ =>
     {
         // Enable DateOnly/TimeOnly mapping (native in .NET 6+)
     });
 });
+
+// Add memory cache for caching programme data
+builder.Services.AddMemoryCache();
+
+// Register cache provider
+builder.Services.AddScoped<ICacheProvider, InMemoryCacheProvider>();
 
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -78,9 +87,38 @@ builder.Services.AddScoped<IJobRepository, JobRepository>();
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IAthleteService, AthleteService>();
-builder.Services.AddScoped<IAssignedProgrammeService, AssignedProgrammeService>();
-builder.Services.AddScoped<IExerciseDefinitionService, ExerciseDefinitionService>();
-builder.Services.AddScoped<IWorkoutSessionService, WorkoutSessionService>();
+
+// Register AssignedProgrammeService with caching decorator pattern
+builder.Services.AddScoped<AssignedProgrammeService>();
+builder.Services.AddScoped<IAssignedProgrammeService>(sp =>
+{
+    var innerService = sp.GetRequiredService<AssignedProgrammeService>();
+    var cacheProvider = sp.GetRequiredService<ICacheProvider>();
+    var logger = sp.GetRequiredService<ILogger<CachedAssignedProgrammeService>>();
+    return new CachedAssignedProgrammeService(innerService, cacheProvider, logger);
+});
+
+// Register ExerciseDefinitionService with caching decorator pattern
+builder.Services.AddScoped<ExerciseDefinitionService>();
+builder.Services.AddScoped<IExerciseDefinitionService>(sp =>
+{
+    var innerService = sp.GetRequiredService<ExerciseDefinitionService>();
+    var cacheProvider = sp.GetRequiredService<ICacheProvider>();
+    var logger = sp.GetRequiredService<ILogger<CachedExerciseDefinitionService>>();
+    return new CachedExerciseDefinitionService(innerService, cacheProvider, logger);
+});
+
+// Register WorkoutSessionService with caching decorator pattern
+builder.Services.AddScoped<WorkoutSessionService>();
+builder.Services.AddScoped<IWorkoutSessionService>(sp =>
+{
+    var innerService = sp.GetRequiredService<WorkoutSessionService>();
+    var cacheProvider = sp.GetRequiredService<ICacheProvider>();
+    var assignedProgramRepository = sp.GetRequiredService<IAssignedProgramRepository>();
+    var logger = sp.GetRequiredService<ILogger<CachedWorkoutSessionService>>();
+    return new CachedWorkoutSessionService(innerService, cacheProvider, assignedProgramRepository, logger);
+});
+
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<IAiProgramGeneratorService, AiProgramGeneratorService>();
 
@@ -93,7 +131,7 @@ builder.Services.AddHttpClient<IOpenAiClient, OpenAiClient>(options =>
 });
 
 // Configure CORS for frontend
-var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ?? new[] { "http://localhost:3000" };
+var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ?? ["http://localhost:3000"];
 
 // Check for ALLOWED_ORIGINS environment variable (for Render.com)
 var allowedOriginsEnv = builder.Configuration["ALLOWED_ORIGINS"];
@@ -147,9 +185,7 @@ using (var scope = app.Services.CreateScope())
 
     try
     {
-        logger.LogInformation("Applying database migrations...");
-        dbContext.Database.Migrate();
-        logger.LogInformation("Database migrations completed successfully.");
+        await dbContext.Database.EnsureCreatedAsync();
     }
     catch (Exception ex)
     {
