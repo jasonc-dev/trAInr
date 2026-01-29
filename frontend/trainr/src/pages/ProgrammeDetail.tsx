@@ -25,6 +25,7 @@ import {
   WorkoutExerciseResponse,
 } from "../types";
 import { DAY_NAMES, getExerciseTypeLabel, getMuscleGroupLabel, NumberPicker } from "../utils";
+import { updateProgrammeWithWeek, updateProgrammeWithDay } from "../utils/programmeUpdaters";
 
 const PageTitle = styled.h1`
   font-size: ${({ theme }) => theme.fontSizes["3xl"]};
@@ -465,6 +466,7 @@ export const ProgrammeDetail: React.FC = () => {
           weekNumber: 1,
           notes: "",
         });
+        // Reload full programme for initial week addition
         const response = await programmesApi.getById(programmeId);
         setProgramme(response.data);
       } catch (err) {
@@ -480,16 +482,15 @@ export const ProgrammeDetail: React.FC = () => {
       const weekId = programme.weeks[selectedWeek].id;
       const existingDays = programme.weeks[selectedWeek].workoutDays.length;
 
-      await workoutsApi.createWorkoutDay(weekId, {
+      const response = await workoutsApi.createWorkoutDay(weekId, {
         scheduledDate: newDay.scheduledDate,
         name: newDay.name || `Day ${existingDays}`,
         description: newDay.description,
         isRestDay: newDay.isRestDay,
       });
 
-      // Reload programme
-      const response = await programmesApi.getById(programme.id);
-      setProgramme(response.data);
+      // Use returned week data directly
+      setProgramme(updateProgrammeWithWeek(programme, response.data));
       setShowAddDayModal(false);
       setNewDay({
         id: "",
@@ -524,16 +525,15 @@ export const ProgrammeDetail: React.FC = () => {
     if (!editDay.id) return;
 
     try {
-      await workoutsApi.updateWorkoutDay(editDay.id, {
+      const response = await workoutsApi.updateWorkoutDay(editDay.id, {
         scheduledDate: editDay.scheduledDate,
         name: editDay.name,
         description: editDay.description,
         isRestDay: editDay.isRestDay,
       });
 
-      // Reload programme
-      const response = await programmesApi.getById(programme!.id);
-      setProgramme(response.data);
+      // Use returned week data directly
+      setProgramme(updateProgrammeWithWeek(programme!, response.data));
       setShowEditDayModal(false);
       setSelectedWorkoutDayId(null);
     } catch (err) {
@@ -550,11 +550,10 @@ export const ProgrammeDetail: React.FC = () => {
     if (!selectedWorkoutDayId) return;
 
     try {
-      await workoutsApi.deleteWorkoutDay(selectedWorkoutDayId);
+      const response = await workoutsApi.deleteWorkoutDay(selectedWorkoutDayId);
 
-      // Reload programme
-      const response = await programmesApi.getById(programme!.id);
-      setProgramme(response.data);
+      // Use returned week data directly
+      setProgramme(updateProgrammeWithWeek(programme!, response.data));
       setShowDeleteDayModal(false);
       setSelectedWorkoutDayId(null);
     } catch (err) {
@@ -571,7 +570,7 @@ export const ProgrammeDetail: React.FC = () => {
       );
       const orderIndex = workoutDay?.exercises.length || 0;
 
-      await workoutsApi.addExercise(selectedWorkoutDayId, {
+      const response = await workoutsApi.addExercise(selectedWorkoutDayId, {
         exerciseId,
         orderIndex,
         targetSets: newExercise.targetSets,
@@ -582,9 +581,8 @@ export const ProgrammeDetail: React.FC = () => {
         notes: newExercise.notes || undefined,
       });
 
-      // Reload programme
-      const response = await programmesApi.getById(programme!.id);
-      setProgramme(response.data);
+      // Use returned day data directly
+      setProgramme(updateProgrammeWithDay(programme!, response.data));
       setShowAddExerciseModal(false);
       setSearchQuery("");
       setSearchResults([]);
@@ -625,7 +623,7 @@ export const ProgrammeDetail: React.FC = () => {
     if (!editExercise.id) return;
 
     try {
-      await workoutsApi.updateExercise(editExercise.id, {
+      const response = await workoutsApi.updateExercise(editExercise.id, {
         orderIndex: editExercise.orderIndex,
         targetSets: editExercise.targetSets,
         targetReps: editExercise.targetReps,
@@ -635,9 +633,8 @@ export const ProgrammeDetail: React.FC = () => {
         notes: editExercise.notes || undefined,
       });
 
-      // Reload programme
-      const response = await programmesApi.getById(programme!.id);
-      setProgramme(response.data);
+      // Use returned day data directly
+      setProgramme(updateProgrammeWithDay(programme!, response.data));
       setShowEditExerciseModal(false);
       setSelectedExercise(null);
     } catch (err) {
@@ -705,11 +702,10 @@ export const ProgrammeDetail: React.FC = () => {
       const orderedIds = exercises.map((e) => e.id);
 
       // Call the reorder API
-      await workoutsApi.reorderExercises(workoutDayId, orderedIds);
+      const response = await workoutsApi.reorderExercises(workoutDayId, orderedIds);
 
-      // Reload programme
-      const response = await programmesApi.getById(programme!.id);
-      setProgramme(response.data);
+      // Use returned day data directly
+      setProgramme(updateProgrammeWithDay(programme!, response.data));
     } catch (err) {
       console.error("Failed to reorder exercises:", err);
     } finally {
@@ -720,9 +716,9 @@ export const ProgrammeDetail: React.FC = () => {
 
   const handleRemoveExercise = async (workoutExerciseId: string) => {
     try {
-      await workoutsApi.removeExercise(workoutExerciseId);
-      const response = await programmesApi.getById(programme!.id);
-      setProgramme(response.data);
+      const response = await workoutsApi.removeExercise(workoutExerciseId);
+      // Use returned day data directly
+      setProgramme(updateProgrammeWithDay(programme!, response.data));
     } catch (err) {
       console.error("Failed to remove exercise:", err);
     }
@@ -746,12 +742,12 @@ export const ProgrammeDetail: React.FC = () => {
       return;
     }
     try {
-      await workoutsApi.groupSuperset(workoutDayId, {
+      const response = await workoutsApi.groupSuperset(workoutDayId, {
         exerciseIds: Array.from(selectedExercises),
         supersetRestSeconds: 120,
       });
-      const response = await programmesApi.getById(programme!.id);
-      setProgramme(response.data);
+      // Use returned day data directly
+      setProgramme(updateProgrammeWithDay(programme!, response.data));
       setSelectedExercises(new Set());
     } catch (err) {
       console.error("Failed to group superset:", err);
@@ -760,9 +756,9 @@ export const ProgrammeDetail: React.FC = () => {
 
   const handleUngroupSuperset = async (supersetGroupId: string) => {
     try {
-      await workoutsApi.ungroupSuperset(supersetGroupId);
-      const response = await programmesApi.getById(programme!.id);
-      setProgramme(response.data);
+      const response = await workoutsApi.ungroupSuperset(supersetGroupId);
+      // Use returned day data directly
+      setProgramme(updateProgrammeWithDay(programme!, response.data));
     } catch (err) {
       console.error("Failed to ungroup superset:", err);
     }
@@ -784,6 +780,8 @@ export const ProgrammeDetail: React.FC = () => {
   const handleCreateDropSet = async () => {
     if (!dropSetConfig.exerciseId) return;
     try {
+      // Note: Drop set returns the exercise, but we need to update the day in the programme
+      // We'll need to reload for this specific case since we need the full day context
       await workoutsApi.createDropSetSequence(dropSetConfig.exerciseId, {
         startingWeight: dropSetConfig.startingWeight,
         startingReps: dropSetConfig.startingReps,
@@ -791,6 +789,7 @@ export const ProgrammeDetail: React.FC = () => {
         dropPercentage: dropSetConfig.dropPercentage,
         repsAdjustment: dropSetConfig.repsAdjustment,
       });
+      // For drop sets, reload the full programme to ensure consistency
       const response = await programmesApi.getById(programme!.id);
       setProgramme(response.data);
       setShowDropSetModal(false);
@@ -810,10 +809,9 @@ export const ProgrammeDetail: React.FC = () => {
         );
         if (!previousWeek) return;
         // Copy content from previous week to current week
-        await programmesApi.copyWeekContent(previousWeek.id, currentWeek.id);
-        // Reload the programme to get updated data
-        const response = await programmesApi.getById(programme?.id ?? "");
-        setProgramme(response.data);
+        const response = await programmesApi.copyWeekContent(previousWeek.id, currentWeek.id);
+        // Use returned week data directly
+        setProgramme(updateProgrammeWithWeek(programme!, response.data));
       } catch (err) {
         console.error("Failed to copy week:", err);
       }
@@ -1580,7 +1578,7 @@ export const ProgrammeDetail: React.FC = () => {
 
               <Flex $gap="1rem" style={{ marginTop: "1rem" }}>
                 <NumberPicker
-                  label="Rest (seconds)"
+                  label="Rest"
                   $size="lg"
                   type="rest"
                   value={newExercise.restSeconds}
@@ -1722,7 +1720,7 @@ export const ProgrammeDetail: React.FC = () => {
 
                 <Flex $gap="1rem">
                   <NumberPicker
-                    label="Rest (seconds)"
+                    label="Rest"
                     $size="lg"
                     type="rest"
                     value={editExercise.restSeconds}

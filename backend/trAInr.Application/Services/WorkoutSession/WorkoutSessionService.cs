@@ -31,7 +31,7 @@ public class WorkoutSessionService(
         return workoutDay is null ? null : MapWorkoutDayToResponse(workoutDay);
     }
 
-    public async Task<WorkoutDayResponse?> CreateWorkoutDayAsync(Guid weekId, CreateWorkoutDayRequest request)
+    public async Task<ProgrammeWeekResponse?> CreateWorkoutDayAsync(Guid weekId, CreateWorkoutDayRequest request)
     {
         var assignedProgram = await assignedProgramRepository.GetByWeekIdAsync(weekId);
         if (assignedProgram is null) return null;
@@ -59,10 +59,10 @@ public class WorkoutSessionService(
         await assignedProgramRepository.AddWorkoutDayAsync(addedWorkoutDay);
         await unitOfWork.SaveChangesAsync();
 
-        return MapWorkoutDayToResponse(addedWorkoutDay);
+        return MapWeekToResponse(week);
     }
 
-    public async Task<WorkoutDayResponse?> UpdateWorkoutDayAsync(Guid workoutDayId, UpdateWorkoutDayRequest request)
+    public async Task<ProgrammeWeekResponse?> UpdateWorkoutDayAsync(Guid workoutDayId, UpdateWorkoutDayRequest request)
     {
         AssignedProgram? assignedProgram = await assignedProgramRepository.GetByWorkoutDayIdAsync(workoutDayId);
         if (assignedProgram is null) return null;
@@ -89,29 +89,29 @@ public class WorkoutSessionService(
         await assignedProgramRepository.UpdateAsync(assignedProgram);
         await unitOfWork.SaveChangesAsync();
 
-        return MapWorkoutDayToResponse(workoutDay);
+        return MapWeekToResponse(week);
     }
 
-    public async Task<bool> DeleteWorkoutDayAsync(Guid workoutDayId)
+    public async Task<ProgrammeWeekResponse?> DeleteWorkoutDayAsync(Guid workoutDayId)
     {
         var assignedProgram = await assignedProgramRepository.GetByWorkoutDayIdAsync(workoutDayId);
-        if (assignedProgram is null) return false;
+        if (assignedProgram is null) return null;
 
         var week = assignedProgram.Weeks
             .FirstOrDefault(w => w.WorkoutDays.Any(d => d.Id == workoutDayId));
 
-        if (week is null) return false;
+        if (week is null) return null;
 
         var workoutDay = week.WorkoutDays.FirstOrDefault(d => d.Id == workoutDayId);
-        if (workoutDay is null) return false;
+        if (workoutDay is null) return null;
 
         week.WorkoutDays.Remove(workoutDay);
         await assignedProgramRepository.UpdateAsync(assignedProgram);
         await unitOfWork.SaveChangesAsync();
-        return true;
+        return MapWeekToResponse(week);
     }
 
-    public async Task<WorkoutDayResponse?> CompleteWorkoutAsync(Guid workoutDayId, CompleteWorkoutRequest request)
+    public async Task<ProgrammeWeekResponse?> CompleteWorkoutAsync(Guid workoutDayId, CompleteWorkoutRequest request)
     {
         var assignedProgram = await assignedProgramRepository.GetByWorkoutDayIdAsync(workoutDayId);
         if (assignedProgram is null) return null;
@@ -124,17 +124,20 @@ public class WorkoutSessionService(
 
         workoutDay.Complete(request.CompletedAt);
 
+        var week = assignedProgram.Weeks.FirstOrDefault(w => w.WorkoutDays.Any(d => d.Id == workoutDayId));
+        if (week is null) return null;
+
         await assignedProgramRepository.UpdateAsync(assignedProgram);
         await unitOfWork.SaveChangesAsync();
 
-        return MapWorkoutDayToResponse(workoutDay);
+        return MapWeekToResponse(week);
     }
 
     #endregion
 
     #region Workout Exercises
 
-    public async Task<WorkoutExerciseResponse?> AddExerciseToWorkoutAsync(Guid workoutDayId,
+    public async Task<WorkoutDayResponse?> AddExerciseToWorkoutAsync(Guid workoutDayId,
         AddWorkoutExerciseRequest request)
     {
         var assignedProgram = await assignedProgramRepository.GetByWorkoutDayIdAsync(workoutDayId);
@@ -166,10 +169,10 @@ public class WorkoutSessionService(
         await assignedProgramRepository.AddWorkoutExerciseAsync(workoutExercise);
         await unitOfWork.SaveChangesAsync();
 
-        return MapWorkoutExerciseToResponse(workoutExercise, exerciseDefinition.Name);
+        return MapWorkoutDayToResponse(workoutDay);
     }
 
-    public async Task<WorkoutExerciseResponse?> UpdateWorkoutExerciseAsync(Guid workoutExerciseId,
+    public async Task<WorkoutDayResponse?> UpdateWorkoutExerciseAsync(Guid workoutExerciseId,
         UpdateWorkoutExerciseRequest request)
     {
         var assignedProgram = await assignedProgramRepository.GetByWorkoutExerciseIdAsync(workoutExerciseId);
@@ -181,6 +184,12 @@ public class WorkoutSessionService(
             .FirstOrDefault(e => e.Id == workoutExerciseId);
 
         if (workoutExercise is null) return null;
+
+        var workoutDay = assignedProgram.Weeks
+            .SelectMany(w => w.WorkoutDays)
+            .FirstOrDefault(d => d.Exercises.Any(e => e.Id == workoutExerciseId));
+
+        if (workoutDay is null) return null;
 
         workoutExercise.OrderIndex = request.OrderIndex;
         workoutExercise.Notes = request.Notes;
@@ -195,54 +204,54 @@ public class WorkoutSessionService(
         await assignedProgramRepository.UpdateAsync(assignedProgram);
         await unitOfWork.SaveChangesAsync();
 
-        return MapWorkoutExerciseToResponse(workoutExercise);
+        return MapWorkoutDayToResponse(workoutDay);
     }
 
-    public async Task<bool> RemoveExerciseFromWorkoutAsync(Guid workoutExerciseId)
+    public async Task<WorkoutDayResponse?> RemoveExerciseFromWorkoutAsync(Guid workoutExerciseId)
     {
         var assignedProgram = await assignedProgramRepository.GetByWorkoutExerciseIdAsync(workoutExerciseId);
-        if (assignedProgram is null) return false;
+        if (assignedProgram is null) return null;
 
         var workoutDay = assignedProgram.Weeks
             .SelectMany(w => w.WorkoutDays)
             .FirstOrDefault(d => d.Exercises.Any(e => e.Id == workoutExerciseId));
 
-        if (workoutDay is null) return false;
+        if (workoutDay is null) return null;
 
         var removed = workoutDay.RemoveExercise(workoutExerciseId);
-        if (!removed) return false;
+        if (!removed) return null;
 
         await assignedProgramRepository.UpdateAsync(assignedProgram);
         await unitOfWork.SaveChangesAsync();
 
-        return true;
+        return MapWorkoutDayToResponse(workoutDay);
     }
 
-    public async Task<bool> ReorderExercisesAsync(Guid workoutDayId, List<Guid> workoutExerciseIds)
+    public async Task<WorkoutDayResponse?> ReorderExercisesAsync(Guid workoutDayId, List<Guid> workoutExerciseIds)
     {
         var assignedProgram = await assignedProgramRepository.GetByWorkoutDayIdAsync(workoutDayId);
-        if (assignedProgram is null) return false;
+        if (assignedProgram is null) return null;
 
         var workoutDay = assignedProgram.Weeks
             .SelectMany(w => w.WorkoutDays)
             .FirstOrDefault(d => d.Id == workoutDayId);
 
-        if (workoutDay is null) return false;
+        if (workoutDay is null) return null;
 
         var reordered = workoutDay.ReorderExercises(workoutExerciseIds);
-        if (!reordered) return false;
+        if (!reordered) return null;
 
         await assignedProgramRepository.UpdateAsync(assignedProgram);
         await unitOfWork.SaveChangesAsync();
 
-        return true;
+        return MapWorkoutDayToResponse(workoutDay);
     }
 
     #endregion
 
     #region Exercise Sets
 
-    public async Task<ExerciseSetResponse?> AddSetAsync(Guid workoutExerciseId, CreateExerciseSetRequest request)
+    public async Task<WorkoutExerciseResponse?> AddSetAsync(Guid workoutExerciseId, CreateExerciseSetRequest request)
     {
         var assignedProgram = await assignedProgramRepository.GetByWorkoutExerciseIdAsync(workoutExerciseId);
         if (assignedProgram is null) return null;
@@ -278,10 +287,10 @@ public class WorkoutSessionService(
         await assignedProgramRepository.AddExerciseSetAsync(exerciseSet);
         await unitOfWork.SaveChangesAsync();
 
-        return MapExerciseSetToResponse(exerciseSet);
+        return MapWorkoutExerciseToResponse(workoutExercise);
     }
 
-    public async Task<ExerciseSetResponse?> UpdateSetAsync(Guid setId, UpdateExerciseSetRequest request)
+    public async Task<WorkoutExerciseResponse?> UpdateSetAsync(Guid setId, UpdateExerciseSetRequest request)
     {
         var assignedProgram = await assignedProgramRepository.GetByExerciseSetIdAsync(setId);
         if (assignedProgram is null) return null;
@@ -293,6 +302,13 @@ public class WorkoutSessionService(
             .FirstOrDefault(s => s.Id == setId);
 
         if (exerciseSet is null) return null;
+
+        var workoutExercise = assignedProgram.Weeks
+            .SelectMany(w => w.WorkoutDays)
+            .SelectMany(d => d.Exercises)
+            .FirstOrDefault(e => e.Sets.Any(s => s.Id == setId));
+
+        if (workoutExercise is null) return null;
 
         exerciseSet.Reps = request.Reps;
         exerciseSet.Weight = request.Weight;
@@ -314,10 +330,10 @@ public class WorkoutSessionService(
         await assignedProgramRepository.UpdateAsync(assignedProgram);
         await unitOfWork.SaveChangesAsync();
 
-        return MapExerciseSetToResponse(exerciseSet);
+        return MapWorkoutExerciseToResponse(workoutExercise);
     }
 
-    public async Task<ExerciseSetResponse?> CompleteSetAsync(Guid setId, CompleteSetRequest request)
+    public async Task<WorkoutExerciseResponse?> CompleteSetAsync(Guid setId, CompleteSetRequest request)
     {
         AssignedProgram? assignedProgram = await assignedProgramRepository.GetByExerciseSetIdAsync(setId);
         if (assignedProgram is null) return null;
@@ -329,6 +345,13 @@ public class WorkoutSessionService(
             .FirstOrDefault(s => s.Id == setId);
 
         if (exerciseSet is null) return null;
+
+        var workoutExercise = assignedProgram.Weeks
+            .SelectMany(w => w.WorkoutDays)
+            .SelectMany(d => d.Exercises)
+            .FirstOrDefault(e => e.Sets.Any(s => s.Id == setId));
+
+        if (workoutExercise is null) return null;
 
         exerciseSet.Reps = request.Reps ?? exerciseSet.Reps;
         exerciseSet.Weight = request.Weight ?? exerciseSet.Weight;
@@ -343,23 +366,23 @@ public class WorkoutSessionService(
         await assignedProgramRepository.UpdateAsync(assignedProgram);
         await unitOfWork.SaveChangesAsync();
 
-        return MapExerciseSetToResponse(exerciseSet);
+        return MapWorkoutExerciseToResponse(workoutExercise);
     }
 
-    public async Task<bool> DeleteSetAsync(Guid setId)
+    public async Task<WorkoutExerciseResponse?> DeleteSetAsync(Guid setId)
     {
         var assignedProgram = await assignedProgramRepository.GetByExerciseSetIdAsync(setId);
-        if (assignedProgram is null) return false;
+        if (assignedProgram is null) return null;
 
         var workoutExercise = assignedProgram.Weeks
             .SelectMany(w => w.WorkoutDays)
             .SelectMany(d => d.Exercises)
             .FirstOrDefault(e => e.Sets.Any(s => s.Id == setId));
 
-        if (workoutExercise is null) return false;
+        if (workoutExercise is null) return null;
 
         var exerciseSet = workoutExercise.Sets.FirstOrDefault(s => s.Id == setId);
-        if (exerciseSet is null) return false;
+        if (exerciseSet is null) return null;
 
         workoutExercise.Sets.Remove(exerciseSet);
 
@@ -373,14 +396,14 @@ public class WorkoutSessionService(
         await assignedProgramRepository.UpdateAsync(assignedProgram);
         await unitOfWork.SaveChangesAsync();
 
-        return true;
+        return MapWorkoutExerciseToResponse(workoutExercise);
     }
 
     #endregion
 
     #region Superset and Drop Set Operations
 
-    public async Task<IEnumerable<WorkoutExerciseResponse>?> GroupExercisesInSupersetAsync(
+    public async Task<WorkoutDayResponse?> GroupExercisesInSupersetAsync(
         Guid workoutDayId,
         GroupSupersetRequest request)
     {
@@ -401,8 +424,6 @@ public class WorkoutSessionService(
         // Generate a new superset group ID
         var supersetGroupId = Guid.NewGuid();
 
-        var exercises = new List<WorkoutExercise>();
-
         // Update all exercises to have the same superset group ID
         foreach (var exerciseId in request.ExerciseIds)
         {
@@ -412,20 +433,19 @@ public class WorkoutSessionService(
 
             exercise.SupersetGroupId = supersetGroupId;
             exercise.SupersetRestSeconds = request.SupersetRestSeconds;
-            exercises.Add(exercise);
         }
 
         await assignedProgramRepository.UpdateAsync(assignedProgram);
         await unitOfWork.SaveChangesAsync();
 
-        return exercises.Select(e => MapWorkoutExerciseToResponse(e));
+        return MapWorkoutDayToResponse(workoutDay);
     }
 
-    public async Task<bool> UngroupExercisesFromSupersetAsync(Guid supersetGroupId)
+    public async Task<WorkoutDayResponse?> UngroupExercisesFromSupersetAsync(Guid supersetGroupId)
     {
         // Find any exercise with this superset group ID to get the assigned program
         var assignedProgram = await assignedProgramRepository.GetBySupersetGroupIdAsync(supersetGroupId);
-        if (assignedProgram is null) return false;
+        if (assignedProgram is null) return null;
 
         // Find all exercises with this superset group ID
         var exercises = assignedProgram.Weeks
@@ -434,7 +454,13 @@ public class WorkoutSessionService(
             .Where(e => e.SupersetGroupId == supersetGroupId)
             .ToList();
 
-        if (!exercises.Any()) return false;
+        if (!exercises.Any()) return null;
+
+        var workoutDay = assignedProgram.Weeks
+            .SelectMany(w => w.WorkoutDays)
+            .FirstOrDefault(d => d.Exercises.Any(e => e.SupersetGroupId == supersetGroupId));
+
+        if (workoutDay is null) return null;
 
         // Remove superset grouping
         foreach (var exercise in exercises)
@@ -446,10 +472,10 @@ public class WorkoutSessionService(
         await assignedProgramRepository.UpdateAsync(assignedProgram);
         await unitOfWork.SaveChangesAsync();
 
-        return true;
+        return MapWorkoutDayToResponse(workoutDay);
     }
 
-    public async Task<IEnumerable<ExerciseSetResponse>?> CreateDropSetSequenceAsync(
+    public async Task<WorkoutExerciseResponse?> CreateDropSetSequenceAsync(
         Guid workoutExerciseId,
         CreateDropSetRequest request)
     {
@@ -464,7 +490,6 @@ public class WorkoutSessionService(
         if (workoutExercise is null) return null;
 
         // Generate the drop set sequence
-        var sets = new List<ExerciseSet>();
         var currentWeight = request.StartingWeight;
         var currentReps = request.StartingReps;
 
@@ -489,7 +514,6 @@ public class WorkoutSessionService(
             };
 
             workoutExercise.Sets.Add(set);
-            sets.Add(set);
             await assignedProgramRepository.AddExerciseSetAsync(set);
 
             // Calculate next drop (if not the last iteration)
@@ -502,12 +526,23 @@ public class WorkoutSessionService(
 
         await unitOfWork.SaveChangesAsync();
 
-        return sets.Select(MapExerciseSetToResponse);
+        return MapWorkoutExerciseToResponse(workoutExercise);
     }
 
     #endregion
 
     #region Mapping Helpers
+
+    private static ProgrammeWeekResponse MapWeekToResponse(ProgrammeWeek week)
+    {
+        return new ProgrammeWeekResponse(
+            week.Id,
+            week.WeekStartDate,
+            week.WeekNumber,
+            week.Notes,
+            week.IsCompleted,
+            week.WorkoutDays.Select(MapWorkoutDayToResponse));
+    }
 
     private static WorkoutDayResponse MapWorkoutDayToResponse(WorkoutDay day)
     {

@@ -46,22 +46,21 @@ public class CachedWorkoutSessionService(
 
     #region Write Operations (Cache Invalidation)
 
-    public async Task<WorkoutDayResponse?> CreateWorkoutDayAsync(Guid weekId, CreateWorkoutDayRequest request)
+    public async Task<ProgrammeWeekResponse?> CreateWorkoutDayAsync(Guid weekId, CreateWorkoutDayRequest request)
     {
         var result = await innerService.CreateWorkoutDayAsync(weekId, request);
 
         if (result != null)
         {
-            await InvalidateWorkoutDayCache(result.Id);
             await InvalidateProgrammeCacheByWeekId(weekId);
         }
 
-        logger.LogInformation("Created workout day {WorkoutDayId} for week {WeekId}, invalidated caches", result?.Id, weekId);
+        logger.LogInformation("Created workout day for week {WeekId}, invalidated caches", weekId);
 
         return result;
     }
 
-    public async Task<WorkoutDayResponse?> UpdateWorkoutDayAsync(Guid workoutDayId, UpdateWorkoutDayRequest request)
+    public async Task<ProgrammeWeekResponse?> UpdateWorkoutDayAsync(Guid workoutDayId, UpdateWorkoutDayRequest request)
     {
         var result = await innerService.UpdateWorkoutDayAsync(workoutDayId, request);
 
@@ -76,14 +75,14 @@ public class CachedWorkoutSessionService(
         return result;
     }
 
-    public async Task<bool> DeleteWorkoutDayAsync(Guid workoutDayId)
+    public async Task<ProgrammeWeekResponse?> DeleteWorkoutDayAsync(Guid workoutDayId)
     {
         // Get programme ID before deletion
         var assignedProgram = await assignedProgramRepository.GetByWorkoutDayIdAsync(workoutDayId);
 
         var result = await innerService.DeleteWorkoutDayAsync(workoutDayId);
 
-        if (result && assignedProgram != null)
+        if (result != null && assignedProgram != null)
         {
             await InvalidateWorkoutDayCache(workoutDayId);
             await InvalidateProgrammeCaches(assignedProgram.Id, assignedProgram.AthleteId);
@@ -94,7 +93,7 @@ public class CachedWorkoutSessionService(
         return result;
     }
 
-    public async Task<WorkoutDayResponse?> CompleteWorkoutAsync(Guid workoutDayId, CompleteWorkoutRequest request)
+    public async Task<ProgrammeWeekResponse?> CompleteWorkoutAsync(Guid workoutDayId, CompleteWorkoutRequest request)
     {
         var result = await innerService.CompleteWorkoutAsync(workoutDayId, request);
 
@@ -109,7 +108,7 @@ public class CachedWorkoutSessionService(
         return result;
     }
 
-    public async Task<WorkoutExerciseResponse?> AddExerciseToWorkoutAsync(Guid workoutDayId, AddWorkoutExerciseRequest request)
+    public async Task<WorkoutDayResponse?> AddExerciseToWorkoutAsync(Guid workoutDayId, AddWorkoutExerciseRequest request)
     {
         var result = await innerService.AddExerciseToWorkoutAsync(workoutDayId, request);
 
@@ -120,12 +119,12 @@ public class CachedWorkoutSessionService(
             await InvalidateProgrammeCacheByWorkoutDayId(workoutDayId);
         }
 
-        logger.LogInformation("Added exercise {ExerciseId} to workout day {WorkoutDayId}, invalidated caches", result?.Id, workoutDayId);
+        logger.LogInformation("Added exercise to workout day {WorkoutDayId}, invalidated caches", workoutDayId);
 
         return result;
     }
 
-    public async Task<WorkoutExerciseResponse?> UpdateWorkoutExerciseAsync(Guid workoutExerciseId, UpdateWorkoutExerciseRequest request)
+    public async Task<WorkoutDayResponse?> UpdateWorkoutExerciseAsync(Guid workoutExerciseId, UpdateWorkoutExerciseRequest request)
     {
         var result = await innerService.UpdateWorkoutExerciseAsync(workoutExerciseId, request);
 
@@ -140,14 +139,14 @@ public class CachedWorkoutSessionService(
         return result;
     }
 
-    public async Task<bool> RemoveExerciseFromWorkoutAsync(Guid workoutExerciseId)
+    public async Task<WorkoutDayResponse?> RemoveExerciseFromWorkoutAsync(Guid workoutExerciseId)
     {
         // Get programme ID before deletion
         var assignedProgram = await assignedProgramRepository.GetByWorkoutExerciseIdAsync(workoutExerciseId);
 
         var result = await innerService.RemoveExerciseFromWorkoutAsync(workoutExerciseId);
 
-        if (result && assignedProgram != null)
+        if (result != null && assignedProgram != null)
         {
             await InvalidateWorkoutExerciseCache(workoutExerciseId);
             await InvalidateProgrammeCaches(assignedProgram.Id, assignedProgram.AthleteId);
@@ -158,11 +157,11 @@ public class CachedWorkoutSessionService(
         return result;
     }
 
-    public async Task<bool> ReorderExercisesAsync(Guid workoutDayId, List<Guid> workoutExerciseIds)
+    public async Task<WorkoutDayResponse?> ReorderExercisesAsync(Guid workoutDayId, List<Guid> workoutExerciseIds)
     {
         var result = await innerService.ReorderExercisesAsync(workoutDayId, workoutExerciseIds);
 
-        if (result)
+        if (result != null)
         {
             // Invalidate the workout day cache since exercise order changed
             await InvalidateWorkoutDayCache(workoutDayId);
@@ -174,7 +173,7 @@ public class CachedWorkoutSessionService(
         return result;
     }
 
-    public async Task<ExerciseSetResponse?> AddSetAsync(Guid workoutExerciseId, CreateExerciseSetRequest request)
+    public async Task<WorkoutExerciseResponse?> AddSetAsync(Guid workoutExerciseId, CreateExerciseSetRequest request)
     {
         var result = await innerService.AddSetAsync(workoutExerciseId, request);
 
@@ -185,12 +184,12 @@ public class CachedWorkoutSessionService(
             await InvalidateProgrammeCacheByWorkoutExerciseId(workoutExerciseId);
         }
 
-        logger.LogInformation("Added set {SetId} to workout exercise {WorkoutExerciseId}, invalidated caches", result?.Id, workoutExerciseId);
+        logger.LogInformation("Added set to workout exercise {WorkoutExerciseId}, invalidated caches", workoutExerciseId);
 
         return result;
     }
 
-    public async Task<ExerciseSetResponse?> UpdateSetAsync(Guid setId, UpdateExerciseSetRequest request)
+    public async Task<WorkoutExerciseResponse?> UpdateSetAsync(Guid setId, UpdateExerciseSetRequest request)
     {
         var result = await innerService.UpdateSetAsync(setId, request);
 
@@ -205,7 +204,7 @@ public class CachedWorkoutSessionService(
         return result;
     }
 
-    public async Task<ExerciseSetResponse?> CompleteSetAsync(Guid setId, CompleteSetRequest request)
+    public async Task<WorkoutExerciseResponse?> CompleteSetAsync(Guid setId, CompleteSetRequest request)
     {
         var result = await innerService.CompleteSetAsync(setId, request);
 
@@ -220,14 +219,14 @@ public class CachedWorkoutSessionService(
         return result;
     }
 
-    public async Task<bool> DeleteSetAsync(Guid setId)
+    public async Task<WorkoutExerciseResponse?> DeleteSetAsync(Guid setId)
     {
         // Get programme ID before deletion
         var assignedProgram = await assignedProgramRepository.GetByExerciseSetIdAsync(setId);
 
         var result = await innerService.DeleteSetAsync(setId);
 
-        if (result && assignedProgram != null)
+        if (result != null && assignedProgram != null)
         {
             await InvalidateExerciseSetCache(setId);
             await InvalidateProgrammeCaches(assignedProgram.Id, assignedProgram.AthleteId);
@@ -238,7 +237,7 @@ public class CachedWorkoutSessionService(
         return result;
     }
 
-    public async Task<IEnumerable<WorkoutExerciseResponse>?> GroupExercisesInSupersetAsync(Guid workoutDayId, GroupSupersetRequest request)
+    public async Task<WorkoutDayResponse?> GroupExercisesInSupersetAsync(Guid workoutDayId, GroupSupersetRequest request)
     {
         var result = await innerService.GroupExercisesInSupersetAsync(workoutDayId, request);
 
@@ -260,14 +259,14 @@ public class CachedWorkoutSessionService(
         return result;
     }
 
-    public async Task<bool> UngroupExercisesFromSupersetAsync(Guid supersetGroupId)
+    public async Task<WorkoutDayResponse?> UngroupExercisesFromSupersetAsync(Guid supersetGroupId)
     {
         // Get programme ID before ungrouping
         var assignedProgram = await assignedProgramRepository.GetBySupersetGroupIdAsync(supersetGroupId);
 
         var result = await innerService.UngroupExercisesFromSupersetAsync(supersetGroupId);
 
-        if (result && assignedProgram != null)
+        if (result != null && assignedProgram != null)
         {
             await InvalidateProgrammeCaches(assignedProgram.Id, assignedProgram.AthleteId);
             logger.LogInformation("Ungrouped exercises from superset {SupersetGroupId}, invalidated programme caches", supersetGroupId);
@@ -276,7 +275,7 @@ public class CachedWorkoutSessionService(
         return result;
     }
 
-    public async Task<IEnumerable<ExerciseSetResponse>?> CreateDropSetSequenceAsync(Guid workoutExerciseId, CreateDropSetRequest request)
+    public async Task<WorkoutExerciseResponse?> CreateDropSetSequenceAsync(Guid workoutExerciseId, CreateDropSetRequest request)
     {
         var result = await innerService.CreateDropSetSequenceAsync(workoutExerciseId, request);
 
