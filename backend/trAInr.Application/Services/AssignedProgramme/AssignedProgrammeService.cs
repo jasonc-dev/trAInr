@@ -245,6 +245,7 @@ public class AssignedProgrammeService(
     {
         return new ProgrammeWeekResponse(
             week.Id,
+            week.AssignedProgramId,
             week.WeekStartDate,
             week.WeekNumber,
             week.Notes,

@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using trAInr.Application.Constants;
 using trAInr.Application.DTOs;
+using trAInr.Application.Helpers;
 using trAInr.Application.Interfaces;
 using trAInr.Application.Interfaces.Services;
 
@@ -19,113 +20,55 @@ public class CachedAssignedProgrammeService(
 
     public async Task<ProgrammeResponse?> GetByIdAsync(Guid id)
     {
-        var cacheKey = CacheKeys.ProgrammeById(id);
-
-        // Try to get from cache first
-        var cachedResult = await cacheProvider.GetAsync<ProgrammeResponse>(cacheKey);
-        if (cachedResult != null)
-        {
-            return cachedResult;
-        }
-
-        // Cache miss - get from service and cache the result
-        var result = await innerService.GetByIdAsync(id);
-        if (result != null)
-        {
-            await cacheProvider.SetAsync(cacheKey, result);
-        }
-
-        return result;
+        return await cacheProvider.GetOrSetNullableAsync(
+            CacheKeys.ProgrammeById(id),
+            () => innerService.GetByIdAsync(id));
     }
 
     public async Task<IEnumerable<ProgrammeSummaryResponse>> GetByAthleteIdAsync(Guid athleteId)
     {
-        var cacheKey = CacheKeys.ProgrammesByAthlete(athleteId);
-
-        // Try to get from cache first
-        var cachedResult = await cacheProvider.GetAsync<List<ProgrammeSummaryResponse>>(cacheKey);
-        if (cachedResult != null)
-        {
-            return cachedResult;
-        }
-
-        // Cache miss - get from service and cache the result
-        var result = await innerService.GetByAthleteIdAsync(athleteId);
-        var resultList = result.ToList();
-
-        if (resultList.Any())
-        {
-            await cacheProvider.SetAsync(cacheKey, resultList);
-        }
-
-        return resultList;
-    }
-
-    public async Task<ProgrammeSummaryResponse?> GetActiveByAthleteIdAsync(Guid athleteId)
-    {
-        var cacheKey = CacheKeys.ActiveProgrammeByAthlete(athleteId);
-
-        // Try to get from cache first
-        var cachedResult = await cacheProvider.GetAsync<ProgrammeSummaryResponse>(cacheKey);
-        if (cachedResult != null)
-        {
-            return cachedResult;
-        }
-
-        // Cache miss - get from service and cache the result
-        var result = await innerService.GetActiveByAthleteIdAsync(athleteId);
-        if (result != null)
-        {
-            await cacheProvider.SetAsync(cacheKey, result);
-        }
+        var result = await cacheProvider.GetOrSetAsync(
+            CacheKeys.ProgrammesByAthlete(athleteId),
+            async () =>
+            {
+                var programmes = await innerService.GetByAthleteIdAsync(athleteId);
+                return programmes.ToList();
+            });
 
         return result;
     }
 
+    public async Task<ProgrammeSummaryResponse?> GetActiveByAthleteIdAsync(Guid athleteId)
+    {
+        return await cacheProvider.GetOrSetNullableAsync(
+            CacheKeys.ActiveProgrammeByAthlete(athleteId),
+            () => innerService.GetActiveByAthleteIdAsync(athleteId));
+    }
+
     public async Task<IEnumerable<ProgrammeSummaryResponse>> GetPreMadeProgrammesAsync()
     {
-        var cacheKey = CacheKeys.PreMadeProgrammeTemplates;
+        var result = await cacheProvider.GetOrSetAsync(
+            CacheKeys.PreMadeProgrammeTemplates,
+            async () =>
+            {
+                var programmes = await innerService.GetPreMadeProgrammesAsync();
+                return programmes.ToList();
+            });
 
-        // Try to get from cache first
-        var cachedResult = await cacheProvider.GetAsync<List<ProgrammeSummaryResponse>>(cacheKey);
-        if (cachedResult != null)
-        {
-            return cachedResult;
-        }
-
-        // Cache miss - get from service and cache the result
-        var result = await innerService.GetPreMadeProgrammesAsync();
-        var resultList = result.ToList();
-
-        if (resultList.Any())
-        {
-            await cacheProvider.SetAsync(cacheKey, resultList);
-        }
-
-        return resultList;
+        return result;
     }
 
     public async Task<IEnumerable<ProgrammeSummaryResponse>> GetProgrammesCreatedByAthleteAsync(Guid athleteId)
     {
-        var cacheKey = CacheKeys.CreatedProgrammeTemplates(athleteId);
+        var result = await cacheProvider.GetOrSetAsync(
+            CacheKeys.CreatedProgrammeTemplates(athleteId),
+            async () =>
+            {
+                var programmes = await innerService.GetProgrammesCreatedByAthleteAsync(athleteId);
+                return programmes.ToList();
+            });
 
-        // Try to get from cache first
-        var cachedResult = await cacheProvider.GetAsync<List<ProgrammeSummaryResponse>>(cacheKey);
-        if (cachedResult != null)
-        {
-            return cachedResult;
-        }
-
-        // Cache miss - get from service and cache the result
-        var result = await innerService.GetProgrammesCreatedByAthleteAsync(athleteId);
-        var resultList = result.ToList();
-
-        if (resultList.Any())
-        {
-            await cacheProvider.SetAsync(cacheKey, resultList);
-        }
-
-        return resultList;
+        return result;
     }
 
     #endregion

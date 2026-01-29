@@ -75,7 +75,7 @@ export interface WorkoutExerciseSummary {
 }
 
 export interface AddWorkoutExerciseRequest {
-  exerciseId: number;
+  exerciseDefinitionId: number;
   orderIndex: number;
   targetSets: number;
   targetReps: number;

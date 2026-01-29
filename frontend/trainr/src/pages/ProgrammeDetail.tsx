@@ -571,7 +571,7 @@ export const ProgrammeDetail: React.FC = () => {
       const orderIndex = workoutDay?.exercises.length || 0;
 
       const response = await workoutsApi.addExercise(selectedWorkoutDayId, {
-        exerciseId,
+        exerciseDefinitionId: exerciseId,
         orderIndex,
         targetSets: newExercise.targetSets,
         targetReps: newExercise.targetReps,

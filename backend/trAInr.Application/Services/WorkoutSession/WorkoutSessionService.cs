@@ -537,6 +537,7 @@ public class WorkoutSessionService(
     {
         return new ProgrammeWeekResponse(
             week.Id,
+            week.AssignedProgramId,
             week.WeekStartDate,
             week.WeekNumber,
             week.Notes,

@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using trAInr.Application.Constants;
 using trAInr.Application.DTOs;
+using trAInr.Application.Helpers;
 using trAInr.Application.Interfaces;
 using trAInr.Application.Interfaces.Repositories;
 using trAInr.Application.Interfaces.Services;
@@ -22,25 +23,10 @@ public class CachedWorkoutSessionService(
 
     public async Task<WorkoutDayResponse?> GetWorkoutDayAsync(Guid workoutDayId)
     {
-        var cacheKey = CacheKeys.WorkoutDayById(workoutDayId);
-
-        var cachedResult = await cacheProvider.GetAsync<WorkoutDayResponse>(cacheKey);
-
-        if (cachedResult != null)
-        {
-            return cachedResult;
-        }
-
-        var result = await innerService.GetWorkoutDayAsync(workoutDayId);
-
-        if (result != null)
-        {
-            await cacheProvider.SetAsync(cacheKey, result);
-        }
-
-        return result;
+        return await cacheProvider.GetOrSetNullableAsync(
+            CacheKeys.WorkoutDayById(workoutDayId),
+            () => innerService.GetWorkoutDayAsync(workoutDayId));
     }
-
 
     #endregion
 
@@ -117,9 +103,13 @@ public class CachedWorkoutSessionService(
             // Invalidate the workout day cache since it contains the exercises list
             await InvalidateWorkoutDayCache(workoutDayId);
             await InvalidateProgrammeCacheByWorkoutDayId(workoutDayId);
-        }
 
-        logger.LogInformation("Added exercise to workout day {WorkoutDayId}, invalidated caches", workoutDayId);
+            logger.LogInformation("Added exercise to workout day {WorkoutDayId}, invalidated caches", workoutDayId);
+        }
+        else
+        {
+            logger.LogWarning("Failed to add exercise to workout day {WorkoutDayId}", workoutDayId);
+        }
 
         return result;
     }

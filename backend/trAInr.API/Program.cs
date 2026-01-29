@@ -11,6 +11,7 @@ using trAInr.Application.Interfaces.Services.AI;
 using trAInr.Application.Services;
 using trAInr.Application.Services.AI;
 using trAInr.Application.Services.AssignedProgramme;
+using trAInr.Application.Services.Exercise;
 using trAInr.Application.Services.WorkoutSession;
 using trAInr.Infrastructure.Api;
 using trAInr.Infrastructure.Data;
@@ -97,7 +98,15 @@ builder.Services.AddScoped<IAssignedProgrammeService>(sp =>
     return new CachedAssignedProgrammeService(innerService, cacheProvider, logger);
 });
 
-builder.Services.AddScoped<IExerciseDefinitionService, ExerciseDefinitionService>();
+// Register ExerciseDefinitionService with caching decorator pattern
+builder.Services.AddScoped<ExerciseDefinitionService>();
+builder.Services.AddScoped<IExerciseDefinitionService>(sp =>
+{
+    var innerService = sp.GetRequiredService<ExerciseDefinitionService>();
+    var cacheProvider = sp.GetRequiredService<ICacheProvider>();
+    var logger = sp.GetRequiredService<ILogger<CachedExerciseDefinitionService>>();
+    return new CachedExerciseDefinitionService(innerService, cacheProvider, logger);
+});
 
 // Register WorkoutSessionService with caching decorator pattern
 builder.Services.AddScoped<WorkoutSessionService>();

@@ -60,4 +60,39 @@ public static class CacheKeys
     public static string ExerciseSetById(Guid exerciseSetId) => $"workout:set:id:{exerciseSetId}";
 
     #endregion
+
+    #region Exercise Definition Cache Keys
+
+    /// <summary>
+    /// Cache key for all exercise definitions.
+    /// Pattern: "exercise:all"
+    /// </summary>
+    public const string AllExercises = "exercise:all";
+
+    /// <summary>
+    /// Cache key for a specific exercise definition by ID.
+    /// Pattern: "exercise:id:{exerciseId}"
+    /// </summary>
+    public static string ExerciseById(int exerciseId) => $"exercise:id:{exerciseId}";
+
+    /// <summary>
+    /// Cache key for exercises by type.
+    /// Pattern: "exercise:type:{exerciseType}"
+    /// </summary>
+    public static string ExercisesByType(string exerciseType) => $"exercise:type:{exerciseType}";
+
+    /// <summary>
+    /// Cache key for exercises by muscle group.
+    /// Pattern: "exercise:musclegroup:{muscleGroup}"
+    /// </summary>
+    public static string ExercisesByMuscleGroup(string muscleGroup) => $"exercise:musclegroup:{muscleGroup}";
+
+    /// <summary>
+    /// Cache key for exercise search results.
+    /// Pattern: "exercise:search:{query}:{type}:{muscleGroup}"
+    /// </summary>
+    public static string ExerciseSearch(string? query, string? type, string? muscleGroup)
+        => $"exercise:search:{query ?? "all"}:{type ?? "all"}:{muscleGroup ?? "all"}";
+
+    #endregion
 }
