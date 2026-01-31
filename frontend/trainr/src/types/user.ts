@@ -15,6 +15,7 @@ export interface User {
   fitnessLevel: FitnessLevel;
   primaryGoal: FitnessGoal;
   workoutDaysPerWeek: number;
+  equipmentPreferences: string[];
   role: UserRole;
   createdAt: string;
   updatedAt: string;
@@ -43,11 +44,10 @@ export interface CreateUserRequest {
 }
 
 export interface UpdateUserRequest {
-  email?: string;
-  firstName?: string;
-  lastName?: string;
-  dateOfBirth?: string;
-  fitnessLevel?: FitnessLevel;
-  primaryGoal?: FitnessGoal;
-  workoutDaysPerWeek?: number;
+  firstName: string;
+  lastName: string;
+  fitnessLevel: FitnessLevel;
+  primaryGoal: FitnessGoal;
+  workoutDaysPerWeek: number;
+  equipmentPreferences?: string[];
 }

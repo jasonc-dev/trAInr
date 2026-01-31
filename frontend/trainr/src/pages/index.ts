@@ -6,3 +6,4 @@ export { ProgrammeDetail } from "./ProgrammeDetail";
 export { Workout } from "./Workout";
 export { WorkoutDetail } from "./WorkoutDetail";
 export { Exercises } from "./Exercises";
+export { Profile } from "./Profile";

@@ -2,6 +2,7 @@ import React from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { useAuth } from "../../hooks/useAuth";
+import { useUser } from "../../hooks/useUser";
 
 const Nav = styled.nav`
   position: fixed;
@@ -61,7 +62,7 @@ const NavLinks = styled.div`
 const MenuButton = styled.button`
   display: none;
   padding: ${({ theme }) => theme.spacing.xs} ${({ theme }) =>
-  theme.spacing.sm};
+    theme.spacing.sm};
   border-radius: ${({ theme }) => theme.radii.md};
   border: 1px solid ${({ theme }) => theme.colors.border};
   background: ${({ theme }) => theme.colors.surface};
@@ -112,7 +113,7 @@ const MobileNavLinks = styled.div`
   }
 `;
 
-const NavLink = styled(Link)<{ $active?: boolean }>`
+const NavLink = styled(Link) <{ $active?: boolean }>`
   padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.md};
   font-size: ${({ theme }) => theme.fontSizes.md};
   font-weight: ${({ theme }) => theme.fontWeights.medium};
@@ -157,11 +158,93 @@ const LogoutButton = styled.button`
   }
 `;
 
+const UserMenuWrapper = styled.div`
+  position: relative;
+`;
+
+const UserAvatar = styled.button`
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(
+    135deg,
+    ${({ theme }) => theme.colors.primary} 0%,
+    ${({ theme }) => theme.colors.secondary} 100%
+  );
+  color: ${({ theme }) => theme.colors.background};
+  font-weight: ${({ theme }) => theme.fontWeights.bold};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  border: 2px solid ${({ theme }) => theme.colors.border};
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all ${({ theme }) => theme.transitions.fast};
+
+  &:hover {
+    transform: scale(1.05);
+    border-color: ${({ theme }) => theme.colors.primary};
+  }
+`;
+
+const DropdownMenu = styled.div<{ $isOpen: boolean }>`
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 200px;
+  background: ${({ theme }) => theme.colors.surface};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: ${({ theme }) => theme.radii.lg};
+  box-shadow: ${({ theme }) => theme.shadows.lg};
+  padding: ${({ theme }) => theme.spacing.sm};
+  display: ${({ $isOpen }) => ($isOpen ? 'block' : 'none')};
+  z-index: 1001;
+`;
+
+const DropdownItem = styled(Link)`
+  display: flex;
+  align-items: center;
+  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.md};
+  color: ${({ theme }) => theme.colors.text};
+  text-decoration: none;
+  border-radius: ${({ theme }) => theme.radii.md};
+  transition: all ${({ theme }) => theme.transitions.fast};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  font-weight: ${({ theme }) => theme.fontWeights.medium};
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.backgroundSecondary};
+  }
+`;
+
+const DropdownButton = styled.button`
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.md};
+  color: ${({ theme }) => theme.colors.error};
+  background: none;
+  border: none;
+  border-radius: ${({ theme }) => theme.radii.md};
+  transition: all ${({ theme }) => theme.transitions.fast};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  font-weight: ${({ theme }) => theme.fontWeights.medium};
+  cursor: pointer;
+  text-align: left;
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.errorLight};
+  }
+`;
+
 export const Navigation: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { logout } = useAuth();
+  const { user } = useUser();
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = React.useState(false);
+  const dropdownRef = React.useRef<HTMLDivElement>(null);
   const isActive = (path: string) => location.pathname === path;
 
   const handleLogout = () => {
@@ -169,9 +252,27 @@ export const Navigation: React.FC = () => {
     navigate("/login");
   };
 
+  const getUserInitials = () => {
+    if (user?.firstName && user?.lastName) {
+      return `${user.firstName[0]}${user.lastName[0]}`.toUpperCase();
+    }
+    return user?.username?.[0]?.toUpperCase() || 'U';
+  };
+
   React.useEffect(() => {
     setIsMenuOpen(false);
   }, [location.pathname]);
+
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   return (
     <Nav>
@@ -205,10 +306,27 @@ export const Navigation: React.FC = () => {
             <IconWrapper>💪</IconWrapper>
             Exercises
           </NavLink>
-          <LogoutButton onClick={handleLogout}>
-            <IconWrapper>🚪</IconWrapper>
-            Logout
-          </LogoutButton>
+          <UserMenuWrapper ref={dropdownRef}>
+            <UserAvatar onClick={() => setIsDropdownOpen(!isDropdownOpen)}>
+              {getUserInitials()}
+            </UserAvatar>
+            <DropdownMenu $isOpen={isDropdownOpen}>
+              <DropdownItem
+                to="/profile"
+                onClick={() => setIsDropdownOpen(false)}
+              >
+                <IconWrapper>👤</IconWrapper>
+                Profile
+              </DropdownItem>
+              <DropdownButton onClick={() => {
+                setIsDropdownOpen(false);
+                handleLogout();
+              }}>
+                <IconWrapper>🚪</IconWrapper>
+                Logout
+              </DropdownButton>
+            </DropdownMenu>
+          </UserMenuWrapper>
         </NavLinks>
       </NavContainer>
       <MobileMenu $isOpen={isMenuOpen}>
@@ -244,6 +362,14 @@ export const Navigation: React.FC = () => {
           >
             <IconWrapper>💪</IconWrapper>
             Exercises
+          </NavLink>
+          <NavLink
+            to="/profile"
+            $active={isActive("/profile")}
+            onClick={() => setIsMenuOpen(false)}
+          >
+            <IconWrapper>👤</IconWrapper>
+            Profile
           </NavLink>
           <LogoutButton
             onClick={() => {

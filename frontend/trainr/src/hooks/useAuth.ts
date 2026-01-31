@@ -3,10 +3,21 @@
  * Manages authentication state and operations
  */
 
-import { useState, useEffect, useCallback } from 'react';
-import { authApi, setAuthToken, removeAuthToken, getAuthToken } from '../services';
-import { AuthResponse, LoginRequest, RegisterRequest, StoredUser } from '../types';
-import { STORAGE_KEYS } from '../config';
+import { useState, useEffect, useCallback } from "react";
+import {
+  authApi,
+  setAuthToken,
+  removeAuthToken,
+  getAuthToken,
+} from "../services";
+import { athleteApi } from "../services/api/athleteApi";
+import {
+  AuthResponse,
+  LoginRequest,
+  RegisterRequest,
+  StoredUser,
+} from "../types";
+import { STORAGE_KEYS } from "../config";
 
 export const useAuth = () => {
   const [user, setUser] = useState<StoredUser | null>(null);
@@ -44,21 +55,50 @@ export const useAuth = () => {
     }
   }, [logout]);
 
-  const handleAuthSuccess = useCallback((response: AuthResponse) => {
-    const storedUser: StoredUser = {
-      id: response.id,
-      username: response.username,
-      email: response.email,
-      firstName: response.firstName,
-      lastName: response.lastName,
-      expiresAt: response.expiresAt.toString(),
-    };
-
+  const handleAuthSuccess = useCallback(async (response: AuthResponse) => {
+    // Set the token first so the next API call is authenticated
     setAuthToken(response.token);
-    localStorage.setItem(STORAGE_KEYS.user, JSON.stringify(storedUser));
-    setUser(storedUser);
-    setIsAuthenticated(true);
-    setError(null);
+
+    try {
+      // Fetch the full user profile to get fitness data
+      const profileResponse = await athleteApi.getCurrentUser();
+      const fullProfile = profileResponse.data;
+
+      const storedUser: StoredUser = {
+        id: response.id,
+        username: response.username,
+        email: response.email,
+        firstName: response.firstName,
+        lastName: response.lastName,
+        fitnessLevel: fullProfile.fitnessLevel,
+        primaryGoal: fullProfile.primaryGoal,
+        workoutDaysPerWeek: fullProfile.workoutDaysPerWeek,
+        expiresAt: response.expiresAt.toString(),
+      };
+
+      localStorage.setItem(STORAGE_KEYS.user, JSON.stringify(storedUser));
+      setUser(storedUser);
+      setIsAuthenticated(true);
+      setError(null);
+    } catch (err) {
+      // Fallback to basic user data if profile fetch fails
+      const storedUser: StoredUser = {
+        id: response.id,
+        username: response.username,
+        email: response.email,
+        firstName: response.firstName,
+        lastName: response.lastName,
+        fitnessLevel: 0, // Default beginner
+        primaryGoal: 4, // Default general fitness
+        workoutDaysPerWeek: 3, // Default 3 days
+        expiresAt: response.expiresAt.toString(),
+      };
+
+      localStorage.setItem(STORAGE_KEYS.user, JSON.stringify(storedUser));
+      setUser(storedUser);
+      setIsAuthenticated(true);
+      setError(null);
+    }
   }, []);
 
   const login = async (request: LoginRequest): Promise<AuthResponse> => {
@@ -66,10 +106,11 @@ export const useAuth = () => {
       setLoading(true);
       setError(null);
       const response = await authApi.login(request);
-      handleAuthSuccess(response.data);
+      await handleAuthSuccess(response.data);
       return response.data;
     } catch (err: any) {
-      const message = err.response?.data?.message || 'Invalid username or password';
+      const message =
+        err.response?.data?.message || "Invalid username or password";
       setError(message);
       throw new Error(message);
     } finally {
@@ -82,10 +123,10 @@ export const useAuth = () => {
       setLoading(true);
       setError(null);
       const response = await authApi.register(request);
-      handleAuthSuccess(response.data);
+      await handleAuthSuccess(response.data);
       return response.data;
     } catch (err: any) {
-      const message = err.response?.data?.message || 'Registration failed';
+      const message = err.response?.data?.message || "Registration failed";
       setError(message);
       throw new Error(message);
     } finally {

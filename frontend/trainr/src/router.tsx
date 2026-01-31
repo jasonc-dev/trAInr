@@ -35,6 +35,9 @@ const WorkoutDetailPage = React.lazy(() =>
 const ExercisesPage = React.lazy(() =>
   import("./pages/Exercises").then((m) => ({ default: m.Exercises }))
 );
+const ProfilePage = React.lazy(() =>
+  import("./pages/Profile").then((m) => ({ default: m.Profile }))
+);
 
 // Loading fallback
 const PageLoader: React.FC = () => (
@@ -99,6 +102,7 @@ export const ROUTES = {
   WORKOUT: "/workout",
   WORKOUT_DETAIL: "/workout/:workoutId",
   EXERCISES: "/exercises",
+  PROFILE: "/profile",
 } as const;
 
 // Main router component
@@ -145,6 +149,7 @@ export const AppRouter: React.FC = () => {
               element={<WorkoutDetailPage />}
             />
             <Route path={ROUTES.EXERCISES} element={<ExercisesPage />} />
+            <Route path={ROUTES.PROFILE} element={<ProfilePage />} />
           </Route>
 
           {/* Fallback routes */}
