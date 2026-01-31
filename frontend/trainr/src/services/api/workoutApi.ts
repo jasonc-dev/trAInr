@@ -5,9 +5,8 @@
 
 import apiClient from "./client";
 import {
-  WorkoutDay,
-  WorkoutExercise,
-  ExerciseSet,
+  WorkoutDayResponse,
+  WorkoutExerciseResponse,
   CreateWorkoutDayRequest,
   UpdateWorkoutDayRequest,
   CompleteWorkoutRequest,
@@ -24,7 +23,7 @@ import {
 export const workoutApi = {
   // Workout Day operations
   getWorkoutDay: (id: string) =>
-    apiClient.get<WorkoutDay>(`/workoutsession/days/${id}`),
+    apiClient.get<WorkoutDayResponse>(`/workoutsession/days/${id}`),
 
   getWorkoutWeeks: (programmeId: string) =>
     apiClient.get<ProgrammeWeek[]>(
@@ -32,77 +31,91 @@ export const workoutApi = {
     ),
 
   getWorkoutDays: (weekId: string) =>
-    apiClient.get<WorkoutDay[]>(`/workoutsession/weeks/${weekId}/days`),
+    apiClient.get<WorkoutDayResponse[]>(`/workoutsession/weeks/${weekId}/days`),
 
+  // Workout Day operations - now return ProgrammeWeek
   createWorkoutDay: (weekId: string, request: CreateWorkoutDayRequest) =>
-    apiClient.post<WorkoutDay>(`/workoutsession/weeks/${weekId}/days`, request),
+    apiClient.post<ProgrammeWeek>(
+      `/workoutsession/weeks/${weekId}/days`,
+      request,
+    ),
 
   updateWorkoutDay: (id: string, request: UpdateWorkoutDayRequest) =>
-    apiClient.put<WorkoutDay>(`/workoutsession/days/${id}`, request),
+    apiClient.put<ProgrammeWeek>(`/workoutsession/days/${id}`, request),
 
   deleteWorkoutDay: (id: string) =>
-    apiClient.delete(`/workoutsession/days/${id}`),
+    apiClient.delete<ProgrammeWeek>(`/workoutsession/days/${id}`),
 
   completeWorkout: (id: string, request: CompleteWorkoutRequest) =>
-    apiClient.post<WorkoutDay>(`/workoutsession/days/${id}/complete`, request),
+    apiClient.post<ProgrammeWeek>(
+      `/workoutsession/days/${id}/complete`,
+      request,
+    ),
 
-  // Exercise operations
+  // Exercise operations - now return WorkoutDayResponse
   addExercise: (workoutDayId: string, request: AddWorkoutExerciseRequest) =>
-    apiClient.post<WorkoutExercise>(
+    apiClient.post<WorkoutDayResponse>(
       `/workoutsession/days/${workoutDayId}/exercises`,
       request,
     ),
 
   updateExercise: (exerciseId: number, request: UpdateWorkoutExerciseRequest) =>
-    apiClient.put<WorkoutExercise>(
+    apiClient.put<WorkoutDayResponse>(
       `/workoutsession/exercises/${exerciseId}`,
       request,
     ),
 
-  removeExercise: (exerciseId: number) =>
-    apiClient.delete(`/workoutsession/exercises/${exerciseId}`),
+  removeExercise: (exerciseId: string) =>
+    apiClient.delete<WorkoutDayResponse>(
+      `/workoutsession/exercises/${exerciseId}`,
+    ),
 
-  reorderExercises: (workoutDayId: string, exerciseIds: number[]) =>
-    apiClient.put(
+  reorderExercises: (workoutDayId: string, exerciseIds: string[]) =>
+    apiClient.put<WorkoutDayResponse>(
       `/workoutsession/days/${workoutDayId}/exercises/reorder`,
       exerciseIds,
     ),
 
-  // Set operations
-  addSet: (workoutExerciseId: number, request: CreateExerciseSetRequest) =>
-    apiClient.post<ExerciseSet>(
+  // Set operations - now return WorkoutExerciseResponse
+  addSet: (workoutExerciseId: string, request: CreateExerciseSetRequest) =>
+    apiClient.post<WorkoutExerciseResponse>(
       `/workoutsession/exercises/${workoutExerciseId}/sets`,
       request,
     ),
 
   updateSet: (setId: string, request: UpdateExerciseSetRequest) =>
-    apiClient.put<ExerciseSet>(`/workoutsession/sets/${setId}`, request),
+    apiClient.put<WorkoutExerciseResponse>(
+      `/workoutsession/sets/${setId}`,
+      request,
+    ),
 
   completeSet: (setId: string, request: CompleteSetRequest) =>
-    apiClient.post<ExerciseSet>(
+    apiClient.post<WorkoutExerciseResponse>(
       `/workoutsession/sets/${setId}/complete`,
       request,
     ),
 
   deleteSet: (setId: string) =>
-    apiClient.delete(`/workoutsession/sets/${setId}`),
+    apiClient.delete<WorkoutExerciseResponse>(`/workoutsession/sets/${setId}`),
 
-  // Superset operations
+  // Superset operations - now return WorkoutDayResponse
   groupSuperset: (workoutDayId: string, request: GroupSupersetRequest) =>
-    apiClient.put<WorkoutExercise[]>(
+    apiClient.put<WorkoutDayResponse>(
       `/workoutsession/days/${workoutDayId}/exercises/superset`,
       request,
     ),
 
   ungroupSuperset: (supersetGroupId: string) =>
-    apiClient.delete(`/workoutsession/exercises/superset/${supersetGroupId}`),
+    apiClient.delete<WorkoutDayResponse>(
+      `/workoutsession/exercises/superset/${supersetGroupId}`,
+    ),
 
-  // Drop set operations
+  // Drop set operations - now return WorkoutExerciseResponse
   createDropSetSequence: (
     workoutExerciseId: number,
     request: CreateDropSetRequest,
   ) =>
-    apiClient.post<ExerciseSet[]>(
+    apiClient.post<WorkoutExerciseResponse>(
       `/workoutsession/exercises/${workoutExerciseId}/dropsets`,
       request,
     ),

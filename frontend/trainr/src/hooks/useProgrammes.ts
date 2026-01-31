@@ -82,16 +82,17 @@ export const useProgrammes = (athleteId: string | undefined) => {
   }, [athleteId]);
 
   useEffect(() => {
+    loadPreMadeProgrammes();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (!athleteId) return;
     loadProgrammes();
     loadActiveProgramme();
-    loadPreMadeProgrammes();
     loadCreatedProgrammes();
-  }, [
-    loadProgrammes,
-    loadActiveProgramme,
-    loadPreMadeProgrammes,
-    loadCreatedProgrammes,
-  ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [athleteId]);
 
   const getProgramme = useCallback(async (id: string): Promise<Programme> => {
     const response = await programmeApi.getById(id);

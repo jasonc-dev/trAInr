@@ -1,7 +1,7 @@
 namespace trAInr.Application.DTOs;
 
 public record AddWorkoutExerciseRequest(
-    int ExerciseId,
+    int ExerciseDefinitionId,
     int OrderIndex,
     string? Notes,
     int TargetSets,
@@ -29,7 +29,7 @@ public record UpdateWorkoutExerciseRequest(
 
 public record WorkoutExerciseResponse(
     Guid Id,
-    int ExerciseId,
+    int ExerciseDefinitionId,
     string ExerciseName,
     int OrderIndex,
     string? Notes,
@@ -43,13 +43,6 @@ public record WorkoutExerciseResponse(
     Guid? SupersetGroupId,
     int? SupersetRestSeconds,
     IEnumerable<ExerciseSetResponse> Sets);
-
-public record WorkoutExerciseSummaryResponse(
-    Guid Id,
-    string ExerciseName,
-    int OrderIndex,
-    int TargetSets,
-    int CompletedSets);
 
 /// <summary>
 /// Request to group multiple exercises into a superset

@@ -6,10 +6,9 @@
 import { useState, useCallback } from "react";
 import { workoutApi, programmeApi } from "../services";
 import {
-  WorkoutDay,
-  WorkoutExercise,
+  WorkoutDayResponse,
+  WorkoutExerciseResponse,
   ProgrammeWeek,
-  ExerciseSet,
   CreateWorkoutDayRequest,
   UpdateWorkoutDayRequest,
   AddWorkoutExerciseRequest,
@@ -21,14 +20,30 @@ import {
   CreateDropSetRequest,
 } from "../types";
 
+/**
+ * Helper to update a specific exercise in the current workout
+ */
+const updateExerciseInWorkout = (
+  workout: WorkoutDayResponse,
+  updatedExercise: WorkoutExerciseResponse,
+): WorkoutDayResponse => {
+  return {
+    ...workout,
+    exercises: workout.exercises.map((ex) =>
+      ex.id === updatedExercise.id ? updatedExercise : ex,
+    ),
+  };
+};
+
 export const useWorkouts = () => {
-  const [currentWorkout, setCurrentWorkout] = useState<WorkoutDay | null>(null);
+  const [currentWorkout, setCurrentWorkout] =
+    useState<WorkoutDayResponse | null>(null);
   const [workoutWeeks, setWorkoutWeeks] = useState<ProgrammeWeek[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const loadWorkout = useCallback(
-    async (workoutDayId: string): Promise<WorkoutDay> => {
+    async (workoutDayId: string): Promise<WorkoutDayResponse> => {
       try {
         setLoading(true);
         setError(null);
@@ -67,7 +82,7 @@ export const useWorkouts = () => {
     async (
       weekId: string,
       request: CreateWorkoutDayRequest,
-    ): Promise<WorkoutDay> => {
+    ): Promise<ProgrammeWeek> => {
       try {
         setLoading(true);
         setError(null);
@@ -88,13 +103,15 @@ export const useWorkouts = () => {
     async (
       id: string,
       request: UpdateWorkoutDayRequest,
-    ): Promise<WorkoutDay> => {
+    ): Promise<ProgrammeWeek> => {
       try {
         setLoading(true);
         setError(null);
         const response = await workoutApi.updateWorkoutDay(id, request);
-        if (currentWorkout?.id === id) {
-          setCurrentWorkout(response.data);
+        // Extract the updated workout day from the returned week
+        const updatedDay = response.data.workoutDays.find((d) => d.id === id);
+        if (currentWorkout?.id === id && updatedDay) {
+          setCurrentWorkout(updatedDay);
         }
         return response.data;
       } catch (err: any) {
@@ -109,14 +126,15 @@ export const useWorkouts = () => {
   );
 
   const deleteWorkoutDay = useCallback(
-    async (id: string): Promise<void> => {
+    async (id: string): Promise<ProgrammeWeek> => {
       try {
         setLoading(true);
         setError(null);
-        await workoutApi.deleteWorkoutDay(id);
+        const response = await workoutApi.deleteWorkoutDay(id);
         if (currentWorkout?.id === id) {
           setCurrentWorkout(null);
         }
+        return response.data;
       } catch (err: any) {
         const message = err.response?.data || "Failed to delete workout day";
         setError(message);
@@ -132,15 +150,19 @@ export const useWorkouts = () => {
     async (
       workoutDayId: string,
       completedAt: Date = new Date(),
-    ): Promise<WorkoutDay> => {
+    ): Promise<ProgrammeWeek> => {
       try {
         setLoading(true);
         setError(null);
         const response = await workoutApi.completeWorkout(workoutDayId, {
           completedAt: completedAt.toISOString(),
         });
-        if (currentWorkout?.id === workoutDayId) {
-          setCurrentWorkout(response.data);
+        // Extract the updated workout day from the returned week
+        const updatedDay = response.data.workoutDays.find(
+          (d) => d.id === workoutDayId,
+        );
+        if (currentWorkout?.id === workoutDayId && updatedDay) {
+          setCurrentWorkout(updatedDay);
         }
         return response.data;
       } catch (err: any) {
@@ -158,11 +180,11 @@ export const useWorkouts = () => {
     async (
       workoutDayId: string,
       request: AddWorkoutExerciseRequest,
-    ): Promise<WorkoutExercise> => {
+    ): Promise<WorkoutDayResponse> => {
       try {
         const response = await workoutApi.addExercise(workoutDayId, request);
         if (currentWorkout?.id === workoutDayId) {
-          await loadWorkout(workoutDayId);
+          setCurrentWorkout(response.data);
         }
         return response.data;
       } catch (err: any) {
@@ -171,18 +193,18 @@ export const useWorkouts = () => {
         throw new Error(message);
       }
     },
-    [currentWorkout?.id, loadWorkout],
+    [currentWorkout?.id],
   );
 
   const updateExercise = useCallback(
     async (
       exerciseId: number,
       request: UpdateWorkoutExerciseRequest,
-    ): Promise<WorkoutExercise> => {
+    ): Promise<WorkoutDayResponse> => {
       try {
         const response = await workoutApi.updateExercise(exerciseId, request);
         if (currentWorkout) {
-          await loadWorkout(currentWorkout.id);
+          setCurrentWorkout(response.data);
         }
         return response.data;
       } catch (err: any) {
@@ -191,50 +213,61 @@ export const useWorkouts = () => {
         throw new Error(message);
       }
     },
-    [currentWorkout, loadWorkout],
+    [currentWorkout],
   );
 
   const removeExercise = useCallback(
-    async (exerciseId: number): Promise<void> => {
+    async (exerciseId: string): Promise<WorkoutDayResponse> => {
       try {
-        await workoutApi.removeExercise(exerciseId);
+        const response = await workoutApi.removeExercise(exerciseId);
         if (currentWorkout) {
-          await loadWorkout(currentWorkout.id);
+          setCurrentWorkout(response.data);
         }
+        return response.data;
       } catch (err: any) {
         const message = err.response?.data || "Failed to remove exercise";
         setError(message);
         throw new Error(message);
       }
     },
-    [currentWorkout, loadWorkout],
+    [currentWorkout],
   );
 
   const reorderExercises = useCallback(
-    async (workoutDayId: string, exerciseIds: number[]): Promise<void> => {
+    async (
+      workoutDayId: string,
+      exerciseIds: string[],
+    ): Promise<WorkoutDayResponse> => {
       try {
-        await workoutApi.reorderExercises(workoutDayId, exerciseIds);
+        const response = await workoutApi.reorderExercises(
+          workoutDayId,
+          exerciseIds,
+        );
         if (currentWorkout?.id === workoutDayId) {
-          await loadWorkout(workoutDayId);
+          setCurrentWorkout(response.data);
         }
+        return response.data;
       } catch (err: any) {
         const message = err.response?.data || "Failed to reorder exercises";
         setError(message);
         throw new Error(message);
       }
     },
-    [currentWorkout?.id, loadWorkout],
+    [currentWorkout?.id],
   );
 
   const addSet = useCallback(
     async (
-      workoutExerciseId: number,
+      workoutExerciseId: string,
       request: CreateExerciseSetRequest,
-    ): Promise<ExerciseSet> => {
+    ): Promise<WorkoutExerciseResponse> => {
       try {
         const response = await workoutApi.addSet(workoutExerciseId, request);
+        // Update current workout with returned exercise data
         if (currentWorkout) {
-          await loadWorkout(currentWorkout.id);
+          setCurrentWorkout(
+            updateExerciseInWorkout(currentWorkout, response.data),
+          );
         }
         return response.data;
       } catch (err: any) {
@@ -243,18 +276,21 @@ export const useWorkouts = () => {
         throw new Error(message);
       }
     },
-    [currentWorkout, loadWorkout],
+    [currentWorkout],
   );
 
   const updateSet = useCallback(
     async (
       setId: string,
       request: UpdateExerciseSetRequest,
-    ): Promise<ExerciseSet> => {
+    ): Promise<WorkoutExerciseResponse> => {
       try {
         const response = await workoutApi.updateSet(setId, request);
+        // Update current workout with returned exercise data
         if (currentWorkout) {
-          await loadWorkout(currentWorkout.id);
+          setCurrentWorkout(
+            updateExerciseInWorkout(currentWorkout, response.data),
+          );
         }
         return response.data;
       } catch (err: any) {
@@ -263,18 +299,21 @@ export const useWorkouts = () => {
         throw new Error(message);
       }
     },
-    [currentWorkout, loadWorkout],
+    [currentWorkout],
   );
 
   const completeSet = useCallback(
     async (
       setId: string,
       request: CompleteSetRequest,
-    ): Promise<ExerciseSet> => {
+    ): Promise<WorkoutExerciseResponse> => {
       try {
         const response = await workoutApi.completeSet(setId, request);
+        // Update current workout with returned exercise data
         if (currentWorkout) {
-          await loadWorkout(currentWorkout.id);
+          setCurrentWorkout(
+            updateExerciseInWorkout(currentWorkout, response.data),
+          );
         }
         return response.data;
       } catch (err: any) {
@@ -283,23 +322,27 @@ export const useWorkouts = () => {
         throw new Error(message);
       }
     },
-    [currentWorkout, loadWorkout],
+    [currentWorkout],
   );
 
   const deleteSet = useCallback(
-    async (setId: string): Promise<void> => {
+    async (setId: string): Promise<WorkoutExerciseResponse> => {
       try {
-        await workoutApi.deleteSet(setId);
+        const response = await workoutApi.deleteSet(setId);
+        // Update current workout with returned exercise data
         if (currentWorkout) {
-          await loadWorkout(currentWorkout.id);
+          setCurrentWorkout(
+            updateExerciseInWorkout(currentWorkout, response.data),
+          );
         }
+        return response.data;
       } catch (err: any) {
         const message = err.response?.data || "Failed to delete set";
         setError(message);
         throw new Error(message);
       }
     },
-    [currentWorkout, loadWorkout],
+    [currentWorkout],
   );
 
   const clearError = useCallback(() => {
@@ -310,11 +353,11 @@ export const useWorkouts = () => {
     async (
       workoutDayId: string,
       request: GroupSupersetRequest,
-    ): Promise<WorkoutExercise[]> => {
+    ): Promise<WorkoutDayResponse> => {
       try {
         const response = await workoutApi.groupSuperset(workoutDayId, request);
         if (currentWorkout) {
-          await loadWorkout(currentWorkout.id);
+          setCurrentWorkout(response.data);
         }
         return response.data;
       } catch (err: any) {
@@ -324,37 +367,40 @@ export const useWorkouts = () => {
         throw new Error(message);
       }
     },
-    [currentWorkout, loadWorkout],
+    [currentWorkout],
   );
 
   const ungroupSuperset = useCallback(
-    async (supersetGroupId: string): Promise<void> => {
+    async (supersetGroupId: string): Promise<WorkoutDayResponse> => {
       try {
-        await workoutApi.ungroupSuperset(supersetGroupId);
+        const response = await workoutApi.ungroupSuperset(supersetGroupId);
         if (currentWorkout) {
-          await loadWorkout(currentWorkout.id);
+          setCurrentWorkout(response.data);
         }
+        return response.data;
       } catch (err: any) {
         const message = err.response?.data || "Failed to ungroup superset";
         setError(message);
         throw new Error(message);
       }
     },
-    [currentWorkout, loadWorkout],
+    [currentWorkout],
   );
 
   const createDropSetSequence = useCallback(
     async (
       workoutExerciseId: number,
       request: CreateDropSetRequest,
-    ): Promise<ExerciseSet[]> => {
+    ): Promise<WorkoutExerciseResponse> => {
       try {
         const response = await workoutApi.createDropSetSequence(
           workoutExerciseId,
           request,
         );
         if (currentWorkout) {
-          await loadWorkout(currentWorkout.id);
+          setCurrentWorkout(
+            updateExerciseInWorkout(currentWorkout, response.data),
+          );
         }
         return response.data;
       } catch (err: any) {
@@ -364,7 +410,7 @@ export const useWorkouts = () => {
         throw new Error(message);
       }
     },
-    [currentWorkout, loadWorkout],
+    [currentWorkout],
   );
 
   return {

@@ -1,7 +1,7 @@
 namespace trAInr.Application.DTOs;
 
 public record CreateWorkoutDayRequest(
-    DateTime? scheduledDate,
+    DateTime? ScheduledDate,
     string Name,
     string? Description,
     bool IsRestDay);
@@ -9,7 +9,7 @@ public record CreateWorkoutDayRequest(
 public record UpdateWorkoutDayRequest(
     string Name,
     string? Description,
-    DateTime? scheduledDate,
+    DateTime? ScheduledDate,
     bool IsCompleted,
     bool IsRestDay);
 
@@ -20,18 +20,9 @@ public record WorkoutDayResponse(
     string? Description,
     DateOnly? ScheduledDate,
     DateTime? CompletedDate,
-    bool IsCompleted,   
-    bool IsRestDay,
-    IEnumerable<WorkoutExerciseResponse> Exercises);
-
-public record WorkoutDaySummaryResponse(
-    Guid Id,
-    string Name,
-    DayOfWeek DayOfWeek,
     bool IsCompleted,
     bool IsRestDay,
-    int ExerciseCount,
-    int CompletedExerciseCount);
+    IEnumerable<WorkoutExerciseResponse> Exercises);
 
 /// <summary>
 ///     Request to complete a workout. CompletedAt is expected in UTC.
