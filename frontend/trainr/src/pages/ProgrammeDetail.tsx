@@ -1576,7 +1576,6 @@ export const ProgrammeDetail: React.FC = () => {
               <Flex $gap="1rem" style={{ marginTop: "1rem" }}>
                 <NumberPicker
                   label="Rest"
-                  $size="lg"
                   type="rest"
                   value={newExercise.restSeconds}
                   onChange={(value) =>
@@ -1714,7 +1713,6 @@ export const ProgrammeDetail: React.FC = () => {
                 <Flex $gap="1rem">
                   <NumberPicker
                     label="Rest"
-                    $size="lg"
                     type="rest"
                     value={editExercise.restSeconds}
                     onChange={(value) =>
