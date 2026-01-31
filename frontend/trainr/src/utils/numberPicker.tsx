@@ -5,7 +5,6 @@ export type NumberPickerType = 'sets' | 'reps' | 'weight' | 'rest' | 'rpe' | 'dr
 
 interface NumberPickerProps {
   label?: string;
-  $size?: 'md' | 'lg';
   value: number | null;
   onChange: (value: number) => void;
   type: NumberPickerType;
@@ -14,7 +13,6 @@ interface NumberPickerProps {
 
 export const NumberPicker: React.FC<NumberPickerProps> = ({
   label,
-  $size = 'md',
   value,
   onChange,
   type,
@@ -84,7 +82,6 @@ export const NumberPicker: React.FC<NumberPickerProps> = ({
     <Select
       label={label}
       options={options}
-      $size={$size}
       value={value?.toString() || ''}
       onChange={(e) => onChange(parseFloat(e.target.value))}
       disabled={disabled}

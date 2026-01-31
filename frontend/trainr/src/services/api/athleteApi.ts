@@ -18,11 +18,16 @@ export const athleteApi = {
 
   getByEmail: (email: string) => apiClient.get<User>(`/athlete/email/${email}`),
 
+  getCurrentUser: () => apiClient.get<User>("/athlete/me"),
+
   create: (request: CreateUserRequest) =>
     apiClient.post<User>("/athlete", request),
 
   update: (id: string, request: UpdateUserRequest) =>
     apiClient.put<User>(`/athlete/${id}`, request),
+
+  updateCurrentUser: (request: UpdateUserRequest) =>
+    apiClient.put<User>("/athlete/me", request),
 
   delete: (id: string) => apiClient.delete(`/athlete/${id}`),
 };

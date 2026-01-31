@@ -4,6 +4,7 @@ using trAInr.Application.Interfaces;
 using trAInr.Application.Interfaces.Repositories;
 using trAInr.Application.Interfaces.Services;
 using trAInr.Domain.Aggregates;
+using trAInr.Domain.ValueObjects;
 
 namespace trAInr.Application.Services;
 
@@ -84,6 +85,31 @@ public class AthleteService(
             request.PrimaryGoal,
             request.WorkoutDaysPerWeek);
 
+        // Update equipment preferences if provided
+        // Note: The domain model doesn't support removing equipment, so we need to work with reflection
+        // or accept that equipment can only be added. For proper implementation, consider adding
+        // a domain method to clear/replace equipment preferences.
+        if (request.EquipmentPreferences is not null)
+        {
+            // For now, we'll use reflection to clear the equipment list
+            var equipmentField = typeof(Athlete).GetField("_equipmentPreferences", 
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            
+            if (equipmentField?.GetValue(athlete) is List<EquipmentRequirement> equipmentList)
+            {
+                equipmentList.Clear();
+            }
+
+            // Add new equipment preferences
+            foreach (var equipmentName in request.EquipmentPreferences)
+            {
+                if (!string.IsNullOrWhiteSpace(equipmentName))
+                {
+                    athlete.AddEquipmentPreference(EquipmentRequirement.Create(equipmentName, true));
+                }
+            }
+        }
+
         await athleteRepository.UpdateAsync(athlete);
         await unitOfWork.SaveChangesAsync();
 
@@ -118,6 +144,7 @@ public class AthleteService(
             athlete.Level,
             athlete.PrimaryGoal,
             athlete.WorkoutDaysPerWeek,
+            athlete.EquipmentPreferences.Select(e => e.Name).ToList(),
             athlete.CreatedAt);
     }
 }

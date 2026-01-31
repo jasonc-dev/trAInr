@@ -182,3 +182,15 @@ export const getExerciseIcon = (type: ExerciseType) => {
       return "🏋️";
   }
 };
+
+// Equipment options for user preferences
+export const EQUIPMENT_OPTIONS = [
+  { value: "Barbell", label: "Barbell" },
+  { value: "Dumbbell", label: "Dumbbell" },
+  { value: "Kettlebell", label: "Kettlebell" },
+  { value: "Resistance Bands", label: "Resistance Bands" },
+  { value: "Pull-up Bar", label: "Pull-up Bar" },
+  { value: "Bench", label: "Bench" },
+  { value: "Cable Machine", label: "Cable Machine" },
+  { value: "Bodyweight Only", label: "Bodyweight Only" },
+] as const;

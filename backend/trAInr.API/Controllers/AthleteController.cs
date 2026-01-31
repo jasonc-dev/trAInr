@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using trAInr.API.Attributes;
 using trAInr.Application.DTOs;
 using trAInr.Application.Interfaces.Services;
 
@@ -36,6 +37,36 @@ public class AthleteController(IAthleteService athleteService) : ControllerBase
     public async Task<ActionResult<UserResponse>> GetByEmail(string email)
     {
         var athlete = await athleteService.GetByEmailAsync(email);
+        if (athlete is null) return NotFound();
+        return Ok(athlete);
+    }
+
+    /// <summary>
+    ///     Get current authenticated user's profile
+    /// </summary>
+    [HttpGet("me")]
+    [Authorize]
+    public async Task<ActionResult<UserResponse>> GetCurrentUser()
+    {
+        var userId = HttpContext.Items["UserId"] as Guid?;
+        if (userId is null) return Unauthorized();
+
+        var athlete = await athleteService.GetByIdAsync(userId.Value);
+        if (athlete is null) return NotFound();
+        return Ok(athlete);
+    }
+
+    /// <summary>
+    ///     Update current authenticated user's profile
+    /// </summary>
+    [HttpPut("me")]
+    [Authorize]
+    public async Task<ActionResult<UserResponse>> UpdateCurrentUser([FromBody] UpdateUserRequest request)
+    {
+        var userId = HttpContext.Items["UserId"] as Guid?;
+        if (userId is null) return Unauthorized();
+
+        var athlete = await athleteService.UpdateAsync(userId.Value, request);
         if (athlete is null) return NotFound();
         return Ok(athlete);
     }

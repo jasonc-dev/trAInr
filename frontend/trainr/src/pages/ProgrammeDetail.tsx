@@ -1541,7 +1541,6 @@ export const ProgrammeDetail: React.FC = () => {
 
               <Flex $gap="1rem" style={{ marginTop: "1rem" }}>
                 <NumberPicker
-                  $size="lg"
                   label="Sets"
                   type="sets"
                   value={newExercise.targetSets}
@@ -1554,7 +1553,6 @@ export const ProgrammeDetail: React.FC = () => {
                 />
                 <NumberPicker
                   label="Reps"
-                  $size="lg"
                   type="reps"
                   value={newExercise.targetReps}
                   onChange={(value) =>
@@ -1566,7 +1564,6 @@ export const ProgrammeDetail: React.FC = () => {
                 />
                 <NumberPicker
                   label="Weight (kg)"
-                  $size="lg"
                   type="weight"
                   value={newExercise.targetWeight}
                   onChange={(value) =>
@@ -1581,7 +1578,6 @@ export const ProgrammeDetail: React.FC = () => {
               <Flex $gap="1rem" style={{ marginTop: "1rem" }}>
                 <NumberPicker
                   label="Rest (seconds)"
-                  $size="lg"
                   type="rest"
                   value={newExercise.restSeconds}
                   onChange={(value) =>
@@ -1593,7 +1589,6 @@ export const ProgrammeDetail: React.FC = () => {
                 />
                 <NumberPicker
                   label="Target RPE (1-10)"
-                  $size="lg"
                   type="rpe"
                   value={newExercise.targetRpe}
                   onChange={(value) =>
@@ -1684,7 +1679,6 @@ export const ProgrammeDetail: React.FC = () => {
                 <Flex $gap="1rem">
                   <NumberPicker
                     label="Sets"
-                    $size="lg"
                     type="sets"
                     value={editExercise.targetSets}
                     onChange={(value) =>
@@ -1696,7 +1690,6 @@ export const ProgrammeDetail: React.FC = () => {
                   />
                   <NumberPicker
                     label="Reps"
-                    $size="lg"
                     type="reps"
                     value={editExercise.targetReps}
                     onChange={(value) =>
@@ -1708,7 +1701,6 @@ export const ProgrammeDetail: React.FC = () => {
                   />
                   <NumberPicker
                     label="Weight (kg)"
-                    $size="lg"
                     type="weight"
                     value={editExercise.targetWeight}
                     onChange={(value) =>
@@ -1723,7 +1715,6 @@ export const ProgrammeDetail: React.FC = () => {
                 <Flex $gap="1rem">
                   <NumberPicker
                     label="Rest (seconds)"
-                    $size="lg"
                     type="rest"
                     value={editExercise.restSeconds}
                     onChange={(value) =>
@@ -1735,7 +1726,6 @@ export const ProgrammeDetail: React.FC = () => {
                   />
                   <NumberPicker
                     label="Target RPE (1-10)"
-                    $size="lg"
                     type="rpe"
                     value={editExercise.targetRpe}
                     onChange={(value) =>

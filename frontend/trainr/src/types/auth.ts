@@ -3,6 +3,8 @@
  * Types related to user authentication and authorization
  */
 
+import { FitnessLevel, FitnessGoal } from './enums';
+
 export interface LoginRequest {
   username: string;
   password: string;
@@ -36,6 +38,9 @@ export interface StoredUser {
   email: string;
   firstName: string;
   lastName: string;
+  fitnessLevel: FitnessLevel;
+  primaryGoal: FitnessGoal;
+  workoutDaysPerWeek: number;
   expiresAt: string;
 }
 

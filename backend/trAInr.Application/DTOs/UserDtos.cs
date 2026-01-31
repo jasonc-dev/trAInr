@@ -18,7 +18,8 @@ public record UpdateUserRequest(
     string LastName,
     TrainingLevel FitnessLevel,
     FitnessGoal PrimaryGoal,
-    int WorkoutDaysPerWeek);
+    int WorkoutDaysPerWeek,
+    List<string>? EquipmentPreferences);
 
 public record UserResponse(
     Guid Id,
@@ -30,6 +31,7 @@ public record UserResponse(
     TrainingLevel FitnessLevel,
     FitnessGoal PrimaryGoal,
     int WorkoutDaysPerWeek,
+    List<string> EquipmentPreferences,
     DateTime CreatedAt);
 
 public record UserSummaryResponse(

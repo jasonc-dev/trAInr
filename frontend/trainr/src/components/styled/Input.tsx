@@ -56,12 +56,9 @@ export const StyledTextarea = styled.textarea<InputWrapperProps>`
   resize: vertical;
 `;
 
-export const StyledSelect = styled.select<InputWrapperProps & { $size: 'md' | 'lg' }>`
+export const StyledSelect = styled.select<InputWrapperProps>`
   ${inputStyles}
-  height: ${({ $size }) => $size === 'md' ? '2rem' : '3rem'};
-  padding: ${({ $size }) => $size === 'md' ? '0 0.5rem' : '0 1rem'};
   cursor: pointer;
-  display: flex;
   appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23A0AEC0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
   background-repeat: no-repeat;
@@ -111,7 +108,6 @@ interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   label?: string;
   error?: string;
   options: { value: string | number; label: string }[];
-  $size?: 'md' | 'lg';
 }
 
 export const Select: React.FC<SelectProps> = ({
@@ -119,13 +115,12 @@ export const Select: React.FC<SelectProps> = ({
   label,
   error,
   options,
-  $size = 'md',
   ...props
 }) => {
   return (
     <InputWrapper $hasError={!!error}>
       {label && <Label htmlFor={id}>{label}</Label>}
-      <StyledSelect id={id} $hasError={!!error} $size={$size} {...props}>
+      <StyledSelect id={id} $hasError={!!error} {...props}>
         {options.map((option) => (
           <option key={option.value} value={option.value}>
             {option.label}
