@@ -46,9 +46,30 @@ public class TrainrDbContext(DbContextOptions<TrainrDbContext> options) : DbCont
     public DbSet<Exercise> Exercises => Set<Exercise>();
     public DbSet<AiGenerationJob> AiGenerationJobs => Set<AiGenerationJob>();
 
+    // New normalized entities for RAG
+    public DbSet<Equipment> Equipment => Set<Equipment>();
+    public DbSet<Muscle> Muscles => Set<Muscle>();
+    public DbSet<Tag> Tags => Set<Tag>();
+    public DbSet<ExerciseEquipment> ExerciseEquipments => Set<ExerciseEquipment>();
+    public DbSet<ExerciseMuscle> ExerciseMuscles => Set<ExerciseMuscle>();
+    public DbSet<ExerciseTag> ExerciseTags => Set<ExerciseTag>();
+    public DbSet<ExerciseVariant> ExerciseVariants => Set<ExerciseVariant>();
+    public DbSet<ExerciseEmbedding> ExerciseEmbeddings => Set<ExerciseEmbedding>();
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        base.OnConfiguring(optionsBuilder);
+
+        // Register pgvector type mapping
+        optionsBuilder.UseNpgsql(options => options.UseVector());
+    }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        // Enable pgvector extension
+        modelBuilder.HasPostgresExtension("vector");
 
         // Explicitly exclude DomainEvent from the model (it's abstract and handled separately)
         modelBuilder.Ignore<DomainEvent>();
@@ -68,6 +89,16 @@ public class TrainrDbContext(DbContextOptions<TrainrDbContext> options) : DbCont
         ConfigureExerciseSet(modelBuilder);
         ConfigureExercise(modelBuilder);
         ConfigureAiGenerationJob(modelBuilder);
+
+        // New normalized entity configurations for RAG
+        ConfigureEquipment(modelBuilder);
+        ConfigureMuscle(modelBuilder);
+        ConfigureTag(modelBuilder);
+        ConfigureExerciseEquipment(modelBuilder);
+        ConfigureExerciseMuscle(modelBuilder);
+        ConfigureExerciseTag(modelBuilder);
+        ConfigureExerciseVariant(modelBuilder);
+        ConfigureExerciseEmbedding(modelBuilder);
     }
 
     private static void ConfigureAthlete(ModelBuilder modelBuilder)
@@ -114,9 +145,13 @@ public class TrainrDbContext(DbContextOptions<TrainrDbContext> options) : DbCont
             entity.Property(e => e.Description).HasMaxLength(1000);
             entity.Property(e => e.Instructions).HasMaxLength(2000);
             entity.Property(e => e.VideoUrl).HasMaxLength(500);
+            entity.Property(e => e.ShortCue).HasMaxLength(120);
             entity.HasIndex(e => e.Name);
             entity.HasIndex(e => e.Type);
             entity.HasIndex(e => e.PrimaryMuscleGroup);
+
+            // Add indexes for new fields
+            entity.HasIndex(e => new { e.SpinalLoad, e.SetupComplexity, e.TrackingMode });
 
             // Configure value objects as JSON column (simpler for record structs)
             entity.Property<List<EquipmentRequirement>>("_equipmentRequirements")
@@ -127,6 +162,13 @@ public class TrainrDbContext(DbContextOptions<TrainrDbContext> options) : DbCont
                 .HasColumnName("EquipmentRequirements");
             entity.Property<List<EquipmentRequirement>>("_equipmentRequirements").Metadata
                 .SetValueComparer(EquipmentRequirementListComparer);
+
+            // Configure Aliases as array
+            entity.Property(e => e.Aliases)
+                .HasConversion(
+                    v => string.Join(',', v),
+                    v => v.Split(',', StringSplitOptions.RemoveEmptyEntries))
+                .HasColumnName("Aliases");
         });
     }
 
@@ -373,6 +415,148 @@ public class TrainrDbContext(DbContextOptions<TrainrDbContext> options) : DbCont
             entity.Property(e => e.CreatedAt).HasColumnType("timestamp with time zone");
             entity.Property(e => e.UpdatedAt).HasColumnType("timestamp with time zone");
             entity.Property(e => e.CompletedAt).HasColumnType("timestamp with time zone");
+        });
+    }
+
+    private static void ConfigureEquipment(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Equipment>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).HasMaxLength(100).IsRequired();
+            entity.Property(e => e.Category).HasMaxLength(50).IsRequired();
+            entity.HasIndex(e => e.Name).IsUnique();
+            entity.HasIndex(e => e.Category);
+        });
+    }
+
+    private static void ConfigureMuscle(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Muscle>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).HasMaxLength(100).IsRequired();
+            entity.Property(e => e.Group).HasMaxLength(50).IsRequired();
+            entity.HasIndex(e => e.Name).IsUnique();
+            entity.HasIndex(e => e.Group);
+        });
+    }
+
+    private static void ConfigureTag(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Tag>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).HasMaxLength(100).IsRequired();
+            entity.HasIndex(e => new { e.Namespace, e.Name }).IsUnique();
+        });
+    }
+
+    private static void ConfigureExerciseEquipment(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<ExerciseEquipment>(entity =>
+        {
+            entity.HasKey(ee => new { ee.ExerciseDefinitionId, ee.EquipmentId });
+
+            entity.HasOne(ee => ee.ExerciseDefinition)
+                .WithMany(e => e.ExerciseEquipments)
+                .HasForeignKey(ee => ee.ExerciseDefinitionId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(ee => ee.Equipment)
+                .WithMany(eq => eq.ExerciseEquipments)
+                .HasForeignKey(ee => ee.EquipmentId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(ee => ee.EquipmentId);
+        });
+    }
+
+    private static void ConfigureExerciseMuscle(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<ExerciseMuscle>(entity =>
+        {
+            entity.HasKey(em => new { em.ExerciseDefinitionId, em.MuscleId, em.Role });
+
+            entity.HasOne(em => em.ExerciseDefinition)
+                .WithMany(e => e.ExerciseMuscles)
+                .HasForeignKey(em => em.ExerciseDefinitionId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(em => em.Muscle)
+                .WithMany(m => m.ExerciseMuscles)
+                .HasForeignKey(em => em.MuscleId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(em => new { em.MuscleId, em.Role });
+        });
+    }
+
+    private static void ConfigureExerciseTag(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<ExerciseTag>(entity =>
+        {
+            entity.HasKey(et => new { et.ExerciseDefinitionId, et.TagId });
+
+            entity.HasOne(et => et.ExerciseDefinition)
+                .WithMany(e => e.ExerciseTags)
+                .HasForeignKey(et => et.ExerciseDefinitionId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(et => et.Tag)
+                .WithMany(t => t.ExerciseTags)
+                .HasForeignKey(et => et.TagId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(et => et.TagId);
+        });
+    }
+
+    private static void ConfigureExerciseVariant(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<ExerciseVariant>(entity =>
+        {
+            entity.HasKey(ev => new { ev.ExerciseDefinitionId, ev.VariantOfExerciseDefinitionId, ev.VariantType });
+
+            entity.HasOne(ev => ev.ExerciseDefinition)
+                .WithMany(e => e.ExerciseVariants)
+                .HasForeignKey(ev => ev.ExerciseDefinitionId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(ev => ev.VariantOfExerciseDefinition)
+                .WithMany(e => e.VariantOfExercises)
+                .HasForeignKey(ev => ev.VariantOfExerciseDefinitionId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+    }
+
+    private static void ConfigureExerciseEmbedding(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<ExerciseEmbedding>(entity =>
+        {
+            entity.HasKey(e => e.ExerciseDefinitionId);
+
+            entity.Property(e => e.Embedding)
+                .HasColumnType("vector(1536)")
+                .IsRequired();
+
+            entity.Property(e => e.EmbeddingModel)
+                .HasMaxLength(50)
+                .IsRequired();
+
+            entity.Property(e => e.UpdatedAt)
+                .HasColumnType("timestamp with time zone")
+                .IsRequired();
+
+            entity.HasOne(e => e.ExerciseDefinition)
+                .WithOne()
+                .HasForeignKey<ExerciseEmbedding>(e => e.ExerciseDefinitionId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Create HNSW index for vector similarity search
+            entity.HasIndex(e => e.Embedding)
+                .HasMethod("hnsw")
+                .HasOperators("vector_cosine_ops");
         });
     }
 }

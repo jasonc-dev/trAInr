@@ -121,11 +121,18 @@ builder.Services.AddScoped<IWorkoutSessionService>(sp =>
 
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<IAiProgramGeneratorService, AiProgramGeneratorService>();
+builder.Services.AddScoped<IExerciseRetrievalService, ExerciseRetrievalService>();
 
 builder.Services.AddHostedService<AiProgramGenerationService>();
 
 // Register OpenAI client
 builder.Services.AddHttpClient<IOpenAiClient, OpenAiClient>(options =>
+{
+    options.Timeout = TimeSpan.FromMinutes(5);
+});
+
+// Register embedding service
+builder.Services.AddHttpClient<IEmbeddingService, OpenAiEmbeddingService>(options =>
 {
     options.Timeout = TimeSpan.FromMinutes(5);
 });

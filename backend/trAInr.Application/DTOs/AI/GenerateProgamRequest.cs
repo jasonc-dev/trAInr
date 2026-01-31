@@ -10,4 +10,8 @@ public class GenerateProgamRequest
     public ExperienceLevel ExperienceLevel { get; set; }
     public List<string> WorkoutDayNames { get; set; } = [];
     public Guid CreatedBy { get; set; }
+
+    // New fields for RAG retrieval
+    public string[]? AvailableEquipment { get; set; }
+    public string[]? Contraindications { get; set; }
 }

@@ -2,9 +2,9 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using Pgvector;
 using trAInr.Infrastructure.Data;
 
 #nullable disable
@@ -12,16 +12,17 @@ using trAInr.Infrastructure.Data;
 namespace trAInr.Infrastructure.Migrations
 {
     [DbContext(typeof(TrainrDbContext))]
-    partial class TrainrDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260131233924_AddExerciseRelatedEntities")]
+    partial class AddExerciseRelatedEntities
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "10.0.0-preview.5.25277.114")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
-            NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "vector");
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
             modelBuilder.Entity("trAInr.Domain.Aggregates.AssignedProgram", b =>
@@ -484,36 +485,6 @@ namespace trAInr.Infrastructure.Migrations
                     b.HasIndex("Name");
 
                     b.ToTable("Exercises");
-                });
-
-            modelBuilder.Entity("trAInr.Domain.Entities.ExerciseEmbedding", b =>
-                {
-                    b.Property<int>("ExerciseDefinitionId")
-                        .HasColumnType("integer");
-
-                    b.Property<long>("CatalogVersion")
-                        .HasColumnType("bigint");
-
-                    b.Property<Vector>("Embedding")
-                        .IsRequired()
-                        .HasColumnType("vector(1536)");
-
-                    b.Property<string>("EmbeddingModel")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("ExerciseDefinitionId");
-
-                    b.HasIndex("Embedding");
-
-                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("Embedding"), "hnsw");
-                    NpgsqlIndexBuilderExtensions.HasOperators(b.HasIndex("Embedding"), new[] { "vector_cosine_ops" });
-
-                    b.ToTable("ExerciseEmbeddings");
                 });
 
             modelBuilder.Entity("trAInr.Domain.Entities.ExerciseEquipment", b =>
@@ -1053,17 +1024,6 @@ namespace trAInr.Infrastructure.Migrations
                         });
 
                     b.Navigation("ExerciseInstances");
-                });
-
-            modelBuilder.Entity("trAInr.Domain.Entities.ExerciseEmbedding", b =>
-                {
-                    b.HasOne("trAInr.Domain.Aggregates.ExerciseDefinition", "ExerciseDefinition")
-                        .WithOne()
-                        .HasForeignKey("trAInr.Domain.Entities.ExerciseEmbedding", "ExerciseDefinitionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("ExerciseDefinition");
                 });
 
             modelBuilder.Entity("trAInr.Domain.Entities.ExerciseEquipment", b =>
