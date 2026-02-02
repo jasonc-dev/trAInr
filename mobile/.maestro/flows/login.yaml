@@ -1,0 +1,21 @@
+# Maestro E2E Test: Login Flow
+appId: com.trainr.app
+---
+- launchApp
+
+# Check we're on the login screen
+- assertVisible: "trAInr"
+- assertVisible: "Welcome back"
+
+# Enter credentials
+- tapOn: "Enter your username"
+- inputText: "testuser"
+
+- tapOn: "Enter your password"
+- inputText: "testpassword123"
+
+# Submit login
+- tapOn: "Sign In"
+
+# Wait for navigation and check we're on the main screen
+- assertVisible: "Today's Workout"

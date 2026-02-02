@@ -1,3 +1,4 @@
+using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
 using trAInr.Application.DTOs;
 using trAInr.Application.Interfaces.Services;
@@ -5,7 +6,8 @@ using trAInr.Application.Interfaces.Services;
 namespace trAInr.API.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[ApiVersion("1.0")]
+[Route("api/v{version:apiVersion}/[controller]")]
 public class AssignedProgrammeController(IAssignedProgrammeService assignedProgramService, IAthleteService athleteService) : ControllerBase
 {
     /// <summary>
@@ -19,6 +21,16 @@ public class AssignedProgrammeController(IAssignedProgrammeService assignedProgr
     }
 
     /// <summary>
+    ///     Get all pre-made programmes with pagination
+    /// </summary>
+    [HttpGet("premade/paged")]
+    public async Task<ActionResult<PagedResponse<ProgrammeSummaryResponse>>> GetPreMadePaged([FromQuery] PagedRequest request)
+    {
+        var programmes = await assignedProgramService.GetPreMadeProgrammesPagedAsync(request);
+        return Ok(programmes);
+    }
+
+    /// <summary>
     ///     Get all assigned programmes for an athlete
     /// </summary>
     [HttpGet("athlete/{athleteId:guid}")]
@@ -27,6 +39,20 @@ public class AssignedProgrammeController(IAssignedProgrammeService assignedProgr
         if (!await athleteService.ExistsAsync(athleteId)) return NotFound("Athlete not found");
 
         var programmes = await assignedProgramService.GetByAthleteIdAsync(athleteId);
+        return Ok(programmes);
+    }
+
+    /// <summary>
+    ///     Get all assigned programmes for an athlete with pagination
+    /// </summary>
+    [HttpGet("athlete/{athleteId:guid}/paged")]
+    public async Task<ActionResult<PagedResponse<ProgrammeSummaryResponse>>> GetByAthletePaged(
+        Guid athleteId,
+        [FromQuery] PagedRequest request)
+    {
+        if (!await athleteService.ExistsAsync(athleteId)) return NotFound("Athlete not found");
+
+        var programmes = await assignedProgramService.GetByAthleteIdPagedAsync(athleteId, request);
         return Ok(programmes);
     }
 

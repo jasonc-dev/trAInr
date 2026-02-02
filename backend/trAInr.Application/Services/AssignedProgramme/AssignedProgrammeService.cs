@@ -29,6 +29,20 @@ public class AssignedProgrammeService(
         return assignedPrograms.Select(MapToSummary);
     }
 
+    public async Task<PagedResponse<ProgrammeSummaryResponse>> GetByAthleteIdPagedAsync(Guid athleteId, PagedRequest request)
+    {
+        var assignedPrograms = await assignedProgramRepository.GetByAthleteIdAsync(athleteId);
+        var programList = assignedPrograms.ToList();
+        var totalCount = programList.Count;
+
+        var pagedItems = programList
+            .Skip(request.Skip)
+            .Take(request.PageSize)
+            .Select(MapToSummary);
+
+        return PagedResponse<ProgrammeSummaryResponse>.Create(pagedItems, request.Page, request.PageSize, totalCount);
+    }
+
     public async Task<ProgrammeSummaryResponse?> GetActiveByAthleteIdAsync(Guid athleteId)
     {
         // userId is actually athleteId in the domain model
@@ -136,6 +150,20 @@ public class AssignedProgrammeService(
     {
         var programTemplates = await programTemplateRepository.GetAllActiveAsync();
         return programTemplates.Select(MapTemplateToSummary);
+    }
+
+    public async Task<PagedResponse<ProgrammeSummaryResponse>> GetPreMadeProgrammesPagedAsync(PagedRequest request)
+    {
+        var programTemplates = await programTemplateRepository.GetAllActiveAsync();
+        var templateList = programTemplates.ToList();
+        var totalCount = templateList.Count;
+
+        var pagedItems = templateList
+            .Skip(request.Skip)
+            .Take(request.PageSize)
+            .Select(MapTemplateToSummary);
+
+        return PagedResponse<ProgrammeSummaryResponse>.Create(pagedItems, request.Page, request.PageSize, totalCount);
     }
 
     public async Task<IEnumerable<ProgrammeSummaryResponse>> GetProgrammesCreatedByAthleteAsync(Guid athleteId)

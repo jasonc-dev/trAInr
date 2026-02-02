@@ -1,3 +1,4 @@
+using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
 using trAInr.Application.DTOs;
 using trAInr.Application.Interfaces.Services;
@@ -6,7 +7,8 @@ using trAInr.Domain.Entities;
 namespace trAInr.API.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[ApiVersion("1.0")]
+[Route("api/v{version:apiVersion}/[controller]")]
 public class ExerciseDefinitionController(IExerciseDefinitionService exerciseDefinitionService) : ControllerBase
 {
     /// <summary>
@@ -20,6 +22,16 @@ public class ExerciseDefinitionController(IExerciseDefinitionService exerciseDef
     }
 
     /// <summary>
+    ///     Get all exercise definitions with pagination
+    /// </summary>
+    [HttpGet("paged")]
+    public async Task<ActionResult<PagedResponse<ExerciseResponse>>> GetAllPaged([FromQuery] PagedRequest request)
+    {
+        var exercises = await exerciseDefinitionService.GetAllPagedAsync(request);
+        return Ok(exercises);
+    }
+
+    /// <summary>
     ///     Search exercise definitions with optional filters
     /// </summary>
     [HttpGet("search")]
@@ -29,6 +41,21 @@ public class ExerciseDefinitionController(IExerciseDefinitionService exerciseDef
         [FromQuery] MuscleGroup? muscleGroup = null)
     {
         var exercises = await exerciseDefinitionService.SearchAsync(query, type, muscleGroup);
+        return Ok(exercises);
+    }
+
+    /// <summary>
+    ///     Search exercise definitions with optional filters and pagination
+    /// </summary>
+    [HttpGet("search/paged")]
+    public async Task<ActionResult<PagedResponse<ExerciseSummaryResponse>>> SearchPaged(
+        [FromQuery] string? query = null,
+        [FromQuery] ExerciseType? type = null,
+        [FromQuery] MuscleGroup? muscleGroup = null,
+        [FromQuery] PagedRequest? request = null)
+    {
+        var pagedRequest = request ?? new PagedRequest();
+        var exercises = await exerciseDefinitionService.SearchPagedAsync(query, type, muscleGroup, pagedRequest);
         return Ok(exercises);
     }
 

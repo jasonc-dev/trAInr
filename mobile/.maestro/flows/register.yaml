@@ -1,0 +1,32 @@
+# Maestro E2E Test: Registration Flow
+appId: com.trainr.app
+---
+- launchApp
+
+# Navigate to register
+- tapOn: "Sign Up"
+
+# Check we're on register screen
+- assertVisible: "Create Account"
+
+# Fill in the form
+- tapOn: "John"
+- inputText: "John"
+
+- tapOn: "Doe"
+- inputText: "Doe"
+
+- tapOn: "Choose a username"
+- inputText: "newuser123"
+
+- tapOn: "your@email.com"
+- inputText: "newuser@example.com"
+
+- tapOn: "Create a password"
+- inputText: "securepassword123"
+
+# Submit registration
+- tapOn: "Create Account"
+
+# Check we're on the main screen
+- assertVisible: "Today's Workout"

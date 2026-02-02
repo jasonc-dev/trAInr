@@ -7,7 +7,9 @@ public interface IExerciseDefinitionService
 {
     Task<ExerciseResponse?> GetByIdAsync(int id);
     Task<IEnumerable<ExerciseResponse>> GetAllAsync();
+    Task<PagedResponse<ExerciseResponse>> GetAllPagedAsync(PagedRequest request);
     Task<IEnumerable<ExerciseSummaryResponse>> SearchAsync(string? query, ExerciseType? type, MuscleGroup? muscleGroup);
+    Task<PagedResponse<ExerciseSummaryResponse>> SearchPagedAsync(string? query, ExerciseType? type, MuscleGroup? muscleGroup, PagedRequest request);
     Task<ExerciseResponse> CreateAsync(CreateExerciseRequest request, Guid? userId = null);
     Task<ExerciseResponse?> UpdateAsync(int id, UpdateExerciseRequest request);
     Task<bool> DeleteAsync(int id);

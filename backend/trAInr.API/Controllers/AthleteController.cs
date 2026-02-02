@@ -1,3 +1,4 @@
+using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
 using trAInr.API.Attributes;
 using trAInr.Application.DTOs;
@@ -6,7 +7,8 @@ using trAInr.Application.Interfaces.Services;
 namespace trAInr.API.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[ApiVersion("1.0")]
+[Route("api/v{version:apiVersion}/[controller]")]
 public class AthleteController(IAthleteService athleteService) : ControllerBase
 {
     /// <summary>

@@ -38,6 +38,15 @@ public class CachedAssignedProgrammeService(
         return result;
     }
 
+    public async Task<PagedResponse<ProgrammeSummaryResponse>> GetByAthleteIdPagedAsync(Guid athleteId, PagedRequest request)
+    {
+        var cacheKey = $"{CacheKeys.ProgrammesByAthlete(athleteId)}:page:{request.Page}:size:{request.PageSize}";
+
+        return await cacheProvider.GetOrSetAsync(
+            cacheKey,
+            async () => await innerService.GetByAthleteIdPagedAsync(athleteId, request));
+    }
+
     public async Task<ProgrammeSummaryResponse?> GetActiveByAthleteIdAsync(Guid athleteId)
     {
         return await cacheProvider.GetOrSetNullableAsync(
@@ -56,6 +65,15 @@ public class CachedAssignedProgrammeService(
             });
 
         return result;
+    }
+
+    public async Task<PagedResponse<ProgrammeSummaryResponse>> GetPreMadeProgrammesPagedAsync(PagedRequest request)
+    {
+        var cacheKey = $"{CacheKeys.PreMadeProgrammeTemplates}:page:{request.Page}:size:{request.PageSize}";
+
+        return await cacheProvider.GetOrSetAsync(
+            cacheKey,
+            async () => await innerService.GetPreMadeProgrammesPagedAsync(request));
     }
 
     public async Task<IEnumerable<ProgrammeSummaryResponse>> GetProgrammesCreatedByAthleteAsync(Guid athleteId)

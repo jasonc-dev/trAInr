@@ -1,6 +1,8 @@
 using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Threading.RateLimiting;
+using Asp.Versioning;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 using trAInr.API.Middleware;
@@ -29,6 +31,19 @@ builder.Services.AddControllers()
         // Serialize DateTime as ISO 8601 with UTC timezone
         options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
     });
+
+// Configure API Versioning
+builder.Services.AddApiVersioning(options =>
+{
+    options.DefaultApiVersion = new ApiVersion(1, 0);
+    options.AssumeDefaultVersionWhenUnspecified = true;
+    options.ReportApiVersions = true;
+    options.ApiVersionReader = new UrlSegmentApiVersionReader();
+}).AddMvc().AddApiExplorer(options =>
+{
+    options.GroupNameFormat = "'v'VVV";
+    options.SubstituteApiVersionInUrl = true;
+});
 
 // Configure OpenAPI (built-in .NET 10 support)
 builder.Services.AddOpenApi();
@@ -82,6 +97,8 @@ builder.Services.AddScoped<IAssignedProgramRepository, AssignedProgramRepository
 builder.Services.AddScoped<IProgramTemplateRepository, ProgramTemplateRepository>();
 builder.Services.AddScoped<IWorkoutSessionRepository, WorkoutSessionRepository>();
 builder.Services.AddScoped<IJobRepository, JobRepository>();
+builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+builder.Services.AddScoped<IIdempotencyRepository, IdempotencyRepository>();
 
 // Register Application services
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
@@ -122,6 +139,7 @@ builder.Services.AddScoped<IWorkoutSessionService>(sp =>
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<IAiProgramGeneratorService, AiProgramGeneratorService>();
 builder.Services.AddScoped<IExerciseRetrievalService, ExerciseRetrievalService>();
+builder.Services.AddScoped<ISyncService, SyncService>();
 
 builder.Services.AddHostedService<AiProgramGenerationService>();
 
@@ -140,11 +158,11 @@ builder.Services.AddHttpClient<IEmbeddingService, OpenAiEmbeddingService>(option
 // Configure CORS for frontend
 var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ?? ["http://localhost:3000"];
 
-// Check for ALLOWED_ORIGINS environment variable (for Render.com)
+// Check for ALLOWED_ORIGINS environment variable (for Render.com and local mobile testing)
 var allowedOriginsEnv = builder.Configuration["ALLOWED_ORIGINS"];
 if (!string.IsNullOrEmpty(allowedOriginsEnv))
 {
-    allowedOrigins = allowedOriginsEnv.Split(',');
+    allowedOrigins = allowedOriginsEnv.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 }
 
 builder.Services.AddCors(options =>
@@ -156,6 +174,85 @@ builder.Services.AddCors(options =>
             .AllowAnyMethod()
             .AllowCredentials();
     });
+});
+
+// Configure Rate Limiting for mobile clients
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    // Global rate limit policy for authenticated users (100 requests per minute)
+    options.AddPolicy("authenticated", context =>
+    {
+        var userId = context.Items["UserId"] as Guid?;
+        var partitionKey = userId?.ToString() ?? context.Connection.RemoteIpAddress?.ToString() ?? "anonymous";
+
+        return RateLimitPartition.GetTokenBucketLimiter(partitionKey, _ => new TokenBucketRateLimiterOptions
+        {
+            TokenLimit = 100,
+            ReplenishmentPeriod = TimeSpan.FromMinutes(1),
+            TokensPerPeriod = 100,
+            AutoReplenishment = true,
+            QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+            QueueLimit = 10
+        });
+    });
+
+    // Anonymous/unauthenticated rate limit (20 requests per minute per IP)
+    options.AddPolicy("anonymous", context =>
+    {
+        var ipAddress = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+
+        return RateLimitPartition.GetTokenBucketLimiter(ipAddress, _ => new TokenBucketRateLimiterOptions
+        {
+            TokenLimit = 20,
+            ReplenishmentPeriod = TimeSpan.FromMinutes(1),
+            TokensPerPeriod = 20,
+            AutoReplenishment = true,
+            QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+            QueueLimit = 5
+        });
+    });
+
+    // Default global limiter as fallback
+    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
+    {
+        var userId = context.Items["UserId"] as Guid?;
+
+        if (userId.HasValue)
+        {
+            return RateLimitPartition.GetTokenBucketLimiter(userId.Value.ToString(), _ => new TokenBucketRateLimiterOptions
+            {
+                TokenLimit = 100,
+                ReplenishmentPeriod = TimeSpan.FromMinutes(1),
+                TokensPerPeriod = 100,
+                AutoReplenishment = true
+            });
+        }
+
+        var ipAddress = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+        return RateLimitPartition.GetTokenBucketLimiter(ipAddress, _ => new TokenBucketRateLimiterOptions
+        {
+            TokenLimit = 20,
+            ReplenishmentPeriod = TimeSpan.FromMinutes(1),
+            TokensPerPeriod = 20,
+            AutoReplenishment = true
+        });
+    });
+
+    options.OnRejected = async (context, cancellationToken) =>
+    {
+        context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+        context.HttpContext.Response.Headers.RetryAfter = "60";
+
+        await context.HttpContext.Response.WriteAsJsonAsync(new
+        {
+            code = "RATE_LIMIT_EXCEEDED",
+            message = "Too many requests. Please try again later.",
+            retryAfterSeconds = 60,
+            retryable = true
+        }, cancellationToken);
+    };
 });
 
 var app = builder.Build();
@@ -179,6 +276,9 @@ app.UseGlobalExceptionHandler();
 
 // Add JWT authentication middleware
 app.UseJwtAuthentication();
+
+// Add rate limiting after authentication so user ID is available
+app.UseRateLimiter();
 
 app.UseAuthorization();
 app.MapControllers();

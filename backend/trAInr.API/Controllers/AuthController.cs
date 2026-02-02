@@ -1,3 +1,4 @@
+using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
 using trAInr.Application.DTOs;
 using trAInr.Application.Interfaces.Services;
@@ -5,7 +6,8 @@ using trAInr.Application.Interfaces.Services;
 namespace trAInr.API.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[ApiVersion("1.0")]
+[Route("api/v{version:apiVersion}/[controller]")]
 public class AuthController(IAuthService authService, ILogger<AuthController> logger) : ControllerBase
 {
     private readonly IAuthService _authService = authService;
@@ -58,5 +60,57 @@ public class AuthController(IAuthService authService, ILogger<AuthController> lo
     {
         var exists = await _authService.UsernameExistsAsync(username);
         return Ok(new { available = !exists });
+    }
+
+    /// <summary>
+    ///     Refresh access token using a valid refresh token
+    /// </summary>
+    [HttpPost("refresh")]
+    public async Task<ActionResult<AuthResponse>> RefreshToken([FromBody] RefreshTokenRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.RefreshToken))
+            return BadRequest(new { message = "Refresh token is required" });
+
+        var result = await _authService.RefreshTokenAsync(request);
+
+        if (result is null)
+            return Unauthorized(new { message = "Invalid or expired refresh token" });
+
+        _logger.LogInformation("Token refreshed successfully for user {UserId}", result.Id);
+        return Ok(result);
+    }
+
+    /// <summary>
+    ///     Revoke a refresh token (logout from specific device)
+    /// </summary>
+    [HttpPost("revoke")]
+    public async Task<ActionResult> RevokeToken([FromBody] RevokeTokenRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.RefreshToken))
+            return BadRequest(new { message = "Refresh token is required" });
+
+        var result = await _authService.RevokeTokenAsync(request);
+
+        if (!result)
+            return NotFound(new { message = "Token not found or already revoked" });
+
+        return Ok(new { message = "Token revoked successfully" });
+    }
+
+    /// <summary>
+    ///     Revoke all refresh tokens for the current user (logout from all devices)
+    /// </summary>
+    [HttpPost("revoke-all")]
+    [trAInr.API.Attributes.Authorize]
+    public async Task<ActionResult> RevokeAllTokens()
+    {
+        var userId = HttpContext.Items["UserId"] as Guid?;
+        if (userId is null)
+            return Unauthorized();
+
+        await _authService.RevokeAllTokensAsync(userId.Value);
+
+        _logger.LogInformation("All tokens revoked for user {UserId}", userId.Value);
+        return Ok(new { message = "All tokens revoked successfully" });
     }
 }
