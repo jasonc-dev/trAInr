@@ -16,9 +16,15 @@ import {
   Flex,
 } from '../components/styled';
 import { EquipmentSelector } from '../components/forms/EquipmentSelector';
+import { ContraindicationSelector } from '../components/forms/ContraindicationSelector';
 import { useProfile } from '../hooks/useProfile';
 import { UpdateUserRequest, FitnessLevel, FitnessGoal } from '../types';
-import { FITNESS_GOAL_OPTIONS, FITNESS_LEVEL_OPTIONS, WORKOUT_DAYS_OPTIONS } from '../utils';
+import {
+  FITNESS_GOAL_OPTIONS,
+  FITNESS_LEVEL_OPTIONS,
+  WORKOUT_DAYS_OPTIONS,
+  CONTRAINDICATION_OPTIONS,
+} from '../utils';
 
 const PageWrapper = styled.div`
   min-height: 100vh;
@@ -204,6 +210,7 @@ export const Profile: React.FC = () => {
     primaryGoal: FitnessGoal.GeneralFitness,
     workoutDaysPerWeek: 3,
     equipmentPreferences: [],
+    contraindications: [],
   });
 
   useEffect(() => {
@@ -220,6 +227,7 @@ export const Profile: React.FC = () => {
         primaryGoal: user.primaryGoal,
         workoutDaysPerWeek: user.workoutDaysPerWeek,
         equipmentPreferences: user.equipmentPreferences || [],
+        contraindications: user.contraindications || [],
       });
     }
   }, [user]);
@@ -247,6 +255,18 @@ export const Profile: React.FC = () => {
 
   const getFitnessGoalLabel = (goal: FitnessGoal): string => {
     return FITNESS_GOAL_OPTIONS.find((opt) => opt.value === goal)?.label || 'Unknown';
+  };
+
+  const getContraindicationLabel = (contraindication: string): string => {
+    return (
+      CONTRAINDICATION_OPTIONS.find((opt) => opt.value === contraindication)?.label ||
+      contraindication
+    );
+  };
+
+  const formatContraindications = (contraindications: string[]): string => {
+    if (!contraindications.length) return 'None selected';
+    return contraindications.map(getContraindicationLabel).join(', ');
   };
 
   const formatDate = (dateString: string): string => {
@@ -349,6 +369,12 @@ export const Profile: React.FC = () => {
                   </InfoValue>
                 </InfoRow>
                 <InfoRow>
+                  <InfoLabel>Contraindications</InfoLabel>
+                  <InfoValue>
+                    {formatContraindications(user.contraindications || [])}
+                  </InfoValue>
+                </InfoRow>
+                <InfoRow>
                   <InfoLabel>Member Since</InfoLabel>
                   <InfoValue>{formatDate(user.createdAt)}</InfoValue>
                 </InfoRow>
@@ -416,6 +442,14 @@ export const Profile: React.FC = () => {
                       selected={formData.equipmentPreferences || []}
                       onChange={(selected) =>
                         handleInputChange('equipmentPreferences', selected)
+                      }
+                    />
+                  </FormSection>
+                  <FormSection>
+                    <ContraindicationSelector
+                      selected={formData.contraindications || []}
+                      onChange={(selected) =>
+                        handleInputChange('contraindications', selected)
                       }
                     />
                   </FormSection>

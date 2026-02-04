@@ -1,4 +1,5 @@
 using trAInr.Domain.Entities;
+using trAInr.Domain.Enums;
 using trAInr.Domain.ValueObjects;
 
 namespace trAInr.Domain.Aggregates;
@@ -62,6 +63,33 @@ public class ExerciseDefinition
     public bool IsSystemExercise { get; private set; } = true;
     public Guid? CreatedByUserId { get; private set; }
     public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
+
+    // Safety & planning fields
+    public SpinalLoad SpinalLoad { get; private set; } = SpinalLoad.Low;
+    public SetupComplexity SetupComplexity { get; private set; } = SetupComplexity.Low;
+    public bool RequiresOverheadPosition { get; private set; }
+    public bool IsUnilateral { get; private set; }
+    public bool IsBodyweight { get; private set; }
+
+    // Execution fields
+    public LoadType LoadType { get; private set; } = LoadType.ExternalLoad;
+    public TrackingMode TrackingMode { get; private set; } = TrackingMode.RepsWeight;
+    public int? DefaultRepMin { get; private set; }
+    public int? DefaultRepMax { get; private set; }
+    public int? DefaultRestMinSec { get; private set; }
+    public int? DefaultRestMaxSec { get; private set; }
+    public int? TimePerSetEstimateSec { get; private set; }
+
+    // Search fields
+    public string[] Aliases { get; private set; } = Array.Empty<string>();
+    public string? ShortCue { get; private set; }
+
+    // Navigation properties for new normalized relationships
+    public ICollection<ExerciseEquipment> ExerciseEquipments { get; private set; } = new List<ExerciseEquipment>();
+    public ICollection<ExerciseMuscle> ExerciseMuscles { get; private set; } = new List<ExerciseMuscle>();
+    public ICollection<ExerciseTag> ExerciseTags { get; private set; } = new List<ExerciseTag>();
+    public ICollection<ExerciseVariant> ExerciseVariants { get; private set; } = new List<ExerciseVariant>();
+    public ICollection<ExerciseVariant> VariantOfExercises { get; private set; } = new List<ExerciseVariant>();
 
     /// <summary>
     ///     Validates that the exercise can be used in a workout session.

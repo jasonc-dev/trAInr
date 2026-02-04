@@ -13,6 +13,8 @@ import {
 import { athleteApi } from "../services/api/athleteApi";
 import {
   AuthResponse,
+  FitnessGoal,
+  FitnessLevel,
   LoginRequest,
   RegisterRequest,
   StoredUser,
@@ -88,8 +90,8 @@ export const useAuth = () => {
         email: response.email,
         firstName: response.firstName,
         lastName: response.lastName,
-        fitnessLevel: 0, // Default beginner
-        primaryGoal: 4, // Default general fitness
+        fitnessLevel: FitnessLevel.Beginner, // Default beginner
+        primaryGoal: FitnessGoal.GeneralFitness, // Default general fitness
         workoutDaysPerWeek: 3, // Default 3 days
         expiresAt: response.expiresAt.toString(),
       };

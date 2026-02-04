@@ -3,6 +3,7 @@
  * Handles AI program generation operations
  */
 
+import { FitnessGoal } from "../../types";
 import apiClient from "./client";
 
 export interface GenerateProgramRequest {
@@ -10,7 +11,10 @@ export interface GenerateProgramRequest {
   description: string;
   durationWeeks: number;
   experienceLevel: number;
+  fitnessGoal: FitnessGoal;
   workoutDayNames: string[];
+  availableEquipment: string[];
+  contraindications: string[];
   createdBy: string;
 }
 

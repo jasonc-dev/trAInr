@@ -10,17 +10,9 @@ namespace trAInr.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class ProgramGeneratorController : ControllerBase
+public class ProgramGeneratorController(IJobRepository jobRepository, IUnitOfWork unitOfWork) : ControllerBase
 {
-    private readonly IJobRepository _jobRepository;
-    private readonly IUnitOfWork _unitOfWork;
     private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = false };
-
-    public ProgramGeneratorController(IJobRepository jobRepository, IUnitOfWork unitOfWork)
-    {
-        _jobRepository = jobRepository;
-        _unitOfWork = unitOfWork;
-    }
 
     [HttpPost]
     [ProducesResponseType(typeof(JobResponse), StatusCodes.Status202Accepted)]
@@ -36,8 +28,8 @@ public class ProgramGeneratorController : ControllerBase
             CreatedAt = DateTime.UtcNow
         };
 
-        await _jobRepository.AddAsync(job);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await jobRepository.AddAsync(job);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
 
         // Return immediately with job ID
         return Accepted(new JobResponse
@@ -53,7 +45,7 @@ public class ProgramGeneratorController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<JobStatusResponse>> GetJobStatus(Guid jobId)
     {
-        var job = await _jobRepository.GetByIdAsync(jobId);
+        var job = await jobRepository.GetByIdAsync(jobId);
 
         if (job == null)
         {

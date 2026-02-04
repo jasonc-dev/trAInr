@@ -8,7 +8,7 @@ using trAInr.Application.Interfaces.Repositories;
 using trAInr.Application.Interfaces.Services.AI;
 using trAInr.Domain.Entities;
 
-namespace trAInr.Application.Services.AI;
+namespace trAInr.Application.Services.AiProgramGenerator;
 
 public class AiProgramGenerationService : IHostedService
 {

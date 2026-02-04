@@ -3,7 +3,7 @@
  * Types related to user/athlete data
  */
 
-import { FitnessLevel, FitnessGoal, UserRole } from './enums';
+import { FitnessLevel, FitnessGoal, UserRole } from "./enums";
 
 export interface User {
   id: string;
@@ -16,6 +16,7 @@ export interface User {
   primaryGoal: FitnessGoal;
   workoutDaysPerWeek: number;
   equipmentPreferences: string[];
+  contraindications: string[];
   role: UserRole;
   createdAt: string;
   updatedAt: string;
@@ -50,4 +51,5 @@ export interface UpdateUserRequest {
   primaryGoal: FitnessGoal;
   workoutDaysPerWeek: number;
   equipmentPreferences?: string[];
+  contraindications?: string[];
 }

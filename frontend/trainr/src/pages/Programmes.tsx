@@ -387,8 +387,11 @@ export const Programmes: React.FC = () => {
         description: aiFormData.description,
         durationWeeks: aiFormData.durationWeeks,
         experienceLevel: currentAthlete?.fitnessLevel || 0,
+        fitnessGoal: currentAthlete?.primaryGoal || 0,
         workoutDayNames,
         createdBy: currentAthlete?.id || "",
+        availableEquipment: currentAthlete?.equipmentPreferences || [],
+        contraindications: currentAthlete?.contraindications || [],
       });
 
       // Store the job in localStorage and state
