@@ -191,11 +191,11 @@ using (var scope = app.Services.CreateScope())
 
     try
     {
-        await dbContext.Database.EnsureCreatedAsync();
+        await dbContext.Database.MigrateAsync();
     }
     catch (Exception ex)
     {
-        logger.LogError(ex, "An error occurred during database initialization.");
+        logger.LogError(ex, "An error occurred applying database migrations.");
         throw;
     }
 }
