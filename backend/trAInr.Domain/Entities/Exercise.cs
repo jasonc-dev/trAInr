@@ -5,17 +5,17 @@ namespace trAInr.Domain.Entities;
 /// </summary>
 public class Exercise
 {
-  public Guid Id { get; set; }
-  public string Name { get; set; } = string.Empty;
-  public string Description { get; set; } = string.Empty;
-  public ExerciseType Type { get; set; }
-  public MuscleGroup PrimaryMuscleGroup { get; set; }
-  public MuscleGroup? SecondaryMuscleGroup { get; set; }
-  public string? Instructions { get; set; }
-  public string? VideoUrl { get; set; }
-  public bool IsSystemExercise { get; set; } = true;
-  public Guid? CreatedByUserId { get; set; }
-  public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public Guid Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public ExerciseType Type { get; set; }
+    public MuscleGroup PrimaryMuscleGroup { get; set; }
+    public MuscleGroup? SecondaryMuscleGroup { get; set; }
+    public string? Instructions { get; set; }
+    public string? VideoUrl { get; set; }
+    public bool IsSystemExercise { get; set; } = true;
+    public Guid? CreatedByUserId { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }
 
 /// <summary>
@@ -23,10 +23,10 @@ public class Exercise
 /// </summary>
 public enum ExerciseType
 {
-  WeightTraining = 1,
-  Cardio = 2,
-  Bodyweight = 3,
-  Flexibility = 4
+    WeightTraining = 1,
+    Cardio = 2,
+    Bodyweight = 3,
+    Flexibility = 4
 }
 
 /// <summary>
@@ -34,26 +34,26 @@ public enum ExerciseType
 /// </summary>
 public enum MuscleGroup
 {
-  Chest = 1,
-  Back = 2,
-  Shoulders = 3,
-  Biceps = 4,
-  Triceps = 5,
-  Forearms = 6,
-  Core = 7,
-  Quadriceps = 8,
-  Hamstrings = 9,
-  Glutes = 10,
-  Calves = 11,
-  FullBody = 12,
-  Cardio = 13
+    Chest = 1,
+    Back = 2,
+    Shoulders = 3,
+    Biceps = 4,
+    Triceps = 5,
+    Forearms = 6,
+    Core = 7,
+    Quadriceps = 8,
+    Hamstrings = 9,
+    Glutes = 10,
+    Calves = 11,
+    FullBody = 12,
+    Cardio = 13
 }
 
 public enum LevelOfDifficulty
 {
-  Beginner = 1,
-  Intermediate = 2,
-  Advanced = 3
+    Beginner = 1,
+    Intermediate = 2,
+    Advanced = 3
 }
 
 /// <summary>
@@ -61,9 +61,10 @@ public enum LevelOfDifficulty
 /// </summary>
 public enum ExperienceLevel
 {
-    Beginner = 1,      // <1 year experience
-    Intermediate = 2,  // 1-3 years experience
-    Advanced = 3       // 3+ years experience
+    Beginner = 0,      // <1 year experience
+    Intermediate = 1,  // 1-3 years experience
+    Advanced = 2,      // 3+ years experience
+    Elite = 3          // 5+ years experience
 }
 
 /// <summary>

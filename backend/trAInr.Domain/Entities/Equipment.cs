@@ -8,7 +8,7 @@ public class Equipment
     public bool IsPortable { get; private set; }
 
     // Navigation properties
-    public ICollection<ExerciseEquipment> ExerciseEquipments { get; private set; } = new List<ExerciseEquipment>();
+    public ICollection<ExerciseEquipment> ExerciseEquipments { get; private set; } = [];
 
     private Equipment() { } // For EF Core
 

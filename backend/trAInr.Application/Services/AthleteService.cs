@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Logging;
 using trAInr.Application.DTOs;
 using trAInr.Application.Interfaces;
 using trAInr.Application.Interfaces.Repositories;
@@ -86,28 +85,19 @@ public class AthleteService(
             request.WorkoutDaysPerWeek);
 
         // Update equipment preferences if provided
-        // Note: The domain model doesn't support removing equipment, so we need to work with reflection
-        // or accept that equipment can only be added. For proper implementation, consider adding
-        // a domain method to clear/replace equipment preferences.
         if (request.EquipmentPreferences is not null)
         {
-            // For now, we'll use reflection to clear the equipment list
-            var equipmentField = typeof(Athlete).GetField("_equipmentPreferences", 
-                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            
-            if (equipmentField?.GetValue(athlete) is List<EquipmentRequirement> equipmentList)
-            {
-                equipmentList.Clear();
-            }
+            var equipmentPreferences = request.EquipmentPreferences
+                .Where(equipmentName => !string.IsNullOrWhiteSpace(equipmentName))
+                .Select(equipmentName => EquipmentRequirement.Create(equipmentName, true))
+                .ToList();
 
-            // Add new equipment preferences
-            foreach (var equipmentName in request.EquipmentPreferences)
-            {
-                if (!string.IsNullOrWhiteSpace(equipmentName))
-                {
-                    athlete.AddEquipmentPreference(EquipmentRequirement.Create(equipmentName, true));
-                }
-            }
+            athlete.ReplaceEquipmentPreferences(equipmentPreferences);
+        }
+
+        if (request.Contraindications is not null)
+        {
+            athlete.ReplaceConstraints(request.Contraindications);
         }
 
         await athleteRepository.UpdateAsync(athlete);
@@ -145,6 +135,7 @@ public class AthleteService(
             athlete.PrimaryGoal,
             athlete.WorkoutDaysPerWeek,
             athlete.EquipmentPreferences.Select(e => e.Name).ToList(),
+            athlete.Constraints.ToList(),
             athlete.CreatedAt);
     }
 }

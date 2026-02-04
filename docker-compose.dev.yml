@@ -4,7 +4,7 @@
 services:
   # PostgreSQL Database
   db:
-    image: postgres:16-alpine
+    image: pgvector/pgvector:pg16
     container_name: trainr-db-dev
     environment:
       POSTGRES_DB: trainr

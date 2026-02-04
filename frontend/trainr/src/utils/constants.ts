@@ -137,9 +137,6 @@ export const EXERCISE_TYPES = [
   { value: ExerciseType.Flexibility, label: "Flexibility" },
 ];
 
-// Alias for backwards compatibility
-export const EXERCISE_TYPE_OPTIONS = EXERCISE_TYPES;
-
 // Muscle group options
 export const MUSCLE_GROUPS = [
   { value: MuscleGroup.Chest, label: "Chest" },
@@ -155,9 +152,6 @@ export const MUSCLE_GROUPS = [
   { value: MuscleGroup.Core, label: "Core" },
   { value: MuscleGroup.FullBody, label: "Full Body" },
 ] as const;
-
-// Alias for backwards compatibility
-export const MUSCLE_GROUP_OPTIONS = MUSCLE_GROUPS;
 
 // Helper functions
 export const getExerciseTypeLabel = (type: ExerciseType): string => {
@@ -187,10 +181,24 @@ export const getExerciseIcon = (type: ExerciseType) => {
 export const EQUIPMENT_OPTIONS = [
   { value: "Barbell", label: "Barbell" },
   { value: "Dumbbell", label: "Dumbbell" },
-  { value: "Kettlebell", label: "Kettlebell" },
-  { value: "Resistance Bands", label: "Resistance Bands" },
-  { value: "Pull-up Bar", label: "Pull-up Bar" },
-  { value: "Bench", label: "Bench" },
+  { value: "Flat Bench", label: "Flat Bench" },
+  { value: "Squat Rack", label: "Squat Rack" },
   { value: "Cable Machine", label: "Cable Machine" },
-  { value: "Bodyweight Only", label: "Bodyweight Only" },
+  { value: "Kettlebell", label: "Kettlebell" },
+  { value: "Bodyweight", label: "Bodyweight" },
+  { value: "Pull-up Bar", label: "Pull-up Bar" },
+  { value: "Leg Press", label: "Leg Press" },
+  { value: "Resistance Bands", label: "Resistance Bands" },
+  { value: "Treadmill", label: "Treadmill" },
+  { value: "EZ Bar", label: "EZ Bar" },
+  { value: "Lat Pulldown", label: "Lat Pulldown" },
+  { value: "Smith Machine", label: "Smith Machine" },
+  { value: "Incline Bench", label: "Incline Bench" },
+  { value: "Leg Extension", label: "Leg Extension" },
+  { value: "Leg Curl", label: "Leg Curl" },
+] as const;
+
+export const CONTRAINDICATION_OPTIONS = [
+  { value: "2:high_spine_load", label: "High spine load" },
+  { value: "2:overhead_required", label: "Overhead required" },
 ] as const;

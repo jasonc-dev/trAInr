@@ -68,7 +68,13 @@ Then call: `POST /api/admin/seed-lookup-tables`
 
 #### Option B: SQL Insert Script
 
-Export the seed data to SQL and run it directly on the database.
+A ready-to-run SQL seed script is provided for testing the RAG feature with all new fields populated:
+
+- **`backend/scripts/rag_seed_data.sql`** – Seeds Equipment, Muscles, Tags, ~58 ExerciseDefinitions (~5 per muscle group), and the join tables (ExerciseEquipments, ExerciseMuscles, ExerciseTags). Covers all new columns: SpinalLoad, SetupComplexity, TrackingMode, LoadType, MovementPattern, LevelOfDifficulty, DefaultRepMin/Max, DefaultRestMin/Max, TimePerSetEstimateSec, IsBodyweight, IsUnilateral, RequiresOverheadPosition, Aliases, ShortCue, and EquipmentRequirements JSON.
+
+Run after migrations (e.g. from repo root: `psql $DATABASE_URL -f backend/scripts/rag_seed_data.sql`). For a clean test, use an empty DB or truncate the RAG-related tables first if you already ran the C# lookup seed.
+
+Alternatively, export your own seed data to SQL and run it directly on the database.
 
 ### 4. Map Existing Exercise Data
 
@@ -80,11 +86,13 @@ Your existing exercises have:
 You need to:
 
 1. **Map equipment to new normalized tables:**
+
    - Parse JSON `EquipmentRequirements`
    - Look up `Equipment.Id` by name
    - Insert into `ExerciseEquipments` join table
 
 2. **Map muscles to new normalized tables:**
+
    - Map `PrimaryMuscleGroup` enum to muscle names
    - Look up `Muscle.Id` by name
    - Insert into `ExerciseMuscles` with `Role = Primary`

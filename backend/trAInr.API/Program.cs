@@ -9,7 +9,7 @@ using trAInr.Application.Interfaces.Repositories;
 using trAInr.Application.Interfaces.Services;
 using trAInr.Application.Interfaces.Services.AI;
 using trAInr.Application.Services;
-using trAInr.Application.Services.AI;
+using trAInr.Application.Services.AiProgramGenerator;
 using trAInr.Application.Services.AssignedProgramme;
 using trAInr.Application.Services.Exercise;
 using trAInr.Application.Services.WorkoutSession;
@@ -184,7 +184,6 @@ app.UseAuthorization();
 app.MapControllers();
 
 
-// Apply database migrations and seed data on startup
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<TrainrDbContext>();

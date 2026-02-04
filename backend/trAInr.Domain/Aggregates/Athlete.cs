@@ -140,6 +140,43 @@ public class Athlete
     }
 
     /// <summary>
+    ///     Replaces the athlete's equipment preferences.
+    /// </summary>
+    public void ReplaceEquipmentPreferences(IEnumerable<EquipmentRequirement> equipmentPreferences)
+    {
+        _equipmentPreferences.Clear();
+
+        foreach (var equipment in equipmentPreferences)
+        {
+            if (_equipmentPreferences.All(e => e.Name != equipment.Name))
+            {
+                _equipmentPreferences.Add(equipment);
+            }
+        }
+
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    ///     Replaces the athlete's constraints (contraindications).
+    /// </summary>
+    public void ReplaceConstraints(IEnumerable<string> constraints)
+    {
+        _constraints.Clear();
+
+        foreach (var constraint in constraints)
+        {
+            if (string.IsNullOrWhiteSpace(constraint)) continue;
+            if (!_constraints.Contains(constraint))
+            {
+                _constraints.Add(constraint.Trim());
+            }
+        }
+
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
     ///     Updates the athlete's profile information.
     /// </summary>
     public void UpdateProfile(
@@ -176,10 +213,10 @@ public class Athlete
 /// </summary>
 public enum TrainingLevel
 {
-    Beginner = 1,
-    Intermediate = 2,
-    Advanced = 3,
-    Elite = 4
+    Beginner = 0,
+    Intermediate = 1,
+    Advanced = 2,
+    Elite = 3
 }
 
 /// <summary>
@@ -187,9 +224,9 @@ public enum TrainingLevel
 /// </summary>
 public enum FitnessGoal
 {
-    BuildMuscle = 1,
-    LoseWeight = 2,
-    ImproveEndurance = 3,
-    IncreaseStrength = 4,
-    GeneralFitness = 5
+    BuildMuscle = 0,
+    LoseWeight = 1,
+    ImproveEndurance = 2,
+    IncreaseStrength = 3,
+    GeneralFitness = 4
 }

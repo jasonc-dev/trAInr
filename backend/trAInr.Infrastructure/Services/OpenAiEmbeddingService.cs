@@ -1,9 +1,9 @@
 using System.Net.Http.Json;
-using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using trAInr.Application.Interfaces.Services.AI;
+using trAInr.Domain.Aggregates;
 using trAInr.Domain.Entities;
 using trAInr.Domain.Enums;
 using trAInr.Infrastructure.Data;
@@ -104,7 +104,7 @@ public class OpenAiEmbeddingService : IEmbeddingService
                     var existingEmbedding = await _context.ExerciseEmbeddings
                         .FirstOrDefaultAsync(e => e.ExerciseDefinitionId == exercise.Id, cancellationToken);
 
-                    if (existingEmbedding != null && existingEmbedding.CatalogVersion >= CurrentCatalogVersion)
+                    if (existingEmbedding is { CatalogVersion: >= CurrentCatalogVersion })
                     {
                         _logger.LogDebug("Skipping {ExerciseName} - embedding is up to date", exercise.Name);
                         continue;
@@ -155,7 +155,7 @@ public class OpenAiEmbeddingService : IEmbeddingService
         _logger.LogInformation("Completed embedding generation. Processed {Count} exercises", processedCount);
     }
 
-    private static string ComposeEmbeddingText(trAInr.Domain.Aggregates.ExerciseDefinition exercise)
+    private static string ComposeEmbeddingText(ExerciseDefinition exercise)
     {
         var primaryMuscles = exercise.ExerciseMuscles
             .Where(em => em.Role == MuscleRole.Primary)
