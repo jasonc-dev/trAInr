@@ -31,33 +31,12 @@ export function NumberInput({
   onChange,
   min = 0,
   max = 999,
-  step = 1,
   suffix,
   disabled = false,
 }: NumberInputProps) {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
   const styles = createStyles(isDark);
-
-  const handleIncrement = () => {
-    if (disabled) return;
-    const currentValue = value ?? min;
-    const newValue = Math.min(currentValue + step, max);
-    if (newValue !== currentValue) {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      onChange(newValue);
-    }
-  };
-
-  const handleDecrement = () => {
-    if (disabled) return;
-    const currentValue = value ?? min;
-    const newValue = Math.max(currentValue - step, min);
-    if (newValue !== currentValue) {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      onChange(newValue);
-    }
-  };
 
   const handleTextChange = (text: string) => {
     if (disabled) return;
@@ -75,18 +54,6 @@ export function NumberInput({
     <View style={styles.container}>
       <Text style={styles.label}>{label}</Text>
       <View style={styles.inputContainer}>
-        <Pressable
-          style={({ pressed }) => [
-            styles.button,
-            pressed && !disabled && styles.buttonPressed,
-            disabled && styles.buttonDisabled,
-          ]}
-          onPress={handleDecrement}
-          disabled={disabled || (value ?? min) <= min}
-        >
-          <Text style={styles.buttonText}>−</Text>
-        </Pressable>
-
         <View style={styles.inputWrapper}>
           <TextInput
             style={styles.input}
@@ -98,18 +65,6 @@ export function NumberInput({
           />
           {suffix && <Text style={styles.suffix}>{suffix}</Text>}
         </View>
-
-        <Pressable
-          style={({ pressed }) => [
-            styles.button,
-            pressed && !disabled && styles.buttonPressed,
-            disabled && styles.buttonDisabled,
-          ]}
-          onPress={handleIncrement}
-          disabled={disabled || (value ?? min) >= max}
-        >
-          <Text style={styles.buttonText}>+</Text>
-        </Pressable>
       </View>
     </View>
   );
@@ -132,9 +87,9 @@ const createStyles = (isDark: boolean) =>
       gap: spacing.xs,
     },
     button: {
-      width: 36,
-      height: 36,
-      borderRadius: borderRadius.sm,
+      width: 44,
+      height: 44,
+      borderRadius: borderRadius.md,
       backgroundColor: isDark ? colors.dark.surface : colors.surface,
       borderWidth: 1,
       borderColor: isDark ? colors.dark.border : colors.border,
@@ -163,7 +118,7 @@ const createStyles = (isDark: boolean) =>
       borderColor: isDark ? colors.dark.border : colors.border,
       borderRadius: borderRadius.sm,
       paddingHorizontal: spacing.sm,
-      height: 36,
+      height: 44,
     },
     input: {
       flex: 1,

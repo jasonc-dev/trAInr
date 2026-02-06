@@ -13,7 +13,8 @@ import {
   useColorScheme,
   KeyboardAvoidingView,
   Platform,
-} from "react-native"; import { SafeAreaView } from "react-native-safe-area-context";
+} from "react-native";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { colors, spacing, typography, borderRadius } from "../../theme";
 
 interface ModalProps {
@@ -40,45 +41,49 @@ export function Modal({
   return (
     <RNModal
       visible={visible}
-      animationType="slide"
+      animationType="none"
       presentationStyle="fullScreen"
       onRequestClose={onClose}
     >
-      <SafeAreaView style={styles.safeArea}>
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-          style={styles.container}
-        >
-          {/* Header */}
-          <View style={styles.header}>
-            <Text style={styles.title}>{title}</Text>
-            <Pressable
-              style={({ pressed }) => [
-                styles.closeButton,
-                pressed && styles.closeButtonPressed,
-              ]}
-              onPress={onClose}
-            >
-              <Text style={styles.closeButtonText}>✕</Text>
-            </Pressable>
-          </View>
-
-          {/* Content */}
-          <ScrollView
-            style={styles.content}
-            contentContainerStyle={[
-              styles.contentContainer,
-              maxHeight && styles.contentContainerMaxHeight,
-            ]}
-            showsVerticalScrollIndicator={true}
+      <SafeAreaProvider>
+        <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
+          <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            style={styles.container}
           >
-            {children}
-          </ScrollView>
+            {/* Header */}
+            <View style={styles.header}>
+              <Text style={styles.title}>{title}</Text>
+              <Pressable
+                style={({ pressed }) => [
+                  styles.closeButton,
+                  pressed && styles.closeButtonPressed,
+                ]}
+                onPress={onClose}
+              >
+                <Text style={styles.closeButtonText}>✕</Text>
+              </Pressable>
+            </View>
 
-          {/* Footer */}
-          {footer && <View style={styles.footer}>{footer}</View>}
-        </KeyboardAvoidingView>
-      </SafeAreaView>
+            {/* Content */}
+            <ScrollView
+              style={styles.content}
+              contentContainerStyle={[
+                styles.contentContainer,
+                maxHeight && styles.contentContainerMaxHeight,
+              ]}
+              showsVerticalScrollIndicator={true}
+              scrollEnabled={true}
+              nestedScrollEnabled={true}
+            >
+              {children}
+            </ScrollView>
+
+            {/* Footer */}
+            {footer && <View style={styles.footer}>{footer}</View>}
+          </KeyboardAvoidingView>
+        </SafeAreaView>
+      </SafeAreaProvider>
     </RNModal>
   );
 }
@@ -97,7 +102,8 @@ const createStyles = (isDark: boolean) =>
       alignItems: "center",
       justifyContent: "space-between",
       paddingHorizontal: spacing.md,
-      paddingVertical: spacing.md,
+      paddingTop: spacing.lg,
+      paddingBottom: spacing.md,
       borderBottomWidth: 1,
       borderBottomColor: isDark ? colors.dark.border : colors.border,
     },

@@ -37,7 +37,7 @@ class SyncEngine {
     entityType: string,
     entityId: string,
     operation: "create" | "update" | "delete",
-    payload: unknown
+    payload: unknown,
   ): Promise<void> {
     const db = await getDatabase();
     const idempotencyKey = uuidv4();
@@ -54,7 +54,7 @@ class SyncEngine {
         JSON.stringify(payload),
         idempotencyKey,
         now,
-      ]
+      ],
     );
 
     // Trigger sync
@@ -88,7 +88,7 @@ class SyncEngine {
       idempotency_key: string;
       created_at: number;
     }>(
-      `SELECT * FROM sync_queue WHERE synced_at IS NULL ORDER BY created_at ASC LIMIT 50`
+      `SELECT * FROM sync_queue WHERE synced_at IS NULL ORDER BY created_at ASC LIMIT 50`,
     );
 
     if (pending.length === 0) return;
@@ -107,7 +107,7 @@ class SyncEngine {
         "/sync/push",
         {
           changes,
-        }
+        },
       );
 
       const now = Date.now();
@@ -118,12 +118,12 @@ class SyncEngine {
         ) {
           await db.runAsync(
             `UPDATE sync_queue SET synced_at = ? WHERE idempotency_key = ?`,
-            [now, result.idempotencyKey]
+            [now, result.idempotencyKey],
           );
         } else {
           await db.runAsync(
             `UPDATE sync_queue SET retry_count = retry_count + 1, last_error = ? WHERE idempotency_key = ?`,
-            [result.errorMessage || "Unknown error", result.idempotencyKey]
+            [result.errorMessage || "Unknown error", result.idempotencyKey],
           );
         }
       }
@@ -137,7 +137,7 @@ class SyncEngine {
 
     // Get last sync timestamp
     const lastSync = await db.getFirstAsync<{ value: string }>(
-      `SELECT value FROM sync_state WHERE key = 'last_pull_timestamp'`
+      `SELECT value FROM sync_state WHERE key = 'last_pull_timestamp'`,
     );
 
     try {
@@ -158,7 +158,7 @@ class SyncEngine {
       // Update last sync timestamp
       await db.runAsync(
         `INSERT OR REPLACE INTO sync_state (key, value) VALUES ('last_pull_timestamp', ?)`,
-        [response.data.serverTimestamp]
+        [response.data.serverTimestamp],
       );
     } catch (error) {
       console.error("Failed to pull changes:", error);
@@ -183,7 +183,7 @@ class SyncEngine {
 
   private async applyExerciseSetChange(
     db: Awaited<ReturnType<typeof getDatabase>>,
-    change: SyncChange
+    change: SyncChange,
   ): Promise<void> {
     const data = change.data as Record<string, unknown>;
 
@@ -206,14 +206,14 @@ class SyncEngine {
           data.completedAt,
           data.notes,
           Date.now(),
-        ]
+        ],
       );
     }
   }
 
   private async applyWorkoutExerciseChange(
     db: Awaited<ReturnType<typeof getDatabase>>,
-    change: SyncChange
+    change: SyncChange,
   ): Promise<void> {
     // Simplified implementation
     console.log("Applying workout exercise change:", change);
@@ -221,7 +221,7 @@ class SyncEngine {
 
   private async applyWorkoutDayChange(
     db: Awaited<ReturnType<typeof getDatabase>>,
-    change: SyncChange
+    change: SyncChange,
   ): Promise<void> {
     // Simplified implementation
     console.log("Applying workout day change:", change);
@@ -245,7 +245,7 @@ class SyncEngine {
   async getPendingChangesCount(): Promise<number> {
     const db = await getDatabase();
     const result = await db.getFirstAsync<{ count: number }>(
-      `SELECT COUNT(*) as count FROM sync_queue WHERE synced_at IS NULL`
+      `SELECT COUNT(*) as count FROM sync_queue WHERE synced_at IS NULL`,
     );
     return result?.count || 0;
   }

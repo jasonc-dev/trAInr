@@ -8,18 +8,26 @@ import {
   ActivityIndicator,
   RefreshControl,
   Alert,
-  TextInput,
-} from 'react-native';
-import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useAuthStore } from '../../stores/authStore';
-import { programmesApi } from '../../lib/api/programmes';
-import type { ProgrammeSummary } from '../../lib/types/programme';
-import { colors, spacing, typography, borderRadius } from '../../theme';
-import { Tabs, Tab, Badge, Modal, Button, Select, SelectOption } from '../../components/ui';
-import { Input } from '../../components/ui';
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useAuthStore } from "../../stores/authStore";
+import { programmesApi } from "../../lib/api/programmes";
+import type { ProgrammeSummary } from "../../lib/types/programme";
+import { colors, spacing, typography, borderRadius } from "../../theme";
+import {
+  Tabs,
+  Tab,
+  Badge,
+  Modal,
+  Button,
+  Select,
+  SelectOption,
+} from "../../components/ui";
+import { Input } from "../../components/ui";
 
-import ProgrammeDetailModal from '../../components/ProgrammeDetailModal';
+import ProgrammeDetailModal from "../../components/programme/ProgrammeDetailModal";
 
 function ProgrammeCard({
   programme,
@@ -57,12 +65,8 @@ function ProgrammeCard({
           {programme.name}
         </Text>
         <View style={styles.cardHeaderBadges}>
-          {isActive && (
-            <Badge variant="primary">Active</Badge>
-          )}
-          {isTemplate && (
-            <Badge variant="info">Template</Badge>
-          )}
+          {isActive && <Badge variant="primary">Active</Badge>}
+          {isTemplate && <Badge variant="info">Template</Badge>}
         </View>
       </View>
       {programme.description ? (
@@ -77,9 +81,7 @@ function ProgrammeCard({
         </Text>
         {!isTemplate && (
           <View style={styles.progressBar}>
-            <View
-              style={[styles.progressFill, { width: `${progress}%` }]}
-            />
+            <View style={[styles.progressFill, { width: `${progress}%` }]} />
           </View>
         )}
       </View>
@@ -121,38 +123,43 @@ function ProgrammeCard({
 
 export default function ProgramsScreen() {
   const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const isDark = colorScheme === "dark";
   const styles = createStyles(isDark);
   const { user } = useAuthStore();
   const queryClient = useQueryClient();
 
   // Tab state
-  const [activeTab, setActiveTab] = useState<'my' | 'created' | 'premade'>('my');
+  const [activeTab, setActiveTab] = useState<"my" | "created" | "premade">(
+    "my",
+  );
 
   // Modal states
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showCloneModal, setShowCloneModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
-  const [selectedProgramme, setSelectedProgramme] = useState<ProgrammeSummary | null>(null);
-  const [selectedProgrammeId, setSelectedProgrammeId] = useState<string | null>(null);
+  const [selectedProgramme, setSelectedProgramme] =
+    useState<ProgrammeSummary | null>(null);
+  const [selectedProgrammeId, setSelectedProgrammeId] = useState<string | null>(
+    null,
+  );
 
   // Form states
   const [createForm, setCreateForm] = useState({
-    name: '',
-    description: '',
+    name: "",
+    description: "",
     durationWeeks: 6,
-    startDate: new Date().toISOString().split('T')[0],
+    startDate: new Date().toISOString().split("T")[0],
   });
 
   const [editForm, setEditForm] = useState({
-    name: '',
-    description: '',
+    name: "",
+    description: "",
     isActive: false,
   });
 
   const [cloneForm, setCloneForm] = useState({
-    startDate: new Date().toISOString().split('T')[0],
+    startDate: new Date().toISOString().split("T")[0],
   });
 
   // Queries
@@ -162,9 +169,9 @@ export default function ProgramsScreen() {
     refetch: refetchMy,
     isRefetching: isRefetchingMy,
   } = useQuery({
-    queryKey: ['programmes', user?.id],
+    queryKey: ["programmes", user?.id],
     queryFn: () => programmesApi.getAssignedProgrammes(user!.id),
-    enabled: !!user?.id && activeTab === 'my',
+    enabled: !!user?.id && activeTab === "my",
   });
 
   const {
@@ -173,9 +180,9 @@ export default function ProgramsScreen() {
     refetch: refetchCreated,
     isRefetching: isRefetchingCreated,
   } = useQuery({
-    queryKey: ['programmes', 'created', user?.id],
+    queryKey: ["programmes", "created", user?.id],
     queryFn: () => programmesApi.getCreatedProgrammes(user!.id),
-    enabled: !!user?.id && activeTab === 'created',
+    enabled: !!user?.id && activeTab === "created",
   });
 
   const {
@@ -184,9 +191,9 @@ export default function ProgramsScreen() {
     refetch: refetchPremade,
     isRefetching: isRefetchingPremade,
   } = useQuery({
-    queryKey: ['programmes', 'premade'],
+    queryKey: ["programmes", "premade"],
     queryFn: () => programmesApi.getPreMadeProgrammes(),
-    enabled: activeTab === 'premade',
+    enabled: activeTab === "premade",
   });
 
   // Mutations
@@ -194,20 +201,20 @@ export default function ProgramsScreen() {
     mutationFn: (data: typeof createForm) =>
       programmesApi.createProgramme(user!.id, data),
     onSuccess: (programme) => {
-      queryClient.invalidateQueries({ queryKey: ['programmes'] });
+      queryClient.invalidateQueries({ queryKey: ["programmes"] });
       setShowCreateModal(false);
       setCreateForm({
-        name: '',
-        description: '',
+        name: "",
+        description: "",
         durationWeeks: 6,
-        startDate: new Date().toISOString().split('T')[0],
+        startDate: new Date().toISOString().split("T")[0],
       });
       // Open detail modal for new programme
       setSelectedProgrammeId(programme.id);
       setShowDetailModal(true);
     },
     onError: (error: Error) => {
-      Alert.alert('Error', error.message || 'Failed to create programme');
+      Alert.alert("Error", error.message || "Failed to create programme");
     },
   });
 
@@ -215,33 +222,39 @@ export default function ProgramsScreen() {
     mutationFn: ({ id, data }: { id: string; data: typeof editForm }) =>
       programmesApi.updateProgramme(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['programmes'] });
+      queryClient.invalidateQueries({ queryKey: ["programmes"] });
       setShowEditModal(false);
       setSelectedProgramme(null);
     },
     onError: (error: Error) => {
-      Alert.alert('Error', error.message || 'Failed to update programme');
+      Alert.alert("Error", error.message || "Failed to update programme");
     },
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => programmesApi.deleteProgramme(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['programmes'] });
+      queryClient.invalidateQueries({ queryKey: ["programmes"] });
     },
     onError: (error: Error) => {
-      Alert.alert('Error', error.message || 'Failed to delete programme');
+      Alert.alert("Error", error.message || "Failed to delete programme");
     },
   });
 
   const cloneMutation = useMutation({
-    mutationFn: ({ programmeId, data }: { programmeId: string; data: typeof cloneForm }) =>
+    mutationFn: ({
+      programmeId,
+      data,
+    }: {
+      programmeId: string;
+      data: typeof cloneForm;
+    }) =>
       programmesApi.cloneProgramme(programmeId, {
         athleteId: user!.id,
         startDate: data.startDate,
       }),
     onSuccess: (programme) => {
-      queryClient.invalidateQueries({ queryKey: ['programmes'] });
+      queryClient.invalidateQueries({ queryKey: ["programmes"] });
       setShowCloneModal(false);
       setSelectedProgramme(null);
       // Open detail modal for cloned programme
@@ -249,7 +262,7 @@ export default function ProgramsScreen() {
       setShowDetailModal(true);
     },
     onError: (error: Error) => {
-      Alert.alert('Error', error.message || 'Failed to clone programme');
+      Alert.alert("Error", error.message || "Failed to clone programme");
     },
   });
 
@@ -258,7 +271,7 @@ export default function ProgramsScreen() {
     setSelectedProgramme(programme);
     setEditForm({
       name: programme.name,
-      description: programme.description || '',
+      description: programme.description || "",
       isActive: programme.isActive,
     });
     setShowEditModal(true);
@@ -266,23 +279,23 @@ export default function ProgramsScreen() {
 
   const handleDelete = (programme: ProgrammeSummary) => {
     Alert.alert(
-      'Delete Programme',
+      "Delete Programme",
       `Are you sure you want to delete "${programme.name}"? This action cannot be undone.`,
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: "Cancel", style: "cancel" },
         {
-          text: 'Delete',
-          style: 'destructive',
+          text: "Delete",
+          style: "destructive",
           onPress: () => deleteMutation.mutate(programme.id),
         },
-      ]
+      ],
     );
   };
 
   const handleClone = (programme: ProgrammeSummary) => {
     setSelectedProgramme(programme);
     setCloneForm({
-      startDate: new Date().toISOString().split('T')[0],
+      startDate: new Date().toISOString().split("T")[0],
     });
     setShowCloneModal(true);
   };
@@ -294,64 +307,68 @@ export default function ProgramsScreen() {
 
   // Tab configuration
   const tabs: Tab[] = [
-    { id: 'my', label: 'My Programmes', badge: myProgrammes.length },
-    { id: 'created', label: 'Your Templates', badge: createdProgrammes.length },
-    { id: 'premade', label: 'Pre-made', badge: premadeProgrammes.length },
+    { id: "my", label: "My Programmes", badge: myProgrammes.length },
+    { id: "created", label: "Your Templates", badge: createdProgrammes.length },
+    { id: "premade", label: "Pre-made", badge: premadeProgrammes.length },
   ];
 
   // Current data based on active tab
   const currentData =
-    activeTab === 'my'
+    activeTab === "my"
       ? myProgrammes
-      : activeTab === 'created'
+      : activeTab === "created"
         ? createdProgrammes
         : premadeProgrammes;
 
   const isLoading =
-    activeTab === 'my'
+    activeTab === "my"
       ? loadingMy
-      : activeTab === 'created'
+      : activeTab === "created"
         ? loadingCreated
         : loadingPremade;
 
   const isRefetching =
-    activeTab === 'my'
+    activeTab === "my"
       ? isRefetchingMy
-      : activeTab === 'created'
+      : activeTab === "created"
         ? isRefetchingCreated
         : isRefetchingPremade;
 
   const refetch =
-    activeTab === 'my'
+    activeTab === "my"
       ? refetchMy
-      : activeTab === 'created'
+      : activeTab === "created"
         ? refetchCreated
         : refetchPremade;
 
   const activeProgramme = myProgrammes.find((p) => p.isActive);
-  const isTemplate = activeTab !== 'my';
+  const isTemplate = activeTab !== "my";
 
   // Duration options
   const durationOptions: SelectOption[] = [
-    { label: '4 weeks', value: '4' },
-    { label: '6 weeks', value: '6' },
-    { label: '8 weeks', value: '8' },
-    { label: '10 weeks', value: '10' },
-    { label: '12 weeks', value: '12' },
+    { label: "4 weeks", value: "4" },
+    { label: "6 weeks", value: "6" },
+    { label: "8 weeks", value: "8" },
+    { label: "10 weeks", value: "10" },
+    { label: "12 weeks", value: "12" },
   ];
 
   if (!user?.id) {
     return (
-      <View style={styles.container}>
-        <View style={styles.placeholder}>
-          <Text style={styles.placeholderText}>Sign in to view your programmes</Text>
+      <SafeAreaView style={styles.safeArea} edges={["left", "right"]}>
+        <View style={styles.container}>
+          <View style={styles.placeholder}>
+            <Text style={styles.placeholderText}>
+              Sign in to view your programmes
+            </Text>
+          </View>
         </View>
-      </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <>
+    <SafeAreaView style={styles.safeArea} edges={["left", "right"]}>
       <ScrollView
         style={styles.container}
         contentContainerStyle={styles.content}
@@ -366,7 +383,7 @@ export default function ProgramsScreen() {
         <View style={styles.header}>
           <Text style={styles.title}>Programs</Text>
           <Text style={styles.subtitle}>Manage your training programs</Text>
-          {activeTab === 'my' && (
+          {activeTab === "my" && (
             <Button
               title="+ New Programme"
               onPress={() => setShowCreateModal(true)}
@@ -376,7 +393,11 @@ export default function ProgramsScreen() {
           )}
         </View>
 
-        <Tabs tabs={tabs} activeTabId={activeTab} onTabChange={(id) => setActiveTab(id as any)} />
+        <Tabs
+          tabs={tabs}
+          activeTabId={activeTab}
+          onTabChange={(id) => setActiveTab(id as any)}
+        />
 
         {isLoading ? (
           <View style={styles.loadingContainer}>
@@ -386,21 +407,21 @@ export default function ProgramsScreen() {
         ) : currentData.length === 0 ? (
           <View style={styles.placeholder}>
             <Text style={styles.placeholderIcon}>
-              {activeTab === 'my' ? '📋' : '📚'}
+              {activeTab === "my" ? "📋" : "📚"}
             </Text>
             <Text style={styles.placeholderTitle}>
-              {activeTab === 'my'
-                ? 'No Programmes Yet'
-                : activeTab === 'created'
-                  ? 'No Templates Created'
-                  : 'No Pre-made Templates'}
+              {activeTab === "my"
+                ? "No Programmes Yet"
+                : activeTab === "created"
+                  ? "No Templates Created"
+                  : "No Pre-made Templates"}
             </Text>
             <Text style={styles.placeholderText}>
-              {activeTab === 'my'
-                ? 'Create your first programme to start tracking'
-                : 'Templates will appear here when available'}
+              {activeTab === "my"
+                ? "Create your first programme to start tracking"
+                : "Templates will appear here when available"}
             </Text>
-            {activeTab === 'my' && (
+            {activeTab === "my" && (
               <Button
                 title="Create Programme"
                 onPress={() => setShowCreateModal(true)}
@@ -410,7 +431,7 @@ export default function ProgramsScreen() {
           </View>
         ) : (
           <View style={styles.grid}>
-            {activeTab === 'my' && activeProgramme && (
+            {activeTab === "my" && activeProgramme && (
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Active Program</Text>
                 <ProgrammeCard
@@ -425,27 +446,28 @@ export default function ProgramsScreen() {
               </View>
             )}
 
-            {activeTab === 'my' && myProgrammes.filter((p) => !p.isActive).length > 0 && (
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Your Programmes</Text>
-                {myProgrammes
-                  .filter((p) => !p.isActive)
-                  .map((programme) => (
-                    <ProgrammeCard
-                      key={programme.id}
-                      programme={programme}
-                      isActive={false}
-                      isTemplate={false}
-                      onPress={() => handleViewDetail(programme.id)}
-                      onEdit={() => handleEdit(programme)}
-                      onDelete={() => handleDelete(programme)}
-                      isDark={isDark}
-                    />
-                  ))}
-              </View>
-            )}
+            {activeTab === "my" &&
+              myProgrammes.filter((p) => !p.isActive).length > 0 && (
+                <View style={styles.section}>
+                  <Text style={styles.sectionTitle}>Your Programmes</Text>
+                  {myProgrammes
+                    .filter((p) => !p.isActive)
+                    .map((programme) => (
+                      <ProgrammeCard
+                        key={programme.id}
+                        programme={programme}
+                        isActive={false}
+                        isTemplate={false}
+                        onPress={() => handleViewDetail(programme.id)}
+                        onEdit={() => handleEdit(programme)}
+                        onDelete={() => handleDelete(programme)}
+                        isDark={isDark}
+                      />
+                    ))}
+                </View>
+              )}
 
-            {(activeTab === 'created' || activeTab === 'premade') && (
+            {(activeTab === "created" || activeTab === "premade") && (
               <View style={styles.section}>
                 {currentData.map((programme) => (
                   <ProgrammeCard
@@ -476,7 +498,7 @@ export default function ProgramsScreen() {
               variant="ghost"
             />
             <Button
-              title={createMutation.isPending ? 'Creating...' : 'Create'}
+              title={createMutation.isPending ? "Creating..." : "Create"}
               onPress={() => createMutation.mutate(createForm)}
               variant="primary"
               disabled={!createForm.name || createMutation.isPending}
@@ -496,7 +518,9 @@ export default function ProgramsScreen() {
             label="Description (optional)"
             placeholder="What are the goals of this programme?"
             value={createForm.description}
-            onChangeText={(description) => setCreateForm({ ...createForm, description })}
+            onChangeText={(description) =>
+              setCreateForm({ ...createForm, description })
+            }
             multiline
           />
           <Select
@@ -510,7 +534,9 @@ export default function ProgramsScreen() {
           <Input
             label="Start Date"
             value={createForm.startDate}
-            onChangeText={(startDate) => setCreateForm({ ...createForm, startDate })}
+            onChangeText={(startDate) =>
+              setCreateForm({ ...createForm, startDate })
+            }
             placeholder="YYYY-MM-DD"
           />
         </View>
@@ -529,10 +555,13 @@ export default function ProgramsScreen() {
               variant="ghost"
             />
             <Button
-              title={updateMutation.isPending ? 'Saving...' : 'Save Changes'}
+              title={updateMutation.isPending ? "Saving..." : "Save Changes"}
               onPress={() =>
                 selectedProgramme &&
-                updateMutation.mutate({ id: selectedProgramme.id, data: editForm })
+                updateMutation.mutate({
+                  id: selectedProgramme.id,
+                  data: editForm,
+                })
               }
               variant="primary"
               disabled={!editForm.name || updateMutation.isPending}
@@ -552,13 +581,17 @@ export default function ProgramsScreen() {
             label="Description (optional)"
             placeholder="What are the goals of this programme?"
             value={editForm.description}
-            onChangeText={(description) => setEditForm({ ...editForm, description })}
+            onChangeText={(description) =>
+              setEditForm({ ...editForm, description })
+            }
             multiline
           />
           <View style={styles.checkboxContainer}>
             <Pressable
               style={styles.checkbox}
-              onPress={() => setEditForm({ ...editForm, isActive: !editForm.isActive })}
+              onPress={() =>
+                setEditForm({ ...editForm, isActive: !editForm.isActive })
+              }
             >
               <View
                 style={[
@@ -566,7 +599,9 @@ export default function ProgramsScreen() {
                   editForm.isActive && styles.checkboxBoxChecked,
                 ]}
               >
-                {editForm.isActive && <Text style={styles.checkboxCheck}>✓</Text>}
+                {editForm.isActive && (
+                  <Text style={styles.checkboxCheck}>✓</Text>
+                )}
               </View>
               <Text style={styles.checkboxLabel}>Set as Active Programme</Text>
             </Pressable>
@@ -587,10 +622,15 @@ export default function ProgramsScreen() {
               variant="ghost"
             />
             <Button
-              title={cloneMutation.isPending ? 'Starting...' : 'Start Programme'}
+              title={
+                cloneMutation.isPending ? "Starting..." : "Start Programme"
+              }
               onPress={() =>
                 selectedProgramme &&
-                cloneMutation.mutate({ programmeId: selectedProgramme.id, data: cloneForm })
+                cloneMutation.mutate({
+                  programmeId: selectedProgramme.id,
+                  data: cloneForm,
+                })
               }
               variant="primary"
               disabled={cloneMutation.isPending}
@@ -602,7 +642,9 @@ export default function ProgramsScreen() {
         {selectedProgramme && (
           <View style={styles.formGroup}>
             <View style={styles.templatePreview}>
-              <Text style={styles.templatePreviewTitle}>{selectedProgramme.name}</Text>
+              <Text style={styles.templatePreviewTitle}>
+                {selectedProgramme.name}
+              </Text>
               <Text style={styles.templatePreviewDesc}>
                 {selectedProgramme.description}
               </Text>
@@ -613,7 +655,9 @@ export default function ProgramsScreen() {
             <Input
               label="Start Date"
               value={cloneForm.startDate}
-              onChangeText={(startDate) => setCloneForm({ ...cloneForm, startDate })}
+              onChangeText={(startDate) =>
+                setCloneForm({ ...cloneForm, startDate })
+              }
               placeholder="YYYY-MM-DD"
             />
           </View>
@@ -631,15 +675,18 @@ export default function ProgramsScreen() {
           }}
         />
       )}
-    </>
+    </SafeAreaView>
   );
 }
 
 const createStyles = (isDark: boolean) =>
   StyleSheet.create({
-    container: {
+    safeArea: {
       flex: 1,
       backgroundColor: isDark ? colors.dark.background : colors.background,
+    },
+    container: {
+      flex: 1,
     },
     content: {
       padding: spacing.md,
@@ -671,7 +718,7 @@ const createStyles = (isDark: boolean) =>
     },
     loadingContainer: {
       padding: spacing.xl,
-      alignItems: 'center',
+      alignItems: "center",
       gap: spacing.md,
     },
     loadingText: {
@@ -682,7 +729,7 @@ const createStyles = (isDark: boolean) =>
       backgroundColor: isDark ? colors.dark.surface : colors.surface,
       borderRadius: borderRadius.lg,
       padding: spacing.xl,
-      alignItems: 'center',
+      alignItems: "center",
       marginTop: spacing.lg,
     },
     placeholderIcon: {
@@ -697,7 +744,7 @@ const createStyles = (isDark: boolean) =>
     placeholderText: {
       ...typography.body,
       color: isDark ? colors.dark.textSecondary : colors.textSecondary,
-      textAlign: 'center',
+      textAlign: "center",
       marginBottom: spacing.md,
     },
     card: {
@@ -714,19 +761,19 @@ const createStyles = (isDark: boolean) =>
       opacity: 0.9,
     },
     cardHeader: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
       gap: spacing.sm,
       marginBottom: spacing.xs,
     },
     cardHeaderBadges: {
-      flexDirection: 'row',
+      flexDirection: "row",
       gap: spacing.xs,
     },
     cardTitle: {
       ...typography.body,
-      fontWeight: '600',
+      fontWeight: "600",
       color: isDark ? colors.dark.text : colors.text,
       flex: 1,
     },
@@ -745,22 +792,24 @@ const createStyles = (isDark: boolean) =>
     },
     progressBar: {
       height: 4,
-      backgroundColor: isDark ? colors.dark.surfaceSecondary : colors.surfaceSecondary,
+      backgroundColor: isDark
+        ? colors.dark.surfaceSecondary
+        : colors.surfaceSecondary,
       borderRadius: 2,
-      overflow: 'hidden',
+      overflow: "hidden",
     },
     progressFill: {
-      height: '100%',
+      height: "100%",
       backgroundColor: colors.primary,
       borderRadius: 2,
     },
     cardActions: {
-      flexDirection: 'row',
+      flexDirection: "row",
       gap: spacing.xs,
     },
     modalFooter: {
-      flexDirection: 'row',
-      justifyContent: 'flex-end',
+      flexDirection: "row",
+      justifyContent: "flex-end",
       gap: spacing.sm,
     },
     formGroup: {
@@ -770,8 +819,8 @@ const createStyles = (isDark: boolean) =>
       marginTop: spacing.sm,
     },
     checkbox: {
-      flexDirection: 'row',
-      alignItems: 'center',
+      flexDirection: "row",
+      alignItems: "center",
       gap: spacing.sm,
     },
     checkboxBox: {
@@ -780,17 +829,17 @@ const createStyles = (isDark: boolean) =>
       borderRadius: borderRadius.sm,
       borderWidth: 2,
       borderColor: isDark ? colors.dark.border : colors.border,
-      alignItems: 'center',
-      justifyContent: 'center',
+      alignItems: "center",
+      justifyContent: "center",
     },
     checkboxBoxChecked: {
       backgroundColor: colors.primary,
       borderColor: colors.primary,
     },
     checkboxCheck: {
-      color: '#FFFFFF',
+      color: "#FFFFFF",
       fontSize: 16,
-      fontWeight: 'bold',
+      fontWeight: "bold",
     },
     checkboxLabel: {
       ...typography.body,
@@ -798,8 +847,8 @@ const createStyles = (isDark: boolean) =>
     },
     templatePreview: {
       backgroundColor: isDark
-        ? 'rgba(99, 102, 241, 0.1)'
-        : 'rgba(99, 102, 241, 0.05)',
+        ? "rgba(99, 102, 241, 0.1)"
+        : "rgba(99, 102, 241, 0.05)",
       borderRadius: borderRadius.md,
       padding: spacing.md,
       marginBottom: spacing.md,

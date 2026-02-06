@@ -20,7 +20,7 @@ export const programmesApi = {
    */
   async getAssignedProgrammes(athleteId: string): Promise<ProgrammeSummary[]> {
     const response = await apiClient.get<ProgrammeSummary[]>(
-      `/AssignedProgramme/athlete/${athleteId}`
+      `/AssignedProgramme/athlete/${athleteId}`,
     );
     return response.data;
   },
@@ -29,11 +29,11 @@ export const programmesApi = {
    * Get the active programme for an athlete
    */
   async getActiveProgramme(
-    athleteId: string
+    athleteId: string,
   ): Promise<ProgrammeSummary | null> {
     try {
       const response = await apiClient.get<ProgrammeSummary>(
-        `/AssignedProgramme/athlete/${athleteId}/active`
+        `/AssignedProgramme/athlete/${athleteId}/active`,
       );
       return response.data;
     } catch (error: unknown) {
@@ -58,11 +58,11 @@ export const programmesApi = {
    */
   async updateProgramme(
     id: string,
-    data: UpdateProgrammeRequest
+    data: UpdateProgrammeRequest,
   ): Promise<Programme> {
     const response = await apiClient.put<Programme>(
       `/AssignedProgramme/${id}`,
-      data
+      data,
     );
     return response.data;
   },
@@ -79,11 +79,11 @@ export const programmesApi = {
    */
   async createProgramme(
     athleteId: string,
-    data: CreateProgrammeRequest
+    data: CreateProgrammeRequest,
   ): Promise<Programme> {
     const response = await apiClient.post<Programme>(
       `/AssignedProgramme/athlete/${athleteId}`,
-      data
+      data,
     );
     return response.data;
   },
@@ -93,11 +93,11 @@ export const programmesApi = {
    */
   async cloneProgramme(
     programmeId: string,
-    data: CloneProgrammeRequest
+    data: CloneProgrammeRequest,
   ): Promise<Programme> {
     const response = await apiClient.post<Programme>(
       `/AssignedProgramme/${programmeId}/clone`,
-      data
+      data,
     );
     return response.data;
   },
@@ -107,11 +107,11 @@ export const programmesApi = {
    */
   async addWeek(
     programmeId: string,
-    data: CreateProgrammeWeekRequest
+    data: CreateProgrammeWeekRequest,
   ): Promise<ProgrammeWeek> {
     const response = await apiClient.post<ProgrammeWeek>(
       `/AssignedProgramme/${programmeId}/weeks`,
-      data
+      data,
     );
     return response.data;
   },
@@ -121,10 +121,10 @@ export const programmesApi = {
    */
   async copyWeekContent(
     sourceWeekId: string,
-    targetWeekId: string
+    targetWeekId: string,
   ): Promise<ProgrammeWeek> {
     const response = await apiClient.post<ProgrammeWeek>(
-      `/AssignedProgramme/weeks/${sourceWeekId}/copy-to/${targetWeekId}`
+      `/AssignedProgramme/weeks/${sourceWeekId}/copy-to/${targetWeekId}`,
     );
     return response.data;
   },
@@ -134,7 +134,7 @@ export const programmesApi = {
    */
   async getPreMadeProgrammes(): Promise<ProgrammeSummary[]> {
     const response = await apiClient.get<ProgrammeSummary[]>(
-      `/AssignedProgramme/premade`
+      `/AssignedProgramme/premade`,
     );
     return response.data;
   },
@@ -144,7 +144,7 @@ export const programmesApi = {
    */
   async getCreatedProgrammes(athleteId: string): Promise<ProgrammeSummary[]> {
     const response = await apiClient.get<ProgrammeSummary[]>(
-      `/AssignedProgramme/athlete/${athleteId}/created`
+      `/AssignedProgramme/athlete/${athleteId}/created`,
     );
     return response.data;
   },

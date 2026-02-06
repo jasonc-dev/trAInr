@@ -3,23 +3,23 @@
  * Search and add exercises to a workout day
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import {
   View,
   Text,
-  StyleSheet,
   useColorScheme,
   Pressable,
   ScrollView,
   ActivityIndicator,
   Alert,
-} from 'react-native';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { workoutsApi } from '../lib/api/workouts';
-import { exercisesApi } from '../lib/api/exercises';
-import type { ExerciseSummary } from '../lib/types/programme';
-import { colors, spacing, typography, borderRadius } from '../theme';
-import { Modal, Button, Input, NumberInput } from './ui';
+} from "react-native";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { workoutsApi } from "../../lib/api/workouts";
+import { exercisesApi } from "../../lib/api/exercises";
+import type { ExerciseSummary } from "../../lib/types/programme";
+import { colors } from "../../theme";
+import { Modal, Button, Input, NumberInput } from "../ui";
+import { createStyles } from "./Styles";
 
 interface AddExerciseModalProps {
   visible: boolean;
@@ -35,14 +35,16 @@ export default function AddExerciseModal({
   programmeId,
 }: AddExerciseModalProps) {
   const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const isDark = colorScheme === "dark";
   const styles = createStyles(isDark);
   const queryClient = useQueryClient();
 
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<ExerciseSummary[]>([]);
   const [isSearching, setIsSearching] = useState(false);
-  const [selectedExerciseId, setSelectedExerciseId] = useState<number | null>(null);
+  const [selectedExerciseId, setSelectedExerciseId] = useState<number | null>(
+    null,
+  );
 
   const [formData, setFormData] = useState({
     targetSets: 3,
@@ -50,7 +52,7 @@ export default function AddExerciseModal({
     targetWeight: 0,
     restSeconds: 90,
     targetRpe: null as number | null,
-    notes: '',
+    notes: "",
   });
 
   // Search exercises with debounce
@@ -66,7 +68,7 @@ export default function AddExerciseModal({
         const results = await exercisesApi.searchExercises(searchQuery);
         setSearchResults(results);
       } catch (error) {
-        console.error('Search error:', error);
+        console.error("Search error:", error);
       } finally {
         setIsSearching(false);
       }
@@ -79,7 +81,7 @@ export default function AddExerciseModal({
   // Reset form when modal closes
   useEffect(() => {
     if (!visible) {
-      setSearchQuery('');
+      setSearchQuery("");
       setSearchResults([]);
       setSelectedExerciseId(null);
       setFormData({
@@ -88,7 +90,7 @@ export default function AddExerciseModal({
         targetWeight: 0,
         restSeconds: 90,
         targetRpe: null,
-        notes: '',
+        notes: "",
       });
     }
   }, [visible]);
@@ -109,17 +111,17 @@ export default function AddExerciseModal({
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['programme', programmeId] });
+      queryClient.invalidateQueries({ queryKey: ["programme", programmeId] });
       onClose();
     },
     onError: (error: Error) => {
-      Alert.alert('Error', error.message || 'Failed to add exercise');
+      Alert.alert("Error", error.message || "Failed to add exercise");
     },
   });
 
   const handleAdd = () => {
     if (!selectedExerciseId) {
-      Alert.alert('Validation Error', 'Please select an exercise');
+      Alert.alert("Validation Error", "Please select an exercise");
       return;
     }
 
@@ -135,7 +137,7 @@ export default function AddExerciseModal({
         <View style={styles.footer}>
           <Button title="Cancel" onPress={onClose} variant="ghost" />
           <Button
-            title={addMutation.isPending ? 'Adding...' : 'Add Exercise'}
+            title={addMutation.isPending ? "Adding..." : "Add Exercise"}
             onPress={handleAdd}
             variant="primary"
             disabled={!selectedExerciseId || addMutation.isPending}
@@ -144,7 +146,7 @@ export default function AddExerciseModal({
         </View>
       }
     >
-      <View style={styles.content}>
+      <View style={styles.addExerciseContent}>
         {/* Search */}
         <Input
           label="Search Exercises"
@@ -167,7 +169,7 @@ export default function AddExerciseModal({
                   style={[
                     styles.exerciseResult,
                     selectedExerciseId === exercise.id &&
-                    styles.exerciseResultSelected,
+                      styles.exerciseResultSelected,
                   ]}
                   onPress={() => setSelectedExerciseId(exercise.id)}
                 >
@@ -176,7 +178,8 @@ export default function AddExerciseModal({
                       {exercise.name}
                     </Text>
                     <Text style={styles.exerciseResultMeta}>
-                      Type: {exercise.type} • Primary: {exercise.primaryMuscleGroup}
+                      Type: {exercise.type} • Primary:{" "}
+                      {exercise.primaryMuscleGroup}
                     </Text>
                   </View>
                   {selectedExerciseId === exercise.id && (
@@ -244,7 +247,6 @@ export default function AddExerciseModal({
                 min={0}
                 max={600}
                 step={15}
-                suffix="s"
               />
               <NumberInput
                 label="RPE"
@@ -270,74 +272,3 @@ export default function AddExerciseModal({
     </Modal>
   );
 }
-
-const createStyles = (isDark: boolean) =>
-  StyleSheet.create({
-    content: {
-      gap: spacing.md,
-    },
-    footer: {
-      flexDirection: 'row',
-      justifyContent: 'flex-end',
-      gap: spacing.sm,
-    },
-    searchState: {
-      padding: spacing.lg,
-      alignItems: 'center',
-    },
-    searchStateText: {
-      ...typography.body,
-      color: isDark ? colors.dark.textSecondary : colors.textSecondary,
-    },
-    searchResults: {
-      maxHeight: 200,
-      borderWidth: 1,
-      borderColor: isDark ? colors.dark.border : colors.border,
-      borderRadius: borderRadius.md,
-    },
-    exerciseResult: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      padding: spacing.md,
-      borderBottomWidth: 1,
-      borderBottomColor: isDark ? colors.dark.border : colors.border,
-    },
-    exerciseResultSelected: {
-      backgroundColor: isDark
-        ? 'rgba(99, 102, 241, 0.2)'
-        : 'rgba(99, 102, 241, 0.1)',
-    },
-    exerciseResultInfo: {
-      flex: 1,
-    },
-    exerciseResultName: {
-      ...typography.body,
-      fontWeight: '600',
-      color: isDark ? colors.dark.text : colors.text,
-      marginBottom: spacing.xs,
-    },
-    exerciseResultMeta: {
-      ...typography.caption,
-      color: isDark ? colors.dark.textSecondary : colors.textSecondary,
-    },
-    checkmark: {
-      fontSize: 18,
-      color: colors.primary,
-      fontWeight: 'bold',
-    },
-    configSection: {
-      gap: spacing.md,
-      paddingTop: spacing.md,
-      borderTopWidth: 1,
-      borderTopColor: isDark ? colors.dark.border : colors.border,
-    },
-    configTitle: {
-      ...typography.h3,
-      color: isDark ? colors.dark.text : colors.text,
-    },
-    numberInputRow: {
-      flexDirection: 'row',
-      gap: spacing.sm,
-    },
-  });

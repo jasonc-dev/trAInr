@@ -10,8 +10,8 @@ import {
   StyleSheet,
   useColorScheme,
   TextInputProps,
-} from 'react-native';
-import { colors, spacing, typography, borderRadius } from '../../theme';
+} from "react-native";
+import { colors, spacing, typography, borderRadius } from "../../theme";
 
 interface InputProps extends TextInputProps {
   label?: string;
@@ -19,15 +19,9 @@ interface InputProps extends TextInputProps {
   helper?: string;
 }
 
-export function Input({
-  label,
-  error,
-  helper,
-  style,
-  ...props
-}: InputProps) {
+export function Input({ label, error, helper, style, ...props }: InputProps) {
   const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const isDark = colorScheme === "dark";
   const styles = createStyles(isDark, !!error);
 
   return (
@@ -35,7 +29,9 @@ export function Input({
       {label && <Text style={styles.label}>{label}</Text>}
       <TextInput
         style={[styles.input, style]}
-        placeholderTextColor={isDark ? colors.dark.textTertiary : colors.textTertiary}
+        placeholderTextColor={
+          isDark ? colors.dark.textTertiary : colors.textTertiary
+        }
         {...props}
       />
       {error && <Text style={styles.error}>{error}</Text>}
@@ -51,7 +47,7 @@ const createStyles = (isDark: boolean, hasError: boolean) =>
     },
     label: {
       ...typography.bodySmall,
-      fontWeight: '500',
+      fontWeight: "500",
       color: isDark ? colors.dark.text : colors.text,
     },
     input: {

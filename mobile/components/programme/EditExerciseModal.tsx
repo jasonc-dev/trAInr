@@ -3,18 +3,13 @@
  * Edit exercise parameters
  */
 
-import { useState, useEffect } from 'react';
-import {
-  View,
-  StyleSheet,
-  useColorScheme,
-  Alert,
-} from 'react-native';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { workoutsApi } from '../lib/api/workouts';
-import type { WorkoutExerciseResponse } from '../lib/types/programme';
-import { colors, spacing } from '../theme';
-import { Modal, Button, Input, NumberInput } from './ui';
+import { useState, useEffect } from "react";
+import { View, useColorScheme, Alert } from "react-native";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { workoutsApi } from "../../lib/api/workouts";
+import type { WorkoutExerciseResponse } from "../../lib/types/programme";
+import { Modal, Button, Input, NumberInput } from "../ui";
+import { createStyles } from "./Styles";
 
 interface EditExerciseModalProps {
   visible: boolean;
@@ -30,7 +25,7 @@ export default function EditExerciseModal({
   programmeId,
 }: EditExerciseModalProps) {
   const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const isDark = colorScheme === "dark";
   const styles = createStyles(isDark);
   const queryClient = useQueryClient();
 
@@ -40,7 +35,7 @@ export default function EditExerciseModal({
     targetWeight: exercise.targetWeight || 0,
     restSeconds: exercise.restSeconds || 90,
     targetRpe: exercise.targetRpe,
-    notes: exercise.notes || '',
+    notes: exercise.notes || "",
   });
 
   useEffect(() => {
@@ -51,7 +46,7 @@ export default function EditExerciseModal({
         targetWeight: exercise.targetWeight || 0,
         restSeconds: exercise.restSeconds || 90,
         targetRpe: exercise.targetRpe,
-        notes: exercise.notes || '',
+        notes: exercise.notes || "",
       });
     }
   }, [exercise, visible]);
@@ -67,11 +62,11 @@ export default function EditExerciseModal({
         notes: formData.notes || undefined,
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['programme', programmeId] });
+      queryClient.invalidateQueries({ queryKey: ["programme", programmeId] });
       onClose();
     },
     onError: (error: Error) => {
-      Alert.alert('Error', error.message || 'Failed to update exercise');
+      Alert.alert("Error", error.message || "Failed to update exercise");
     },
   });
 
@@ -84,7 +79,7 @@ export default function EditExerciseModal({
         <View style={styles.footer}>
           <Button title="Cancel" onPress={onClose} variant="ghost" />
           <Button
-            title={updateMutation.isPending ? 'Saving...' : 'Save Changes'}
+            title={updateMutation.isPending ? "Saving..." : "Save Changes"}
             onPress={() => updateMutation.mutate()}
             variant="primary"
             loading={updateMutation.isPending}
@@ -134,14 +129,11 @@ export default function EditExerciseModal({
             min={0}
             max={600}
             step={15}
-            suffix="s"
           />
           <NumberInput
             label="RPE"
-            value={formData.targetRpe}
-            onChange={(value) =>
-              setFormData({ ...formData, targetRpe: value })
-            }
+            value={formData.targetRpe || null}
+            onChange={(value) => setFormData({ ...formData, targetRpe: value })}
             min={1}
             max={10}
           />
@@ -158,19 +150,3 @@ export default function EditExerciseModal({
     </Modal>
   );
 }
-
-const createStyles = (isDark: boolean) =>
-  StyleSheet.create({
-    formGroup: {
-      gap: spacing.md,
-    },
-    footer: {
-      flexDirection: 'row',
-      justifyContent: 'flex-end',
-      gap: spacing.sm,
-    },
-    numberInputRow: {
-      flexDirection: 'row',
-      gap: spacing.sm,
-    },
-  });

@@ -9,34 +9,25 @@ import {
   useColorScheme,
   ViewStyle,
   Pressable,
-} from 'react-native';
-import { colors, spacing, borderRadius, shadows } from '../../theme';
+} from "react-native";
+import { colors, spacing, borderRadius, shadows } from "../../theme";
 
 interface CardProps {
   children: React.ReactNode;
   style?: ViewStyle;
   onPress?: () => void;
-  padding?: 'none' | 'sm' | 'md' | 'lg';
+  padding?: "none" | "sm" | "md" | "lg";
 }
 
-export function Card({
-  children,
-  style,
-  onPress,
-  padding = 'md',
-}: CardProps) {
+export function Card({ children, style, onPress, padding = "md" }: CardProps) {
   const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const isDark = colorScheme === "dark";
   const styles = createStyles(isDark, padding);
 
   if (onPress) {
     return (
       <Pressable
-        style={({ pressed }) => [
-          styles.card,
-          pressed && styles.pressed,
-          style,
-        ]}
+        style={({ pressed }) => [styles.card, pressed && styles.pressed, style]}
         onPress={onPress}
       >
         {children}
@@ -47,7 +38,10 @@ export function Card({
   return <View style={[styles.card, style]}>{children}</View>;
 }
 
-const createStyles = (isDark: boolean, padding: 'none' | 'sm' | 'md' | 'lg') => {
+const createStyles = (
+  isDark: boolean,
+  padding: "none" | "sm" | "md" | "lg",
+) => {
   const paddingValues = {
     none: 0,
     sm: spacing.sm,

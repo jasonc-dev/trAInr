@@ -50,9 +50,7 @@ export function Tabs({ tabs, activeTabId, onTabChange }: TabsProps) {
               ]}
               onPress={() => onTabChange(tab.id)}
             >
-              <Text
-                style={[styles.tabText, isActive && styles.tabTextActive]}
-              >
+              <Text style={[styles.tabText, isActive && styles.tabTextActive]}>
                 {tab.label}
               </Text>
               {tab.badge !== undefined && tab.badge > 0 && (

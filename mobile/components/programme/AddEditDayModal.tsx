@@ -3,29 +3,22 @@
  * Modal for creating and editing workout days
  */
 
-import { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  useColorScheme,
-  Pressable,
-  Alert,
-} from 'react-native';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { workoutsApi } from '../lib/api/workouts';
-import type { WorkoutDayResponse } from '../lib/types/programme';
-import { colors, spacing, typography, borderRadius } from '../theme';
-import { Modal, Button, Input, Select, SelectOption } from './ui';
+import { useState, useEffect } from "react";
+import { View, Text, useColorScheme, Pressable, Alert } from "react-native";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { workoutsApi } from "../../lib/api/workouts";
+import type { WorkoutDayResponse } from "../../lib/types/programme";
+import { Modal, Button, Input, Select, SelectOption } from "../ui";
+import { createStyles } from "./Styles";
 
 const DAY_NAMES = [
-  'Sunday',
-  'Monday',
-  'Tuesday',
-  'Wednesday',
-  'Thursday',
-  'Friday',
-  'Saturday',
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
 ];
 
 interface AddEditDayModalProps {
@@ -44,16 +37,16 @@ export default function AddEditDayModal({
   day,
 }: AddEditDayModalProps) {
   const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const isDark = colorScheme === "dark";
   const styles = createStyles(isDark);
   const queryClient = useQueryClient();
 
   const isEditing = !!day;
 
   const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    scheduledDate: new Date().toISOString().split('T')[0],
+    name: "",
+    description: "",
+    scheduledDate: new Date().toISOString().split("T")[0],
     isRestDay: false,
   });
 
@@ -62,15 +55,15 @@ export default function AddEditDayModal({
     if (day) {
       setFormData({
         name: day.name,
-        description: day.description || '',
-        scheduledDate: day.scheduledDate.split('T')[0],
+        description: day.description || "",
+        scheduledDate: day.scheduledDate.split("T")[0],
         isRestDay: day.isRestDay,
       });
     } else {
       setFormData({
-        name: '',
-        description: '',
-        scheduledDate: new Date().toISOString().split('T')[0],
+        name: "",
+        description: "",
+        scheduledDate: new Date().toISOString().split("T")[0],
         isRestDay: false,
       });
     }
@@ -84,11 +77,11 @@ export default function AddEditDayModal({
         scheduledDate: formData.scheduledDate,
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['programme', programmeId] });
+      queryClient.invalidateQueries({ queryKey: ["programme", programmeId] });
       onClose();
     },
     onError: (error: Error) => {
-      Alert.alert('Error', error.message || 'Failed to create workout day');
+      Alert.alert("Error", error.message || "Failed to create workout day");
     },
   });
 
@@ -100,17 +93,17 @@ export default function AddEditDayModal({
         scheduledDate: formData.scheduledDate,
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['programme', programmeId] });
+      queryClient.invalidateQueries({ queryKey: ["programme", programmeId] });
       onClose();
     },
     onError: (error: Error) => {
-      Alert.alert('Error', error.message || 'Failed to update workout day');
+      Alert.alert("Error", error.message || "Failed to update workout day");
     },
   });
 
   const handleSubmit = () => {
     if (!formData.name) {
-      Alert.alert('Validation Error', 'Please enter a day name');
+      Alert.alert("Validation Error", "Please enter a day name");
       return;
     }
 
@@ -125,7 +118,7 @@ export default function AddEditDayModal({
 
   // Day of week options
   const getDayOfWeekFromDate = (dateString: string): string => {
-    const date = new Date(dateString + 'T00:00:00');
+    const date = new Date(dateString + "T00:00:00");
     return DAY_NAMES[date.getDay()];
   };
 
@@ -139,7 +132,7 @@ export default function AddEditDayModal({
 
     const targetDate = new Date(today);
     targetDate.setDate(today.getDate() + dayOffset);
-    return targetDate.toISOString().split('T')[0];
+    return targetDate.toISOString().split("T")[0];
   };
 
   const dayOptions: SelectOption[] = DAY_NAMES.map((name) => ({
@@ -151,7 +144,7 @@ export default function AddEditDayModal({
     <Modal
       visible={visible}
       onClose={onClose}
-      title={isEditing ? 'Edit Workout Day' : 'Add Workout Day'}
+      title={isEditing ? "Edit Workout Day" : "Add Workout Day"}
       footer={
         <View style={styles.footer}>
           <Button
@@ -164,11 +157,11 @@ export default function AddEditDayModal({
             title={
               isPending
                 ? isEditing
-                  ? 'Saving...'
-                  : 'Adding...'
+                  ? "Saving..."
+                  : "Adding..."
                 : isEditing
-                  ? 'Save Changes'
-                  : 'Add Day'
+                  ? "Save Changes"
+                  : "Add Day"
             }
             onPress={handleSubmit}
             variant="primary"
@@ -232,45 +225,3 @@ export default function AddEditDayModal({
     </Modal>
   );
 }
-
-const createStyles = (isDark: boolean) =>
-  StyleSheet.create({
-    formGroup: {
-      gap: spacing.md,
-    },
-    footer: {
-      flexDirection: 'row',
-      justifyContent: 'flex-end',
-      gap: spacing.sm,
-    },
-    checkboxContainer: {
-      marginTop: spacing.sm,
-    },
-    checkbox: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: spacing.sm,
-    },
-    checkboxBox: {
-      width: 24,
-      height: 24,
-      borderRadius: borderRadius.sm,
-      borderWidth: 2,
-      borderColor: isDark ? colors.dark.border : colors.border,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    checkboxBoxChecked: {
-      backgroundColor: colors.primary,
-      borderColor: colors.primary,
-    },
-    checkboxCheck: {
-      color: '#FFFFFF',
-      fontSize: 16,
-      fontWeight: 'bold',
-    },
-    checkboxLabel: {
-      ...typography.body,
-      color: isDark ? colors.dark.text : colors.text,
-    },
-  });

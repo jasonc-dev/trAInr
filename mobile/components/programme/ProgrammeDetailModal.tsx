@@ -3,25 +3,26 @@
  * Shows full programme details with weeks, days, and exercises
  */
 
-import { useState } from 'react';
+import { useState } from "react";
 import {
   View,
   Text,
-  StyleSheet,
   ScrollView,
   useColorScheme,
   Pressable,
   ActivityIndicator,
   Alert,
-} from 'react-native';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { programmesApi } from '../lib/api/programmes';
-import { workoutsApi } from '../lib/api/workouts';
-import type { Programme, WorkoutDayResponse } from '../lib/types/programme';
-import { colors, spacing, typography, borderRadius } from '../theme';
-import { Modal, Badge, Button } from './ui';
-import AddEditDayModal from './AddEditDayModal';
-import ExerciseListModal from './ExerciseListModal';
+  TouchableOpacity,
+} from "react-native";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { programmesApi } from "../../lib/api/programmes";
+import { workoutsApi } from "../../lib/api/workouts";
+import type { Programme, WorkoutDayResponse } from "../../lib/types/programme";
+import { colors } from "../../theme";
+import { Modal, Badge, Button } from "../ui";
+import AddEditDayModal from "./AddEditDayModal";
+import ExerciseListModal from "./ExerciseListModal";
+import { createStyles } from "./Styles";
 
 interface ProgrammeDetailModalProps {
   programmeId: string;
@@ -35,15 +36,28 @@ export default function ProgrammeDetailModal({
   onClose,
 }: ProgrammeDetailModalProps) {
   const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const isDark = colorScheme === "dark";
   const styles = createStyles(isDark);
   const queryClient = useQueryClient();
+
+  const [selectedDayId, setSelectedDayId] = useState<string | null>(null);
 
   const [selectedWeekIndex, setSelectedWeekIndex] = useState(0);
   const [showAddDayModal, setShowAddDayModal] = useState(false);
   const [showEditDayModal, setShowEditDayModal] = useState(false);
-  const [selectedDay, setSelectedDay] = useState<WorkoutDayResponse | null>(null);
+  const [selectedDay, setSelectedDay] = useState<WorkoutDayResponse | null>(
+    null,
+  );
   const [showExerciseListModal, setShowExerciseListModal] = useState(false);
+
+  // Reset child modal states when parent modal closes
+  const handleClose = () => {
+    setShowAddDayModal(false);
+    setShowEditDayModal(false);
+    setShowExerciseListModal(false);
+    setSelectedDay(null);
+    onClose();
+  };
 
   // Query programme details
   const {
@@ -51,7 +65,7 @@ export default function ProgrammeDetailModal({
     isLoading,
     error,
   } = useQuery({
-    queryKey: ['programme', programmeId],
+    queryKey: ["programme", programmeId],
     queryFn: () => programmesApi.getById(programmeId),
     enabled: visible && !!programmeId,
   });
@@ -61,13 +75,13 @@ export default function ProgrammeDetailModal({
     mutationFn: () =>
       programmesApi.addWeek(programmeId, {
         weekNumber: 1,
-        notes: '',
+        notes: "",
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['programme', programmeId] });
+      queryClient.invalidateQueries({ queryKey: ["programme", programmeId] });
     },
     onError: (error: Error) => {
-      Alert.alert('Error', error.message || 'Failed to add week');
+      Alert.alert("Error", error.message || "Failed to add week");
     },
   });
 
@@ -81,10 +95,10 @@ export default function ProgrammeDetailModal({
       targetWeekId: string;
     }) => programmesApi.copyWeekContent(sourceWeekId, targetWeekId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['programme', programmeId] });
+      queryClient.invalidateQueries({ queryKey: ["programme", programmeId] });
     },
     onError: (error: Error) => {
-      Alert.alert('Error', error.message || 'Failed to copy week content');
+      Alert.alert("Error", error.message || "Failed to copy week content");
     },
   });
 
@@ -92,35 +106,39 @@ export default function ProgrammeDetailModal({
   const deleteDayMutation = useMutation({
     mutationFn: (dayId: string) => workoutsApi.deleteWorkoutDay(dayId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['programme', programmeId] });
+      queryClient.invalidateQueries({ queryKey: ["programme", programmeId] });
     },
     onError: (error: Error) => {
-      Alert.alert('Error', error.message || 'Failed to delete day');
+      Alert.alert("Error", error.message || "Failed to delete day");
     },
   });
 
   const handleEditDay = (day: WorkoutDayResponse) => {
+    console.log("Edit day pressed:", day.id, day.name);
     setSelectedDay(day);
     setShowEditDayModal(true);
   };
 
   const handleDeleteDay = (day: WorkoutDayResponse) => {
+    console.log("Delete day pressed:", day.id, day.name);
     Alert.alert(
-      'Delete Workout Day',
+      "Delete Workout Day",
       `Are you sure you want to delete "${day.name}"? All exercises will be removed.`,
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: "Cancel", style: "cancel" },
         {
-          text: 'Delete',
-          style: 'destructive',
+          text: "Delete",
+          style: "destructive",
           onPress: () => deleteDayMutation.mutate(day.id),
         },
-      ]
+      ],
     );
   };
 
   const handleViewExercises = (day: WorkoutDayResponse) => {
+    console.log("View exercises pressed:", day.id, day.name);
     setSelectedDay(day);
+    setSelectedDayId(day.id);
     setShowExerciseListModal(true);
   };
 
@@ -134,37 +152,37 @@ export default function ProgrammeDetailModal({
 
     // Check if previous week has exercises
     const prevHasExercises = previousWeek.workoutDays.some(
-      (day) => day.exercises && day.exercises.length > 0
+      (day) => day.exercises && day.exercises.length > 0,
     );
 
     if (!prevHasExercises) {
       Alert.alert(
-        'No Exercises',
-        'The previous week has no exercises to copy.'
+        "No Exercises",
+        "The previous week has no exercises to copy.",
       );
       return;
     }
 
     Alert.alert(
-      'Copy Week Content',
+      "Copy Week Content",
       `Copy all exercises from Week ${previousWeek.weekNumber} to Week ${currentWeek.weekNumber}?`,
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: "Cancel", style: "cancel" },
         {
-          text: 'Copy',
+          text: "Copy",
           onPress: () =>
             copyWeekMutation.mutate({
               sourceWeekId: previousWeek.id,
               targetWeekId: currentWeek.id,
             }),
         },
-      ]
+      ],
     );
   };
 
   if (isLoading) {
     return (
-      <Modal visible={visible} onClose={onClose} title="Loading...">
+      <Modal visible={visible} onClose={handleClose} title="Loading...">
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
         </View>
@@ -174,10 +192,10 @@ export default function ProgrammeDetailModal({
 
   if (error || !programme) {
     return (
-      <Modal visible={visible} onClose={onClose} title="Error">
+      <Modal visible={visible} onClose={handleClose} title="Error">
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>Failed to load programme</Text>
-          <Button title="Close" onPress={onClose} variant="primary" />
+          <Button title="Close" onPress={handleClose} variant="primary" />
         </View>
       </Modal>
     );
@@ -187,12 +205,23 @@ export default function ProgrammeDetailModal({
   const previousWeek =
     selectedWeekIndex > 0 ? programme.weeks[selectedWeekIndex - 1] : null;
   const prevWeekHasExercises = previousWeek?.workoutDays.some(
-    (day) => day.exercises && day.exercises.length > 0
+    (day) => day.exercises && day.exercises.length > 0,
   );
+  const dayForExerciseList = currentWeek?.workoutDays.find(
+    (day) => day.id === selectedDayId,
+  );
+
+  // Hide parent modal when child modals are open
+  const parentModalVisible =
+    visible && !showAddDayModal && !showEditDayModal && !showExerciseListModal;
 
   return (
     <>
-      <Modal visible={visible} onClose={onClose} title={programme.name}>
+      <Modal
+        visible={parentModalVisible}
+        onClose={handleClose}
+        title={programme.name}
+      >
         {/* Programme Info */}
         <View style={styles.programmeInfo}>
           {programme.description && (
@@ -201,7 +230,7 @@ export default function ProgrammeDetailModal({
             </Text>
           )}
           {programme.isActive && (
-            <Badge variant="primary" style={styles.badge}>
+            <Badge variant="primary" style={styles.programmeBadge}>
               Active
             </Badge>
           )}
@@ -209,16 +238,16 @@ export default function ProgrammeDetailModal({
 
         {/* No weeks state */}
         {programme.weeks.length === 0 ? (
-          <View style={styles.emptyState}>
-            <Text style={styles.emptyStateIcon}>📅</Text>
-            <Text style={styles.emptyStateTitle}>No Weeks Configured</Text>
-            <Text style={styles.emptyStateText}>
+          <View style={styles.programmeEmptyState}>
+            <Text style={styles.programmeEmptyStateIcon}>📅</Text>
+            <Text style={styles.programmeEmptyStateTitle}>
+              No Weeks Configured
+            </Text>
+            <Text style={styles.programmeEmptyStateText}>
               Add weeks to start planning your workouts
             </Text>
             <Button
-              title={
-                addWeekMutation.isPending ? 'Adding...' : 'Add First Week'
-              }
+              title={addWeekMutation.isPending ? "Adding..." : "Add First Week"}
               onPress={() => addWeekMutation.mutate()}
               variant="primary"
               loading={addWeekMutation.isPending}
@@ -247,8 +276,7 @@ export default function ProgrammeDetailModal({
                     <Text
                       style={[
                         styles.weekTabText,
-                        selectedWeekIndex === index &&
-                        styles.weekTabTextActive,
+                        selectedWeekIndex === index && styles.weekTabTextActive,
                       ]}
                     >
                       Week {week.weekNumber}
@@ -279,10 +307,12 @@ export default function ProgrammeDetailModal({
 
             {/* Workout Days */}
             {currentWeek.workoutDays.length === 0 ? (
-              <View style={styles.emptyState}>
-                <Text style={styles.emptyStateIcon}>📅</Text>
-                <Text style={styles.emptyStateTitle}>No Workout Days</Text>
-                <Text style={styles.emptyStateText}>
+              <View style={styles.programmeEmptyState}>
+                <Text style={styles.programmeEmptyStateIcon}>📅</Text>
+                <Text style={styles.programmeEmptyStateTitle}>
+                  No Workout Days
+                </Text>
+                <Text style={styles.programmeEmptyStateText}>
                   Add workout days to plan your week
                 </Text>
                 <Button
@@ -297,7 +327,7 @@ export default function ProgrammeDetailModal({
                   .sort(
                     (a, b) =>
                       new Date(a.scheduledDate).getTime() -
-                      new Date(b.scheduledDate).getTime()
+                      new Date(b.scheduledDate).getTime(),
                   )
                   .map((day) => (
                     <View
@@ -313,8 +343,8 @@ export default function ProgrammeDetailModal({
                           <Text style={styles.dayCardName}>{day.name}</Text>
                           <Text style={styles.dayCardDate}>
                             {new Date(day.scheduledDate).toLocaleDateString(
-                              'en-US',
-                              { weekday: 'short' }
+                              "en-US",
+                              { weekday: "short" },
                             )}
                           </Text>
                         </View>
@@ -329,31 +359,46 @@ export default function ProgrammeDetailModal({
                       {!day.isRestDay && (
                         <Text style={styles.dayCardExerciseCount}>
                           {day.exercises.length} exercise
-                          {day.exercises.length !== 1 ? 's' : ''}
+                          {day.exercises.length !== 1 ? "s" : ""}
                         </Text>
                       )}
 
                       <View style={styles.dayCardActions}>
                         {!day.isRestDay && (
-                          <Button
-                            title="Exercises"
+                          <TouchableOpacity
+                            style={styles.dayActionButton}
                             onPress={() => handleViewExercises(day)}
-                            variant="primary"
-                            size="sm"
-                          />
+                            activeOpacity={0.7}
+                          >
+                            <View style={styles.actionButtonPrimary}>
+                              <Text style={styles.actionButtonTextPrimary}>
+                                Exercises
+                              </Text>
+                            </View>
+                          </TouchableOpacity>
                         )}
-                        <Button
-                          title="Edit"
+                        <TouchableOpacity
+                          style={styles.dayActionButton}
                           onPress={() => handleEditDay(day)}
-                          variant="secondary"
-                          size="sm"
-                        />
-                        <Button
-                          title="Delete"
+                          activeOpacity={0.7}
+                        >
+                          <View style={styles.actionButtonSecondary}>
+                            <Text style={styles.actionButtonTextSecondary}>
+                              Edit
+                            </Text>
+                          </View>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          style={styles.dayActionButton}
                           onPress={() => handleDeleteDay(day)}
-                          variant="ghost"
-                          size="sm"
-                        />
+                          activeOpacity={0.7}
+                        >
+                          <View style={styles.actionButtonGhost}>
+                            <Text style={styles.actionButtonTextGhost}>
+                              Delete
+                            </Text>
+                          </View>
+                        </TouchableOpacity>
                       </View>
                     </View>
                   ))}
@@ -364,9 +409,10 @@ export default function ProgrammeDetailModal({
       </Modal>
 
       {/* Add/Edit Day Modal */}
-      {currentWeek && (
+      {currentWeek && visible && (
         <>
           <AddEditDayModal
+            key="add-day"
             visible={showAddDayModal}
             onClose={() => setShowAddDayModal(false)}
             weekId={currentWeek.id}
@@ -374,6 +420,7 @@ export default function ProgrammeDetailModal({
           />
           {selectedDay && (
             <AddEditDayModal
+              key="edit-day"
               visible={showEditDayModal}
               onClose={() => {
                 setShowEditDayModal(false);
@@ -381,173 +428,25 @@ export default function ProgrammeDetailModal({
               }}
               weekId={currentWeek.id}
               programmeId={programmeId}
-              day={selectedDay}
+              day={selectedDay!}
             />
           )}
         </>
       )}
 
       {/* Exercise List Modal */}
-      {selectedDay && (
+      {dayForExerciseList && visible && (
         <ExerciseListModal
           visible={showExerciseListModal}
           onClose={() => {
             setShowExerciseListModal(false);
             setSelectedDay(null);
+            setSelectedDayId(null);
           }}
-          day={selectedDay}
+          day={dayForExerciseList}
           programmeId={programmeId}
         />
       )}
     </>
   );
 }
-
-const createStyles = (isDark: boolean) =>
-  StyleSheet.create({
-    programmeInfo: {
-      marginBottom: spacing.lg,
-      gap: spacing.sm,
-    },
-    programmeDescription: {
-      ...typography.body,
-      color: isDark ? colors.dark.textSecondary : colors.textSecondary,
-    },
-    badge: {
-      alignSelf: 'flex-start',
-    },
-    loadingContainer: {
-      padding: spacing.xl,
-      alignItems: 'center',
-    },
-    errorContainer: {
-      padding: spacing.xl,
-      alignItems: 'center',
-      gap: spacing.md,
-    },
-    errorText: {
-      ...typography.body,
-      color: colors.error,
-    },
-    weekTabs: {
-      marginBottom: spacing.md,
-      borderBottomWidth: 1,
-      borderBottomColor: isDark ? colors.dark.border : colors.border,
-    },
-    weekTabsContent: {
-      paddingHorizontal: 0,
-      paddingBottom: spacing.sm,
-      gap: spacing.xs,
-    },
-    weekTab: {
-      paddingHorizontal: spacing.lg,
-      paddingVertical: spacing.sm,
-      borderRadius: borderRadius.md,
-      backgroundColor: isDark ? colors.dark.surface : colors.surface,
-      borderWidth: 1,
-      borderColor: isDark ? colors.dark.border : colors.border,
-    },
-    weekTabActive: {
-      backgroundColor: colors.primary,
-      borderColor: colors.primary,
-    },
-    weekTabCompleted: {
-      backgroundColor: isDark
-        ? 'rgba(16, 185, 129, 0.2)'
-        : 'rgba(16, 185, 129, 0.1)',
-      borderColor: colors.success,
-    },
-    weekTabPressed: {
-      opacity: 0.7,
-    },
-    weekTabText: {
-      ...typography.body,
-      fontWeight: '500',
-      color: isDark ? colors.dark.text : colors.text,
-    },
-    weekTabTextActive: {
-      color: '#FFFFFF',
-      fontWeight: '600',
-    },
-    weekActions: {
-      flexDirection: 'row',
-      gap: spacing.sm,
-      marginBottom: spacing.md,
-      flexWrap: 'wrap',
-    },
-    emptyState: {
-      backgroundColor: isDark ? colors.dark.surface : colors.surface,
-      borderRadius: borderRadius.lg,
-      padding: spacing.xl,
-      alignItems: 'center',
-      marginTop: spacing.md,
-    },
-    emptyStateIcon: {
-      fontSize: 64,
-      marginBottom: spacing.md,
-    },
-    emptyStateTitle: {
-      ...typography.h3,
-      color: isDark ? colors.dark.text : colors.text,
-      marginBottom: spacing.xs,
-    },
-    emptyStateText: {
-      ...typography.body,
-      color: isDark ? colors.dark.textSecondary : colors.textSecondary,
-      textAlign: 'center',
-      marginBottom: spacing.md,
-    },
-    daysGrid: {
-      gap: spacing.md,
-    },
-    dayCard: {
-      backgroundColor: isDark ? colors.dark.surface : colors.surface,
-      borderRadius: borderRadius.lg,
-      padding: spacing.md,
-      borderWidth: 1,
-      borderColor: isDark ? colors.dark.border : colors.border,
-    },
-    dayCardRest: {
-      backgroundColor: isDark
-        ? colors.dark.surfaceSecondary
-        : colors.surfaceSecondary,
-    },
-    dayCardCompleted: {
-      backgroundColor: isDark
-        ? 'rgba(16, 185, 129, 0.1)'
-        : 'rgba(16, 185, 129, 0.05)',
-      borderColor: colors.success,
-    },
-    dayCardHeader: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'flex-start',
-      marginBottom: spacing.sm,
-    },
-    dayCardInfo: {
-      flex: 1,
-    },
-    dayCardName: {
-      ...typography.body,
-      fontWeight: '600',
-      color: isDark ? colors.dark.text : colors.text,
-      marginBottom: spacing.xs,
-    },
-    dayCardDate: {
-      ...typography.caption,
-      color: isDark ? colors.dark.textSecondary : colors.textSecondary,
-    },
-    dayCardBadges: {
-      flexDirection: 'row',
-      gap: spacing.xs,
-    },
-    dayCardExerciseCount: {
-      ...typography.bodySmall,
-      color: isDark ? colors.dark.textSecondary : colors.textSecondary,
-      marginBottom: spacing.sm,
-    },
-    dayCardActions: {
-      flexDirection: 'row',
-      gap: spacing.xs,
-    },
-  });

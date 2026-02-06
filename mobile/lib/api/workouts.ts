@@ -21,7 +21,7 @@ export const workoutsApi = {
    */
   async getWorkoutDay(id: string): Promise<WorkoutDayResponse> {
     const response = await apiClient.get<WorkoutDayResponse>(
-      `/WorkoutSession/days/${id}`
+      `/WorkoutSession/days/${id}`,
     );
     return response.data;
   },
@@ -31,11 +31,11 @@ export const workoutsApi = {
    */
   async createWorkoutDay(
     weekId: string,
-    data: CreateWorkoutDayRequest
+    data: CreateWorkoutDayRequest,
   ): Promise<ProgrammeWeek> {
     const response = await apiClient.post<ProgrammeWeek>(
       `/WorkoutSession/weeks/${weekId}/days`,
-      data
+      data,
     );
     return response.data;
   },
@@ -45,11 +45,11 @@ export const workoutsApi = {
    */
   async updateWorkoutDay(
     id: string,
-    data: UpdateWorkoutDayRequest
+    data: UpdateWorkoutDayRequest,
   ): Promise<ProgrammeWeek> {
     const response = await apiClient.put<ProgrammeWeek>(
       `/WorkoutSession/days/${id}`,
-      data
+      data,
     );
     return response.data;
   },
@@ -59,7 +59,7 @@ export const workoutsApi = {
    */
   async deleteWorkoutDay(id: string): Promise<ProgrammeWeek> {
     const response = await apiClient.delete<ProgrammeWeek>(
-      `/WorkoutSession/days/${id}`
+      `/WorkoutSession/days/${id}`,
     );
     return response.data;
   },
@@ -69,11 +69,11 @@ export const workoutsApi = {
    */
   async completeWorkout(
     id: string,
-    data: CompleteWorkoutRequest
+    data: CompleteWorkoutRequest,
   ): Promise<ProgrammeWeek> {
     const response = await apiClient.post<ProgrammeWeek>(
       `/WorkoutSession/days/${id}/complete`,
-      data
+      data,
     );
     return response.data;
   },
@@ -83,11 +83,11 @@ export const workoutsApi = {
    */
   async addExercise(
     workoutDayId: string,
-    data: AddWorkoutExerciseRequest
+    data: AddWorkoutExerciseRequest,
   ): Promise<WorkoutDayResponse> {
     const response = await apiClient.post<WorkoutDayResponse>(
       `/WorkoutSession/days/${workoutDayId}/exercises`,
-      data
+      data,
     );
     return response.data;
   },
@@ -97,11 +97,11 @@ export const workoutsApi = {
    */
   async updateExercise(
     exerciseId: string,
-    data: UpdateWorkoutExerciseRequest
+    data: UpdateWorkoutExerciseRequest,
   ): Promise<WorkoutDayResponse> {
     const response = await apiClient.put<WorkoutDayResponse>(
       `/WorkoutSession/exercises/${exerciseId}`,
-      data
+      data,
     );
     return response.data;
   },
@@ -111,7 +111,7 @@ export const workoutsApi = {
    */
   async removeExercise(exerciseId: string): Promise<WorkoutDayResponse> {
     const response = await apiClient.delete<WorkoutDayResponse>(
-      `/WorkoutSession/exercises/${exerciseId}`
+      `/WorkoutSession/exercises/${exerciseId}`,
     );
     return response.data;
   },
@@ -121,11 +121,11 @@ export const workoutsApi = {
    */
   async reorderExercises(
     workoutDayId: string,
-    exerciseIds: string[]
+    exerciseIds: string[],
   ): Promise<WorkoutDayResponse> {
     const response = await apiClient.put<WorkoutDayResponse>(
       `/WorkoutSession/days/${workoutDayId}/exercises/reorder`,
-      exerciseIds
+      exerciseIds,
     );
     return response.data;
   },
@@ -135,11 +135,11 @@ export const workoutsApi = {
    */
   async groupSuperset(
     workoutDayId: string,
-    data: GroupSupersetRequest
+    data: GroupSupersetRequest,
   ): Promise<WorkoutDayResponse> {
     const response = await apiClient.put<WorkoutDayResponse>(
       `/WorkoutSession/days/${workoutDayId}/exercises/superset`,
-      data
+      data,
     );
     return response.data;
   },
@@ -149,7 +149,7 @@ export const workoutsApi = {
    */
   async ungroupSuperset(supersetGroupId: string): Promise<WorkoutDayResponse> {
     const response = await apiClient.delete<WorkoutDayResponse>(
-      `/WorkoutSession/exercises/superset/${supersetGroupId}`
+      `/WorkoutSession/exercises/superset/${supersetGroupId}`,
     );
     return response.data;
   },

@@ -9,10 +9,10 @@ import {
   StyleSheet,
   Pressable,
   useColorScheme,
-  Platform,
   Modal as RNModal,
   ScrollView,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useState } from "react";
 import { colors, spacing, typography, borderRadius } from "../../theme";
 
@@ -64,10 +64,7 @@ export function Select({
         disabled={disabled}
       >
         <Text
-          style={[
-            styles.selectText,
-            !selectedOption && styles.placeholderText,
-          ]}
+          style={[styles.selectText, !selectedOption && styles.placeholderText]}
         >
           {displayValue}
         </Text>
@@ -84,45 +81,54 @@ export function Select({
           style={styles.modalOverlay}
           onPress={() => setShowModal(false)}
         >
-          <View
-            style={styles.modalContent}
-            onStartShouldSetResponder={() => true}
+          <SafeAreaView
+            style={styles.modalSafeArea}
+            edges={["top", "left", "right"]}
           >
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>{label}</Text>
-              <Pressable
-                style={styles.closeButton}
-                onPress={() => setShowModal(false)}
-              >
-                <Text style={styles.closeButtonText}>✕</Text>
-              </Pressable>
-            </View>
-            <ScrollView style={styles.optionsList}>
-              {options.map((option) => (
+            <View
+              style={styles.modalContent}
+              onStartShouldSetResponder={() => true}
+            >
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>{label}</Text>
                 <Pressable
-                  key={option.value}
-                  style={({ pressed }) => [
-                    styles.option,
-                    option.value === value && styles.optionSelected,
-                    pressed && styles.optionPressed,
-                  ]}
-                  onPress={() => handleSelect(option.value)}
+                  style={styles.closeButton}
+                  onPress={() => setShowModal(false)}
                 >
-                  <Text
-                    style={[
-                      styles.optionText,
-                      option.value === value && styles.optionTextSelected,
-                    ]}
-                  >
-                    {option.label}
-                  </Text>
-                  {option.value === value && (
-                    <Text style={styles.checkmark}>✓</Text>
-                  )}
+                  <Text style={styles.closeButtonText}>✕</Text>
                 </Pressable>
-              ))}
-            </ScrollView>
-          </View>
+              </View>
+              <ScrollView
+                style={styles.optionsList}
+                contentContainerStyle={styles.optionsListContent}
+                bounces={false}
+              >
+                {options.map((option) => (
+                  <Pressable
+                    key={option.value}
+                    style={({ pressed }) => [
+                      styles.option,
+                      option.value === value && styles.optionSelected,
+                      pressed && styles.optionPressed,
+                    ]}
+                    onPress={() => handleSelect(option.value)}
+                  >
+                    <Text
+                      style={[
+                        styles.optionText,
+                        option.value === value && styles.optionTextSelected,
+                      ]}
+                    >
+                      {option.label}
+                    </Text>
+                    {option.value === value && (
+                      <Text style={styles.checkmark}>✓</Text>
+                    )}
+                  </Pressable>
+                ))}
+              </ScrollView>
+            </View>
+          </SafeAreaView>
         </Pressable>
       </RNModal>
     </View>
@@ -148,8 +154,7 @@ const createStyles = (isDark: boolean) =>
       borderColor: isDark ? colors.dark.border : colors.border,
       borderRadius: borderRadius.sm,
       paddingHorizontal: spacing.md,
-      paddingVertical: spacing.sm + 2,
-      minHeight: 44,
+      height: 44,
     },
     selectButtonPressed: {
       backgroundColor: isDark
@@ -177,11 +182,15 @@ const createStyles = (isDark: boolean) =>
       backgroundColor: "rgba(0, 0, 0, 0.5)",
       justifyContent: "flex-end",
     },
+    modalSafeArea: {
+      width: "100%",
+    },
     modalContent: {
       backgroundColor: isDark ? colors.dark.surface : colors.surface,
       borderTopLeftRadius: borderRadius.lg,
       borderTopRightRadius: borderRadius.lg,
       maxHeight: "70%",
+      minHeight: 440,
       paddingBottom: spacing.lg,
     },
     modalHeader: {
@@ -212,6 +221,9 @@ const createStyles = (isDark: boolean) =>
     },
     optionsList: {
       flex: 1,
+    },
+    optionsListContent: {
+      paddingBottom: spacing.lg,
     },
     option: {
       flexDirection: "row",

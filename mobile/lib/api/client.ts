@@ -20,7 +20,7 @@ if (__DEV__) {
   console.log("[trAInr API]", "Base URL:", API_BASE_URL);
   if (API_BASE_URL.includes(":5000/")) {
     console.warn(
-      "[trAInr API] Using port 5000 — backend uses 5001. Update .env or EXPO_PUBLIC_API_URL to ...:5001/api/v1 and restart Expo."
+      "[trAInr API] Using port 5000 — backend uses 5001. Update .env or EXPO_PUBLIC_API_URL to ...:5001/api/v1 and restart Expo.",
     );
   }
 }
@@ -62,7 +62,7 @@ apiClient.interceptors.request.use(
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 // Response interceptor - handle 401 and refresh token
@@ -86,7 +86,7 @@ apiClient.interceptors.response.use(
     // Handle network errors (backend not available)
     if (error.code === "ERR_NETWORK" || !error.response) {
       const friendlyError = new Error(
-        "Cannot connect to server. Please check your internet connection and ensure the backend is running."
+        "Cannot connect to server. Please check your internet connection and ensure the backend is running.",
       );
       return Promise.reject(friendlyError);
     }
@@ -95,7 +95,7 @@ apiClient.interceptors.response.use(
     if (error.response?.status === 403 && __DEV__) {
       console.warn(
         "[trAInr API] 403 Forbidden. Request may not be reaching your backend. API base:",
-        API_BASE_URL
+        API_BASE_URL,
       );
     }
 
@@ -119,7 +119,7 @@ apiClient.interceptors.response.use(
         try {
           const response = await axios.post<AuthResponse>(
             `${API_BASE_URL}/auth/refresh`,
-            { refreshToken }
+            { refreshToken },
           );
 
           const { accessToken, refreshToken: newRefreshToken } = response.data;
@@ -153,7 +153,7 @@ apiClient.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
 export { apiClient };

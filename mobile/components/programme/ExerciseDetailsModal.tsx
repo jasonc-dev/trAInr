@@ -3,19 +3,14 @@
  * Shows full exercise information with actions
  */
 
-import { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  useColorScheme,
-  ActivityIndicator,
-} from 'react-native';
-import { useQuery } from '@tanstack/react-query';
-import { exercisesApi } from '../lib/api/exercises';
-import type { WorkoutExerciseResponse } from '../lib/types/programme';
-import { colors, spacing, typography, borderRadius } from '../theme';
-import { Modal, Button, Badge } from './ui';
+import { useState, useEffect } from "react";
+import { View, Text, useColorScheme, ActivityIndicator } from "react-native";
+import { useQuery } from "@tanstack/react-query";
+import { exercisesApi } from "../../lib/api/exercises";
+import type { WorkoutExerciseResponse } from "../../lib/types/programme";
+import { colors } from "../../theme";
+import { Modal, Button, Badge } from "../ui";
+import { createStyles } from "./Styles";
 
 interface ExerciseDetailsModalProps {
   visible: boolean;
@@ -35,11 +30,11 @@ export default function ExerciseDetailsModal({
   onRemove,
 }: ExerciseDetailsModalProps) {
   const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const isDark = colorScheme === "dark";
   const styles = createStyles(isDark);
 
   const { data: details, isLoading } = useQuery({
-    queryKey: ['exercise', exercise.exerciseDefinitionId],
+    queryKey: ["exercise", exercise.exerciseDefinitionId],
     queryFn: () => exercisesApi.getExerciseById(exercise.exerciseDefinitionId),
     enabled: visible,
   });
@@ -50,7 +45,7 @@ export default function ExerciseDetailsModal({
       onClose={onClose}
       title={exercise.exerciseName}
       footer={
-        <View style={styles.footer}>
+        <View style={styles.detailsFooter}>
           <Button
             title="Remove"
             onPress={() => {
@@ -64,11 +59,11 @@ export default function ExerciseDetailsModal({
       }
     >
       {isLoading ? (
-        <View style={styles.loading}>
+        <View style={styles.detailsLoadingModal}>
           <ActivityIndicator size="large" color={colors.primary} />
         </View>
       ) : details ? (
-        <View style={styles.content}>
+        <View style={styles.detailsContent}>
           {/* Description */}
           {details.description && (
             <View style={styles.section}>
@@ -122,7 +117,7 @@ export default function ExerciseDetailsModal({
                   <Text style={styles.targetLabel}>Rest</Text>
                   <Text style={styles.targetValue}>
                     {Math.floor(exercise.restSeconds / 60)}:
-                    {String(exercise.restSeconds % 60).padStart(2, '0')}
+                    {String(exercise.restSeconds % 60).padStart(2, "0")}
                   </Text>
                 </View>
               )}
@@ -144,98 +139,12 @@ export default function ExerciseDetailsModal({
           </View>
         </View>
       ) : (
-        <View style={styles.error}>
-          <Text style={styles.errorText}>Failed to load exercise details</Text>
+        <View style={styles.detailsError}>
+          <Text style={styles.detailsErrorText}>
+            Failed to load exercise details
+          </Text>
         </View>
       )}
     </Modal>
   );
 }
-
-const createStyles = (isDark: boolean) =>
-  StyleSheet.create({
-    loading: {
-      padding: spacing.xl,
-      alignItems: 'center',
-    },
-    content: {
-      gap: spacing.lg,
-    },
-    error: {
-      padding: spacing.xl,
-      alignItems: 'center',
-    },
-    errorText: {
-      ...typography.body,
-      color: colors.error,
-    },
-    footer: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      gap: spacing.sm,
-    },
-    section: {
-      gap: spacing.sm,
-    },
-    sectionTitle: {
-      ...typography.body,
-      fontWeight: '600',
-      color: isDark ? colors.dark.text : colors.text,
-      textTransform: 'uppercase',
-      letterSpacing: 0.5,
-      fontSize: 12,
-    },
-    sectionText: {
-      ...typography.body,
-      color: isDark ? colors.dark.text : colors.text,
-      lineHeight: 24,
-    },
-    badgeRow: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      gap: spacing.xs,
-    },
-    targetsGrid: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      gap: spacing.md,
-    },
-    targetItem: {
-      flex: 1,
-      minWidth: '30%',
-      backgroundColor: isDark
-        ? colors.dark.surfaceSecondary
-        : colors.surfaceSecondary,
-      padding: spacing.sm,
-      borderRadius: borderRadius.md,
-    },
-    targetLabel: {
-      ...typography.caption,
-      color: isDark ? colors.dark.textSecondary : colors.textSecondary,
-      marginBottom: spacing.xs,
-    },
-    targetValue: {
-      ...typography.body,
-      fontWeight: '600',
-      color: isDark ? colors.dark.text : colors.text,
-    },
-    notesBox: {
-      marginTop: spacing.sm,
-      padding: spacing.sm,
-      backgroundColor: isDark
-        ? 'rgba(99, 102, 241, 0.1)'
-        : 'rgba(99, 102, 241, 0.05)',
-      borderRadius: borderRadius.sm,
-    },
-    notesLabel: {
-      ...typography.caption,
-      fontWeight: '600',
-      color: isDark ? colors.dark.text : colors.text,
-      marginBottom: spacing.xs,
-    },
-    notesText: {
-      ...typography.bodySmall,
-      color: isDark ? colors.dark.text : colors.text,
-      fontStyle: 'italic',
-    },
-  });

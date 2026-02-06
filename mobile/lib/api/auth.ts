@@ -69,7 +69,7 @@ export const authApi = {
   async register(request: RegisterRequest): Promise<AuthResponse> {
     const response = await apiClient.post<AuthResponse>(
       "/auth/register",
-      request
+      request,
     );
 
     // Store tokens and user
@@ -101,7 +101,7 @@ export const authApi = {
 
   async checkUsername(username: string): Promise<boolean> {
     const response = await apiClient.get<{ available: boolean }>(
-      `/auth/check-username/${username}`
+      `/auth/check-username/${username}`,
     );
     return response.data.available;
   },

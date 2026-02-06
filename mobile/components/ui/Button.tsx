@@ -11,12 +11,12 @@ import {
   useColorScheme,
   ViewStyle,
   TextStyle,
-} from 'react-native';
-import * as Haptics from 'expo-haptics';
-import { colors, spacing, typography, borderRadius } from '../../theme';
+} from "react-native";
+import * as Haptics from "expo-haptics";
+import { colors, spacing, typography, borderRadius } from "../../theme";
 
-type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
-type ButtonSize = 'sm' | 'md' | 'lg';
+type ButtonVariant = "primary" | "secondary" | "outline" | "ghost" | "danger";
+type ButtonSize = "sm" | "md" | "lg";
 
 interface ButtonProps {
   title: string;
@@ -32,15 +32,15 @@ interface ButtonProps {
 export function Button({
   title,
   onPress,
-  variant = 'primary',
-  size = 'md',
+  variant = "primary",
+  size = "md",
   disabled = false,
   loading = false,
   fullWidth = false,
   haptic = true,
 }: ButtonProps) {
   const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const isDark = colorScheme === "dark";
 
   const handlePress = () => {
     if (haptic) {
@@ -49,7 +49,13 @@ export function Button({
     onPress();
   };
 
-  const buttonStyles = getButtonStyles(variant, size, isDark, disabled, fullWidth);
+  const buttonStyles = getButtonStyles(
+    variant,
+    size,
+    isDark,
+    disabled,
+    fullWidth,
+  );
   const textStyles = getTextStyles(variant, size, isDark, disabled);
 
   return (
@@ -63,7 +69,11 @@ export function Button({
     >
       {loading ? (
         <ActivityIndicator
-          color={variant === 'primary' || variant === 'danger' ? '#FFFFFF' : colors.primary}
+          color={
+            variant === "primary" || variant === "danger"
+              ? "#FFFFFF"
+              : colors.primary
+          }
           size="small"
         />
       ) : (
@@ -85,14 +95,14 @@ function getButtonStyles(
   size: ButtonSize,
   isDark: boolean,
   disabled: boolean,
-  fullWidth: boolean
+  fullWidth: boolean,
 ): ViewStyle {
   const base: ViewStyle = {
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     borderRadius: borderRadius.md,
     opacity: disabled ? 0.5 : 1,
-    width: fullWidth ? '100%' : undefined,
+    width: fullWidth ? "100%" : undefined,
   };
 
   // Size styles
@@ -105,13 +115,15 @@ function getButtonStyles(
   // Variant styles
   const variantStyles: Record<ButtonVariant, ViewStyle> = {
     primary: { backgroundColor: colors.primary },
-    secondary: { backgroundColor: isDark ? colors.dark.surface : colors.surfaceSecondary },
+    secondary: {
+      backgroundColor: isDark ? colors.dark.surface : colors.surfaceSecondary,
+    },
     outline: {
-      backgroundColor: 'transparent',
+      backgroundColor: "transparent",
       borderWidth: 1,
       borderColor: colors.primary,
     },
-    ghost: { backgroundColor: 'transparent' },
+    ghost: { backgroundColor: "transparent" },
     danger: { backgroundColor: colors.error },
   };
 
@@ -122,7 +134,7 @@ function getTextStyles(
   variant: ButtonVariant,
   size: ButtonSize,
   isDark: boolean,
-  disabled: boolean
+  disabled: boolean,
 ): TextStyle {
   const base: TextStyle = {
     ...typography.button,
@@ -138,11 +150,11 @@ function getTextStyles(
 
   // Variant styles
   const variantStyles: Record<ButtonVariant, TextStyle> = {
-    primary: { color: '#FFFFFF' },
+    primary: { color: "#FFFFFF" },
     secondary: { color: isDark ? colors.dark.text : colors.text },
     outline: { color: colors.primary },
     ghost: { color: colors.primary },
-    danger: { color: '#FFFFFF' },
+    danger: { color: "#FFFFFF" },
   };
 
   return { ...base, ...sizeStyles[size], ...variantStyles[variant] };

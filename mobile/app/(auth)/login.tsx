@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState } from "react";
 import {
   View,
   Text,
@@ -9,18 +9,19 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-} from 'react-native';
-import { Link, router } from 'expo-router';
-import { colors, spacing, typography, borderRadius } from '../../theme';
-import { useAuthStore } from '../../stores/authStore';
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Link, router } from "expo-router";
+import { colors, spacing, typography, borderRadius } from "../../theme";
+import { useAuthStore } from "../../stores/authStore";
 
 export default function LoginScreen() {
   const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const isDark = colorScheme === "dark";
   const styles = createStyles(isDark);
 
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const { login, isLoading, error, clearError } = useAuthStore();
 
   const handleUsernameChange = (text: string) => {
@@ -36,7 +37,7 @@ export default function LoginScreen() {
   const handleLogin = async () => {
     try {
       await login({ username, password, deviceInfo: Platform.OS });
-      router.replace('/(tabs)');
+      router.replace("/(tabs)");
     } catch {
       // Error state handled by store
     }
@@ -45,88 +46,97 @@ export default function LoginScreen() {
   const isFormInvalid = !username.trim() || !password.trim();
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      <ScrollView contentContainerStyle={styles.content}>
-        <View style={styles.header}>
-          <Text style={styles.title}>trAInr</Text>
-          <Text style={styles.subtitle}>Welcome back</Text>
-        </View>
-
-        <View style={styles.form}>
-          {error && <Text style={styles.errorText}>{error}</Text>}
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Username</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Enter your username"
-              placeholderTextColor={isDark ? colors.dark.textTertiary : colors.textTertiary}
-              value={username}
-              onChangeText={handleUsernameChange}
-              autoCapitalize="none"
-              autoCorrect={false}
-            />
+    <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
+        <ScrollView contentContainerStyle={styles.content}>
+          <View style={styles.header}>
+            <Text style={styles.title}>trAInr</Text>
+            <Text style={styles.subtitle}>Welcome back</Text>
           </View>
 
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Password</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Enter your password"
-              placeholderTextColor={isDark ? colors.dark.textTertiary : colors.textTertiary}
-              value={password}
-              onChangeText={handlePasswordChange}
-              secureTextEntry
-            />
-          </View>
+          <View style={styles.form}>
+            {error && <Text style={styles.errorText}>{error}</Text>}
+            <View style={styles.inputContainer}>
+              <Text style={styles.label}>Username</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Enter your username"
+                placeholderTextColor={
+                  isDark ? colors.dark.textTertiary : colors.textTertiary
+                }
+                value={username}
+                onChangeText={handleUsernameChange}
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
+            </View>
 
-          <Pressable
-            style={[
-              styles.button,
-              (isLoading || isFormInvalid) && styles.buttonDisabled,
-            ]}
-            onPress={handleLogin}
-            disabled={isLoading || isFormInvalid}
-          >
-            <Text style={styles.buttonText}>
-              {isLoading ? 'Signing in...' : 'Sign In'}
-            </Text>
-          </Pressable>
+            <View style={styles.inputContainer}>
+              <Text style={styles.label}>Password</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Enter your password"
+                placeholderTextColor={
+                  isDark ? colors.dark.textTertiary : colors.textTertiary
+                }
+                value={password}
+                onChangeText={handlePasswordChange}
+                secureTextEntry
+              />
+            </View>
 
-          <View style={styles.footer}>
-            <Text style={styles.footerText}>Don't have an account? </Text>
-            <Link href="/(auth)/register" asChild>
-              <Pressable>
-                <Text style={styles.linkText}>Sign Up</Text>
-              </Pressable>
-            </Link>
+            <Pressable
+              style={[
+                styles.button,
+                (isLoading || isFormInvalid) && styles.buttonDisabled,
+              ]}
+              onPress={handleLogin}
+              disabled={isLoading || isFormInvalid}
+            >
+              <Text style={styles.buttonText}>
+                {isLoading ? "Signing in..." : "Sign In"}
+              </Text>
+            </Pressable>
+
+            <View style={styles.footer}>
+              <Text style={styles.footerText}>Don't have an account? </Text>
+              <Link href="/(auth)/register" asChild>
+                <Pressable>
+                  <Text style={styles.linkText}>Sign Up</Text>
+                </Pressable>
+              </Link>
+            </View>
           </View>
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
 const createStyles = (isDark: boolean) =>
   StyleSheet.create({
-    container: {
+    safeArea: {
       flex: 1,
       backgroundColor: isDark ? colors.dark.background : colors.background,
     },
+    container: {
+      flex: 1,
+    },
     content: {
       flexGrow: 1,
-      justifyContent: 'center',
+      justifyContent: "center",
       padding: spacing.lg,
     },
     header: {
-      alignItems: 'center',
+      alignItems: "center",
       marginBottom: spacing.xl,
     },
     title: {
       fontSize: 40,
-      fontWeight: '700',
+      fontWeight: "700",
       color: colors.primary,
       marginBottom: spacing.sm,
     },
@@ -142,7 +152,7 @@ const createStyles = (isDark: boolean) =>
     },
     label: {
       ...typography.bodySmall,
-      fontWeight: '500',
+      fontWeight: "500",
       color: isDark ? colors.dark.text : colors.text,
     },
     input: {
@@ -158,7 +168,7 @@ const createStyles = (isDark: boolean) =>
       backgroundColor: colors.primary,
       borderRadius: borderRadius.md,
       padding: spacing.md,
-      alignItems: 'center',
+      alignItems: "center",
       marginTop: spacing.md,
     },
     buttonDisabled: {
@@ -166,11 +176,11 @@ const createStyles = (isDark: boolean) =>
     },
     buttonText: {
       ...typography.button,
-      color: '#FFFFFF',
+      color: "#FFFFFF",
     },
     footer: {
-      flexDirection: 'row',
-      justifyContent: 'center',
+      flexDirection: "row",
+      justifyContent: "center",
       marginTop: spacing.lg,
     },
     footerText: {
@@ -180,11 +190,11 @@ const createStyles = (isDark: boolean) =>
     linkText: {
       ...typography.body,
       color: colors.primary,
-      fontWeight: '600',
+      fontWeight: "600",
     },
     errorText: {
       ...typography.bodySmall,
       color: colors.error,
-      textAlign: 'center',
+      textAlign: "center",
     },
   });

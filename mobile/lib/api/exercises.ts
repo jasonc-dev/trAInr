@@ -18,7 +18,7 @@ export const exercisesApi = {
   async searchExercises(
     query: string,
     type?: ExerciseType,
-    muscleGroup?: MuscleGroup
+    muscleGroup?: MuscleGroup,
   ): Promise<ExerciseSummary[]> {
     const params = new URLSearchParams();
     if (query) params.append("query", query);
@@ -27,7 +27,7 @@ export const exercisesApi = {
       params.append("muscleGroup", muscleGroup.toString());
 
     const response = await apiClient.get<ExerciseSummary[]>(
-      `/ExerciseDefinition/search?${params.toString()}`
+      `/ExerciseDefinition/search?${params.toString()}`,
     );
     return response.data;
   },
@@ -37,7 +37,7 @@ export const exercisesApi = {
    */
   async getExerciseById(id: number): Promise<ExerciseDefinition> {
     const response = await apiClient.get<ExerciseDefinition>(
-      `/ExerciseDefinition/${id}`
+      `/ExerciseDefinition/${id}`,
     );
     return response.data;
   },

@@ -37,7 +37,7 @@ export async function closeDatabase(): Promise<void> {
 
 // Helper function for transactions
 export async function runTransaction<T>(
-  callback: (db: SQLite.SQLiteDatabase) => Promise<T>
+  callback: (db: SQLite.SQLiteDatabase) => Promise<T>,
 ): Promise<T> {
   const database = await getDatabase();
   return await database.withTransactionAsync(async () => {
