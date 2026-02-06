@@ -26,7 +26,7 @@ import {
 } from "../../components/ui";
 import { Input } from "../../components/ui";
 
-import ProgrammeDetailModal from "../../components/programme/ProgrammeDetailModal";
+import { ProgrammeDetailModal } from "../../components/programme/index";
 
 function ProgrammeCard({
   programme,

@@ -44,7 +44,10 @@ export function Modal({
       presentationStyle="fullScreen"
       onRequestClose={onClose}
     >
-      <ScrollView contentInsetAdjustmentBehavior="automatic">
+      <ScrollView
+        style={styles.wrapper}
+        contentInsetAdjustmentBehavior="automatic"
+      >
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
           style={styles.container}
@@ -87,8 +90,13 @@ export function Modal({
 
 const createStyles = (isDark: boolean) =>
   StyleSheet.create({
+    wrapper: {
+      flex: 1,
+      backgroundColor: isDark ? colors.dark.background : colors.background,
+    },
     container: {
       flex: 1,
+      backgroundColor: isDark ? colors.dark.background : colors.background,
     },
     header: {
       flexDirection: "row",
@@ -124,9 +132,11 @@ const createStyles = (isDark: boolean) =>
     },
     content: {
       flex: 1,
+      backgroundColor: isDark ? colors.dark.background : colors.background,
     },
     contentContainer: {
       padding: spacing.md,
+      backgroundColor: isDark ? colors.dark.background : colors.background,
     },
     contentContainerMaxHeight: {
       flexGrow: 1,

@@ -3,7 +3,6 @@
  * Shows full exercise information with actions
  */
 
-import { useState, useEffect } from "react";
 import { View, Text, useColorScheme, ActivityIndicator } from "react-native";
 import { useQuery } from "@tanstack/react-query";
 import { exercisesApi } from "../../lib/api/exercises";

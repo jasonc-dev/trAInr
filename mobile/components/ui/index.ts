@@ -9,4 +9,6 @@ export * from "./Modal";
 export * from "./Badge";
 export * from "./Tabs";
 export * from "./NumberInput";
+export * from "./ExerciseNumberInput";
 export * from "./Select";
+export * from "./CollapsibleSection";

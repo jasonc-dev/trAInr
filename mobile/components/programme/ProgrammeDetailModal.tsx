@@ -17,12 +17,12 @@ import {
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { programmesApi } from "../../lib/api/programmes";
 import { workoutsApi } from "../../lib/api/workouts";
-import type { Programme, WorkoutDayResponse } from "../../lib/types/programme";
+import type { WorkoutDayResponse } from "../../lib/types/programme";
 import { colors } from "../../theme";
 import { Modal, Badge, Button } from "../ui";
+import { createStyles } from "./Styles";
 import AddEditDayModal from "./AddEditDayModal";
 import ExerciseListModal from "./ExerciseListModal";
-import { createStyles } from "./Styles";
 
 interface ProgrammeDetailModalProps {
   programmeId: string;
@@ -46,7 +46,7 @@ export default function ProgrammeDetailModal({
   const [showAddDayModal, setShowAddDayModal] = useState(false);
   const [showEditDayModal, setShowEditDayModal] = useState(false);
   const [selectedDay, setSelectedDay] = useState<WorkoutDayResponse | null>(
-    null,
+    null
   );
   const [showExerciseListModal, setShowExerciseListModal] = useState(false);
 
@@ -131,7 +131,7 @@ export default function ProgrammeDetailModal({
           style: "destructive",
           onPress: () => deleteDayMutation.mutate(day.id),
         },
-      ],
+      ]
     );
   };
 
@@ -152,13 +152,13 @@ export default function ProgrammeDetailModal({
 
     // Check if previous week has exercises
     const prevHasExercises = previousWeek.workoutDays.some(
-      (day) => day.exercises && day.exercises.length > 0,
+      (day) => day.exercises && day.exercises.length > 0
     );
 
     if (!prevHasExercises) {
       Alert.alert(
         "No Exercises",
-        "The previous week has no exercises to copy.",
+        "The previous week has no exercises to copy."
       );
       return;
     }
@@ -176,7 +176,7 @@ export default function ProgrammeDetailModal({
               targetWeekId: currentWeek.id,
             }),
         },
-      ],
+      ]
     );
   };
 
@@ -205,10 +205,10 @@ export default function ProgrammeDetailModal({
   const previousWeek =
     selectedWeekIndex > 0 ? programme.weeks[selectedWeekIndex - 1] : null;
   const prevWeekHasExercises = previousWeek?.workoutDays.some(
-    (day) => day.exercises && day.exercises.length > 0,
+    (day) => day.exercises && day.exercises.length > 0
   );
   const dayForExerciseList = currentWeek?.workoutDays.find(
-    (day) => day.id === selectedDayId,
+    (day) => day.id === selectedDayId
   );
 
   // Hide parent modal when child modals are open
@@ -327,7 +327,7 @@ export default function ProgrammeDetailModal({
                   .sort(
                     (a, b) =>
                       new Date(a.scheduledDate).getTime() -
-                      new Date(b.scheduledDate).getTime(),
+                      new Date(b.scheduledDate).getTime()
                   )
                   .map((day) => (
                     <View
@@ -344,7 +344,7 @@ export default function ProgrammeDetailModal({
                           <Text style={styles.dayCardDate}>
                             {new Date(day.scheduledDate).toLocaleDateString(
                               "en-US",
-                              { weekday: "short" },
+                              { weekday: "short" }
                             )}
                           </Text>
                         </View>

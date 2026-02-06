@@ -43,6 +43,7 @@ const createStyles = (isDark: boolean) =>
       alignItems: "center",
       justifyContent: "center",
       gap: spacing.md,
+      backgroundColor: isDark ? colors.dark.background : colors.background,
     },
     loadingText: {
       ...typography.body,

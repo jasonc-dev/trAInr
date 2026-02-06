@@ -3,7 +3,13 @@ import { WorkoutExerciseResponse } from "../../lib/types/programme";
 import { useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { workoutsApi } from "../../lib/api/workouts";
-import { Input, NumberInput, Button, Select, type SelectOption } from "../ui";
+import {
+  Input,
+  ExerciseNumberInput,
+  Button,
+  Select,
+  type SelectOption,
+} from "../ui";
 import { createStyles } from "./Styles";
 
 const RPE_OPTIONS: SelectOption[] = [
@@ -77,29 +83,29 @@ export default function EditExerciseForm({
     <View style={styles.editFormContainer}>
       <View style={styles.formGroup}>
         <View style={styles.numberInputRow}>
-          <NumberInput
+          <ExerciseNumberInput
             label="Sets"
             value={formData.targetSets}
             onChange={(value) =>
-              setFormData({ ...formData, targetSets: value })
+              setFormData({ ...formData, targetSets: value ?? 1 })
             }
             min={1}
             max={20}
           />
-          <NumberInput
+          <ExerciseNumberInput
             label="Reps"
             value={formData.targetReps}
             onChange={(value) =>
-              setFormData({ ...formData, targetReps: value })
+              setFormData({ ...formData, targetReps: value ?? 1 })
             }
             min={1}
             max={100}
           />
-          <NumberInput
+          <ExerciseNumberInput
             label="Weight"
             value={formData.targetWeight}
             onChange={(value) =>
-              setFormData({ ...formData, targetWeight: value })
+              setFormData({ ...formData, targetWeight: value ?? 0 })
             }
             min={0}
             max={500}
@@ -108,11 +114,11 @@ export default function EditExerciseForm({
         </View>
 
         <View style={styles.numberInputRow}>
-          <NumberInput
+          <ExerciseNumberInput
             label="Rest (sec)"
             value={formData.restSeconds}
             onChange={(value) =>
-              setFormData({ ...formData, restSeconds: value })
+              setFormData({ ...formData, restSeconds: value ?? 90 })
             }
             min={0}
             max={600}

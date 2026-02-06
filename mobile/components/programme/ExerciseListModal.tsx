@@ -14,10 +14,9 @@ import type {
 } from "../../lib/types/programme";
 import { Modal, Button, Badge } from "../ui";
 import { createStyles } from "./Styles";
-import AddExerciseModal from "./AddExerciseModal";
+import AddExerciseForm from "./AddExerciseForm";
 import EditExerciseForm from "./EditExerciseForm";
 import ExerciseDetailsContent from "./ExerciseDetailsContent";
-import AddExerciseForm from "./AddExerciseForm";
 
 type ViewMode = "list" | "details" | "edit" | "add";
 
@@ -43,7 +42,7 @@ export default function ExerciseListModal({
   const [selectedExercise, setSelectedExercise] =
     useState<WorkoutExerciseResponse | null>(null);
   const [selectedExercises, setSelectedExercises] = useState<Set<string>>(
-    new Set(),
+    new Set()
   );
   const [viewMode, setViewMode] = useState<ViewMode>("list");
 
@@ -147,13 +146,13 @@ export default function ExerciseListModal({
           style: "destructive",
           onPress: () => removeMutation.mutate(exercise.id),
         },
-      ],
+      ]
     );
   };
 
   const handleMoveUp = (exercise: WorkoutExerciseResponse) => {
     const sortedExercises = [...day.exercises].sort(
-      (a, b) => a.orderIndex - b.orderIndex,
+      (a, b) => a.orderIndex - b.orderIndex
     );
     const currentIndex = sortedExercises.findIndex((e) => e.id === exercise.id);
 
@@ -170,7 +169,7 @@ export default function ExerciseListModal({
 
   const handleMoveDown = (exercise: WorkoutExerciseResponse) => {
     const sortedExercises = [...day.exercises].sort(
-      (a, b) => a.orderIndex - b.orderIndex,
+      (a, b) => a.orderIndex - b.orderIndex
     );
     const currentIndex = sortedExercises.findIndex((e) => e.id === exercise.id);
 
@@ -206,7 +205,7 @@ export default function ExerciseListModal({
           text: "Ungroup",
           onPress: () => ungroupSupersetMutation.mutate(supersetGroupId),
         },
-      ],
+      ]
     );
   };
 
@@ -215,7 +214,7 @@ export default function ExerciseListModal({
     if (!exercise.supersetGroupId) return "";
 
     const supersetCount = day.exercises.filter(
-      (e) => e.supersetGroupId === exercise.supersetGroupId,
+      (e) => e.supersetGroupId === exercise.supersetGroupId
     ).length;
 
     if (supersetCount === 2) return "Superset";
@@ -224,7 +223,7 @@ export default function ExerciseListModal({
   };
 
   const sortedExercises = [...day.exercises].sort(
-    (a, b) => a.orderIndex - b.orderIndex,
+    (a, b) => a.orderIndex - b.orderIndex
   );
 
   // Determine modal title and footer based on viewMode
@@ -278,8 +277,8 @@ export default function ExerciseListModal({
               selectedExercises.size === 2
                 ? "Superset"
                 : selectedExercises.size === 3
-                  ? "Triset"
-                  : "Giant Set"
+                ? "Triset"
+                : "Giant Set"
             } (${selectedExercises.size})`}
             onPress={handleGroupSuperset}
             variant="primary"
@@ -400,7 +399,7 @@ export default function ExerciseListModal({
                     {exercise.targetWeight && ` @ ${exercise.targetWeight}kg`}
                     {exercise.restSeconds &&
                       ` • ${Math.floor(exercise.restSeconds / 60)}:${String(
-                        exercise.restSeconds % 60,
+                        exercise.restSeconds % 60
                       ).padStart(2, "0")} rest`}
                   </Text>
                   {exercise.notes && (

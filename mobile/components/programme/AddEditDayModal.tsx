@@ -160,8 +160,8 @@ export default function AddEditDayModal({
                   ? "Saving..."
                   : "Adding..."
                 : isEditing
-                  ? "Save Changes"
-                  : "Add Day"
+                ? "Save Changes"
+                : "Add Day"
             }
             onPress={handleSubmit}
             variant="primary"

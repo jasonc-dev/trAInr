@@ -18,8 +18,22 @@ import { workoutsApi } from "../../lib/api/workouts";
 import { exercisesApi } from "../../lib/api/exercises";
 import type { ExerciseSummary } from "../../lib/types/programme";
 import { colors } from "../../theme";
-import { Input, NumberInput, Button } from "../ui";
+import {
+  Input,
+  ExerciseNumberInput,
+  Button,
+  Select,
+  type SelectOption,
+} from "../ui";
 import { createStyles } from "./Styles";
+
+const RPE_OPTIONS: SelectOption[] = [
+  { label: "Not set", value: "" },
+  ...Array.from({ length: 10 }, (_, i) => ({
+    label: String(i + 1),
+    value: String(i + 1),
+  })),
+];
 
 interface AddExerciseFormProps {
   visible: boolean;
@@ -43,7 +57,7 @@ export default function AddExerciseForm({
   const [searchResults, setSearchResults] = useState<ExerciseSummary[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [selectedExerciseId, setSelectedExerciseId] = useState<number | null>(
-    null,
+    null
   );
 
   const [formData, setFormData] = useState({
@@ -191,29 +205,29 @@ export default function AddExerciseForm({
             <Text style={styles.configTitle}>Exercise Configuration</Text>
 
             <View style={styles.numberInputRow}>
-              <NumberInput
+              <ExerciseNumberInput
                 label="Sets"
                 value={formData.targetSets}
                 onChange={(value) =>
-                  setFormData({ ...formData, targetSets: value })
+                  setFormData({ ...formData, targetSets: value ?? 1 })
                 }
                 min={1}
                 max={20}
               />
-              <NumberInput
+              <ExerciseNumberInput
                 label="Reps"
                 value={formData.targetReps}
                 onChange={(value) =>
-                  setFormData({ ...formData, targetReps: value })
+                  setFormData({ ...formData, targetReps: value ?? 1 })
                 }
                 min={1}
                 max={100}
               />
-              <NumberInput
+              <ExerciseNumberInput
                 label="Weight"
                 value={formData.targetWeight}
                 onChange={(value) =>
-                  setFormData({ ...formData, targetWeight: value })
+                  setFormData({ ...formData, targetWeight: value ?? 0 })
                 }
                 min={0}
                 max={500}
@@ -222,24 +236,27 @@ export default function AddExerciseForm({
             </View>
 
             <View style={styles.numberInputRow}>
-              <NumberInput
+              <ExerciseNumberInput
                 label="Rest (sec)"
                 value={formData.restSeconds}
                 onChange={(value) =>
-                  setFormData({ ...formData, restSeconds: value })
+                  setFormData({ ...formData, restSeconds: value ?? 90 })
                 }
                 min={0}
                 max={600}
                 step={15}
               />
-              <NumberInput
+              <Select
                 label="RPE"
-                value={formData.targetRpe}
+                options={RPE_OPTIONS}
+                value={formData.targetRpe?.toString() ?? ""}
                 onChange={(value) =>
-                  setFormData({ ...formData, targetRpe: value })
+                  setFormData({
+                    ...formData,
+                    targetRpe: value ? parseInt(value) : null,
+                  })
                 }
-                min={1}
-                max={10}
+                placeholder="Select RPE"
               />
             </View>
 

@@ -21,7 +21,7 @@ export interface SelectOption {
 }
 
 interface SelectProps {
-  label: string;
+  label?: string;
   value: string;
   options: SelectOption[];
   onChange: (value: string) => void;
@@ -52,7 +52,7 @@ export function Select({
 
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>{label}</Text>
+      {label && <Text style={styles.label}>{label}</Text>}
       <Pressable
         style={({ pressed }) => [
           styles.selectButton,
@@ -150,7 +150,7 @@ const createStyles = (isDark: boolean) =>
       borderColor: isDark ? colors.dark.border : colors.border,
       borderRadius: borderRadius.sm,
       paddingHorizontal: spacing.md,
-      height: 44,
+      height: 32,
     },
     selectButtonPressed: {
       backgroundColor: isDark

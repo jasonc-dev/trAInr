@@ -82,6 +82,7 @@ const createStyles = (isDark: boolean) =>
   StyleSheet.create({
     container: {
       flex: 1,
+      backgroundColor: isDark ? colors.dark.background : colors.background,
     },
     content: {
       padding: spacing.md,

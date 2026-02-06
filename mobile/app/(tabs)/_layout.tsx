@@ -28,6 +28,12 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="workout"
+        options={{
           title: "Today",
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="fitness" size={size} color={color} />

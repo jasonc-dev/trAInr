@@ -4,7 +4,7 @@ import { colors } from "../../theme";
 import { useQuery } from "@tanstack/react-query";
 import { exercisesApi } from "../../lib/api/exercises";
 import type { WorkoutExerciseResponse } from "../../lib/types/programme";
- import {
+import {
   getExerciseTypeLabel,
   getMuscleGroupLabel,
 } from "../../lib/utils/exerciseLabels";
