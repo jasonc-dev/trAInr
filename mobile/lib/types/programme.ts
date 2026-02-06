@@ -14,35 +14,29 @@ export enum DayOfWeek {
   Saturday = 6,
 }
 
+/** Matches backend trAInr.Domain.Entities.Exercise.ExerciseType */
 export enum ExerciseType {
-  Compound = 0,
-  Isolation = 1,
+  WeightTraining = 1,
   Cardio = 2,
-  Flexibility = 3,
-  Plyometric = 4,
-  Strongman = 5,
-  Olympic = 6,
+  Bodyweight = 3,
+  Flexibility = 4,
 }
 
+/** Matches backend trAInr.Domain.Entities.Exercise.MuscleGroup */
 export enum MuscleGroup {
-  Chest = 0,
-  Back = 1,
-  Shoulders = 2,
-  Biceps = 3,
-  Triceps = 4,
-  Forearms = 5,
-  Abs = 6,
-  Obliques = 7,
-  Glutes = 8,
-  Quadriceps = 9,
-  Hamstrings = 10,
+  Chest = 1,
+  Back = 2,
+  Shoulders = 3,
+  Biceps = 4,
+  Triceps = 5,
+  Forearms = 6,
+  Core = 7,
+  Quadriceps = 8,
+  Hamstrings = 9,
+  Glutes = 10,
   Calves = 11,
-  Traps = 12,
-  Lats = 13,
-  LowerBack = 14,
-  MiddleBack = 15,
-  Neck = 16,
-  FullBody = 17,
+  FullBody = 12,
+  Cardio = 13,
 }
 
 export enum SetType {

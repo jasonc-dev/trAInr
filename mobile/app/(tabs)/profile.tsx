@@ -6,7 +6,6 @@ import {
   useColorScheme,
   Pressable,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { colors, spacing, typography, borderRadius } from "../../theme";
 import { useAuthStore } from "../../stores/authStore";
@@ -28,64 +27,59 @@ export default function ProfileScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={["left", "right"]}>
-      <ScrollView
-        style={styles.container}
-        contentContainerStyle={styles.content}
-      >
-        <View style={styles.header}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>{initials.toUpperCase()}</Text>
-          </View>
-          <Text style={styles.name}>
-            {user ? `${user.firstName} ${user.lastName}` : "Guest"}
-          </Text>
-          <Text style={styles.email}>{user?.email ?? "Not signed in"}</Text>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.content}
+      contentInsetAdjustmentBehavior="automatic"
+    >
+      <View style={styles.header}>
+        <View style={styles.avatar}>
+          <Text style={styles.avatarText}>{initials.toUpperCase()}</Text>
         </View>
+        <Text style={styles.name}>
+          {user ? `${user.firstName} ${user.lastName}` : "Guest"}
+        </Text>
+        <Text style={styles.email}>{user?.email ?? "Not signed in"}</Text>
+      </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Settings</Text>
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Settings</Text>
 
-          <Pressable style={styles.menuItem}>
-            <Text style={styles.menuItemText}>Edit Profile</Text>
-          </Pressable>
-
-          <Pressable style={styles.menuItem}>
-            <Text style={styles.menuItemText}>Training Preferences</Text>
-          </Pressable>
-
-          <Pressable style={styles.menuItem}>
-            <Text style={styles.menuItemText}>Equipment</Text>
-          </Pressable>
-
-          <Pressable style={styles.menuItem}>
-            <Text style={styles.menuItemText}>Units (kg/lbs)</Text>
-          </Pressable>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Sync</Text>
-
-          <View style={styles.syncStatus}>
-            <Text style={styles.syncStatusText}>Last synced: Just now</Text>
-            <View style={styles.syncIndicator} />
-          </View>
-        </View>
-
-        <Pressable style={styles.logoutButton} onPress={handleLogout}>
-          <Text style={styles.logoutButtonText}>Sign Out</Text>
+        <Pressable style={styles.menuItem}>
+          <Text style={styles.menuItemText}>Edit Profile</Text>
         </Pressable>
-      </ScrollView>
-    </SafeAreaView>
+
+        <Pressable style={styles.menuItem}>
+          <Text style={styles.menuItemText}>Training Preferences</Text>
+        </Pressable>
+
+        <Pressable style={styles.menuItem}>
+          <Text style={styles.menuItemText}>Equipment</Text>
+        </Pressable>
+
+        <Pressable style={styles.menuItem}>
+          <Text style={styles.menuItemText}>Units (kg/lbs)</Text>
+        </Pressable>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Sync</Text>
+
+        <View style={styles.syncStatus}>
+          <Text style={styles.syncStatusText}>Last synced: Just now</Text>
+          <View style={styles.syncIndicator} />
+        </View>
+      </View>
+
+      <Pressable style={styles.logoutButton} onPress={handleLogout}>
+        <Text style={styles.logoutButtonText}>Sign Out</Text>
+      </Pressable>
+    </ScrollView>
   );
 }
 
 const createStyles = (isDark: boolean) =>
   StyleSheet.create({
-    safeArea: {
-      flex: 1,
-      backgroundColor: isDark ? colors.dark.background : colors.background,
-    },
     container: {
       flex: 1,
     },

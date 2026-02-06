@@ -12,7 +12,6 @@ import {
   Modal as RNModal,
   ScrollView,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { useState } from "react";
 import { colors, spacing, typography, borderRadius } from "../../theme";
 
@@ -81,10 +80,7 @@ export function Select({
           style={styles.modalOverlay}
           onPress={() => setShowModal(false)}
         >
-          <SafeAreaView
-            style={styles.modalSafeArea}
-            edges={["top", "left", "right"]}
-          >
+          <View style={styles.modalSafeArea}>
             <View
               style={styles.modalContent}
               onStartShouldSetResponder={() => true}
@@ -128,7 +124,7 @@ export function Select({
                 ))}
               </ScrollView>
             </View>
-          </SafeAreaView>
+          </View>
         </Pressable>
       </RNModal>
     </View>

@@ -9,7 +9,6 @@ import {
   RefreshControl,
   Alert,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "../../stores/authStore";
@@ -130,7 +129,7 @@ export default function ProgramsScreen() {
 
   // Tab state
   const [activeTab, setActiveTab] = useState<"my" | "created" | "premade">(
-    "my",
+    "my"
   );
 
   // Modal states
@@ -141,7 +140,7 @@ export default function ProgramsScreen() {
   const [selectedProgramme, setSelectedProgramme] =
     useState<ProgrammeSummary | null>(null);
   const [selectedProgrammeId, setSelectedProgrammeId] = useState<string | null>(
-    null,
+    null
   );
 
   // Form states
@@ -288,7 +287,7 @@ export default function ProgramsScreen() {
           style: "destructive",
           onPress: () => deleteMutation.mutate(programme.id),
         },
-      ],
+      ]
     );
   };
 
@@ -317,29 +316,29 @@ export default function ProgramsScreen() {
     activeTab === "my"
       ? myProgrammes
       : activeTab === "created"
-        ? createdProgrammes
-        : premadeProgrammes;
+      ? createdProgrammes
+      : premadeProgrammes;
 
   const isLoading =
     activeTab === "my"
       ? loadingMy
       : activeTab === "created"
-        ? loadingCreated
-        : loadingPremade;
+      ? loadingCreated
+      : loadingPremade;
 
   const isRefetching =
     activeTab === "my"
       ? isRefetchingMy
       : activeTab === "created"
-        ? isRefetchingCreated
-        : isRefetchingPremade;
+      ? isRefetchingCreated
+      : isRefetchingPremade;
 
   const refetch =
     activeTab === "my"
       ? refetchMy
       : activeTab === "created"
-        ? refetchCreated
-        : refetchPremade;
+      ? refetchCreated
+      : refetchPremade;
 
   const activeProgramme = myProgrammes.find((p) => p.isActive);
   const isTemplate = activeTab !== "my";
@@ -355,23 +354,26 @@ export default function ProgramsScreen() {
 
   if (!user?.id) {
     return (
-      <SafeAreaView style={styles.safeArea} edges={["left", "right"]}>
-        <View style={styles.container}>
-          <View style={styles.placeholder}>
-            <Text style={styles.placeholderText}>
-              Sign in to view your programmes
-            </Text>
-          </View>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.content}
+        contentInsetAdjustmentBehavior="automatic"
+      >
+        <View style={styles.placeholder}>
+          <Text style={styles.placeholderText}>
+            Sign in to view your programmes
+          </Text>
         </View>
-      </SafeAreaView>
+      </ScrollView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={["left", "right"]}>
+    <View style={styles.wrapper}>
       <ScrollView
-        style={styles.container}
+        style={styles.scrollView}
         contentContainerStyle={styles.content}
+        contentInsetAdjustmentBehavior="automatic"
         refreshControl={
           <RefreshControl
             refreshing={isRefetching && !isLoading}
@@ -413,8 +415,8 @@ export default function ProgramsScreen() {
               {activeTab === "my"
                 ? "No Programmes Yet"
                 : activeTab === "created"
-                  ? "No Templates Created"
-                  : "No Pre-made Templates"}
+                ? "No Templates Created"
+                : "No Pre-made Templates"}
             </Text>
             <Text style={styles.placeholderText}>
               {activeTab === "my"
@@ -675,21 +677,22 @@ export default function ProgramsScreen() {
           }}
         />
       )}
-    </SafeAreaView>
+    </View>
   );
 }
 
 const createStyles = (isDark: boolean) =>
   StyleSheet.create({
-    safeArea: {
+    wrapper: {
       flex: 1,
       backgroundColor: isDark ? colors.dark.background : colors.background,
     },
-    container: {
+    scrollView: {
       flex: 1,
     },
     content: {
       padding: spacing.md,
+      paddingBottom: spacing.xl,
     },
     header: {
       marginBottom: spacing.lg,

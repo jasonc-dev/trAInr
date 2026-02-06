@@ -14,7 +14,6 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
-import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { colors, spacing, typography, borderRadius } from "../../theme";
 
 interface ModalProps {
@@ -45,55 +44,49 @@ export function Modal({
       presentationStyle="fullScreen"
       onRequestClose={onClose}
     >
-      <SafeAreaProvider>
-        <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
-          <KeyboardAvoidingView
-            behavior={Platform.OS === "ios" ? "padding" : "height"}
-            style={styles.container}
-          >
-            {/* Header */}
-            <View style={styles.header}>
-              <Text style={styles.title}>{title}</Text>
-              <Pressable
-                style={({ pressed }) => [
-                  styles.closeButton,
-                  pressed && styles.closeButtonPressed,
-                ]}
-                onPress={onClose}
-              >
-                <Text style={styles.closeButtonText}>✕</Text>
-              </Pressable>
-            </View>
-
-            {/* Content */}
-            <ScrollView
-              style={styles.content}
-              contentContainerStyle={[
-                styles.contentContainer,
-                maxHeight && styles.contentContainerMaxHeight,
+      <ScrollView contentInsetAdjustmentBehavior="automatic">
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={styles.container}
+        >
+          {/* Header */}
+          <View style={styles.header}>
+            <Text style={styles.title}>{title}</Text>
+            <Pressable
+              style={({ pressed }) => [
+                styles.closeButton,
+                pressed && styles.closeButtonPressed,
               ]}
-              showsVerticalScrollIndicator={true}
-              scrollEnabled={true}
-              nestedScrollEnabled={true}
+              onPress={onClose}
             >
-              {children}
-            </ScrollView>
+              <Text style={styles.closeButtonText}>✕</Text>
+            </Pressable>
+          </View>
 
-            {/* Footer */}
-            {footer && <View style={styles.footer}>{footer}</View>}
-          </KeyboardAvoidingView>
-        </SafeAreaView>
-      </SafeAreaProvider>
+          {/* Content */}
+          <ScrollView
+            style={styles.content}
+            contentContainerStyle={[
+              styles.contentContainer,
+              maxHeight && styles.contentContainerMaxHeight,
+            ]}
+            showsVerticalScrollIndicator={true}
+            scrollEnabled={true}
+            nestedScrollEnabled={true}
+          >
+            {children}
+          </ScrollView>
+
+          {/* Footer */}
+          {footer && <View style={styles.footer}>{footer}</View>}
+        </KeyboardAvoidingView>
+      </ScrollView>
     </RNModal>
   );
 }
 
 const createStyles = (isDark: boolean) =>
   StyleSheet.create({
-    safeArea: {
-      flex: 1,
-      backgroundColor: isDark ? colors.dark.background : colors.background,
-    },
     container: {
       flex: 1,
     },

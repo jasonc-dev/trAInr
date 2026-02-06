@@ -10,7 +10,6 @@ import {
   Platform,
   ScrollView,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { Link, router } from "expo-router";
 import { colors, spacing, typography, borderRadius } from "../../theme";
 import { useAuthStore } from "../../stores/authStore";
@@ -46,89 +45,93 @@ export default function LoginScreen() {
   const isFormInvalid = !username.trim() || !password.trim();
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
-      <KeyboardAvoidingView
-        style={styles.container}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.content}
+        contentInsetAdjustmentBehavior="automatic"
+        keyboardShouldPersistTaps="handled"
       >
-        <ScrollView contentContainerStyle={styles.content}>
-          <View style={styles.header}>
-            <Text style={styles.title}>trAInr</Text>
-            <Text style={styles.subtitle}>Welcome back</Text>
+        <View style={styles.header}>
+          <Text style={styles.title}>trAInr</Text>
+          <Text style={styles.subtitle}>Welcome back</Text>
+        </View>
+
+        <View style={styles.form}>
+          {error && <Text style={styles.errorText}>{error}</Text>}
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Username</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter your username"
+              placeholderTextColor={
+                isDark ? colors.dark.textTertiary : colors.textTertiary
+              }
+              value={username}
+              onChangeText={handleUsernameChange}
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
           </View>
 
-          <View style={styles.form}>
-            {error && <Text style={styles.errorText}>{error}</Text>}
-            <View style={styles.inputContainer}>
-              <Text style={styles.label}>Username</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Enter your username"
-                placeholderTextColor={
-                  isDark ? colors.dark.textTertiary : colors.textTertiary
-                }
-                value={username}
-                onChangeText={handleUsernameChange}
-                autoCapitalize="none"
-                autoCorrect={false}
-              />
-            </View>
-
-            <View style={styles.inputContainer}>
-              <Text style={styles.label}>Password</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Enter your password"
-                placeholderTextColor={
-                  isDark ? colors.dark.textTertiary : colors.textTertiary
-                }
-                value={password}
-                onChangeText={handlePasswordChange}
-                secureTextEntry
-              />
-            </View>
-
-            <Pressable
-              style={[
-                styles.button,
-                (isLoading || isFormInvalid) && styles.buttonDisabled,
-              ]}
-              onPress={handleLogin}
-              disabled={isLoading || isFormInvalid}
-            >
-              <Text style={styles.buttonText}>
-                {isLoading ? "Signing in..." : "Sign In"}
-              </Text>
-            </Pressable>
-
-            <View style={styles.footer}>
-              <Text style={styles.footerText}>Don't have an account? </Text>
-              <Link href="/(auth)/register" asChild>
-                <Pressable>
-                  <Text style={styles.linkText}>Sign Up</Text>
-                </Pressable>
-              </Link>
-            </View>
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Password</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter your password"
+              placeholderTextColor={
+                isDark ? colors.dark.textTertiary : colors.textTertiary
+              }
+              value={password}
+              onChangeText={handlePasswordChange}
+              secureTextEntry
+            />
           </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+
+          <Pressable
+            style={[
+              styles.button,
+              (isLoading || isFormInvalid) && styles.buttonDisabled,
+            ]}
+            onPress={handleLogin}
+            disabled={isLoading || isFormInvalid}
+          >
+            <Text style={styles.buttonText}>
+              {isLoading ? "Signing in..." : "Sign In"}
+            </Text>
+          </Pressable>
+
+          <View style={styles.footer}>
+            <Text style={styles.footerText}>Don't have an account? </Text>
+            <Link href="/(auth)/register" asChild>
+              <Pressable>
+                <Text style={styles.linkText}>Sign Up</Text>
+              </Pressable>
+            </Link>
+          </View>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const createStyles = (isDark: boolean) =>
   StyleSheet.create({
-    safeArea: {
+    container: {
       flex: 1,
       backgroundColor: isDark ? colors.dark.background : colors.background,
     },
-    container: {
+    scrollView: {
       flex: 1,
     },
     content: {
       flexGrow: 1,
       justifyContent: "center",
       padding: spacing.lg,
+      paddingBottom: spacing.xl,
     },
     header: {
       alignItems: "center",

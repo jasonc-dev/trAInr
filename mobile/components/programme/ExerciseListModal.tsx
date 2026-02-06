@@ -435,12 +435,6 @@ export default function ExerciseListModal({
                 </Pressable>
                 <Pressable
                   style={styles.listActionButton}
-                  onPress={() => handleEdit(exercise)}
-                >
-                  <Text style={styles.listActionButtonText}>✎</Text>
-                </Pressable>
-                <Pressable
-                  style={styles.listActionButton}
                   onPress={() => handleRemove(exercise)}
                 >
                   <Text style={styles.listActionButtonText}>×</Text>

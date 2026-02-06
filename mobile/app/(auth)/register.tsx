@@ -10,7 +10,6 @@ import {
   Platform,
   ScrollView,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { Link, router } from "expo-router";
 import { colors, spacing, typography, borderRadius } from "../../theme";
 import { useAuthStore } from "../../stores/authStore";
@@ -73,136 +72,136 @@ export default function RegisterScreen() {
     !formData.password.trim();
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
-      <KeyboardAvoidingView
-        style={styles.container}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.content}
+        contentInsetAdjustmentBehavior="automatic"
+        keyboardShouldPersistTaps="handled"
       >
-        <ScrollView contentContainerStyle={styles.content}>
-          <View style={styles.header}>
-            <Text style={styles.title}>Create Account</Text>
-            <Text style={styles.subtitle}>Start your training journey</Text>
+        <View style={styles.header}>
+          <Text style={styles.title}>Create Account</Text>
+          <Text style={styles.subtitle}>Start your training journey</Text>
+        </View>
+
+        <View style={styles.form}>
+          {error && <Text style={styles.errorText}>{error}</Text>}
+          <View style={styles.row}>
+            <View style={[styles.inputContainer, styles.halfWidth]}>
+              <Text style={styles.label}>First Name</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="John"
+                placeholderTextColor={
+                  isDark ? colors.dark.textTertiary : colors.textTertiary
+                }
+                value={formData.firstName}
+                onChangeText={(text: string) => handleChange("firstName", text)}
+              />
+            </View>
+            <View style={[styles.inputContainer, styles.halfWidth]}>
+              <Text style={styles.label}>Last Name</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Doe"
+                placeholderTextColor={
+                  isDark ? colors.dark.textTertiary : colors.textTertiary
+                }
+                value={formData.lastName}
+                onChangeText={(text: string) => handleChange("lastName", text)}
+              />
+            </View>
           </View>
 
-          <View style={styles.form}>
-            {error && <Text style={styles.errorText}>{error}</Text>}
-            <View style={styles.row}>
-              <View style={[styles.inputContainer, styles.halfWidth]}>
-                <Text style={styles.label}>First Name</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="John"
-                  placeholderTextColor={
-                    isDark ? colors.dark.textTertiary : colors.textTertiary
-                  }
-                  value={formData.firstName}
-                  onChangeText={(text: string) =>
-                    handleChange("firstName", text)
-                  }
-                />
-              </View>
-              <View style={[styles.inputContainer, styles.halfWidth]}>
-                <Text style={styles.label}>Last Name</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Doe"
-                  placeholderTextColor={
-                    isDark ? colors.dark.textTertiary : colors.textTertiary
-                  }
-                  value={formData.lastName}
-                  onChangeText={(text: string) =>
-                    handleChange("lastName", text)
-                  }
-                />
-              </View>
-            </View>
-
-            <View style={styles.inputContainer}>
-              <Text style={styles.label}>Username</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Choose a username"
-                placeholderTextColor={
-                  isDark ? colors.dark.textTertiary : colors.textTertiary
-                }
-                value={formData.username}
-                onChangeText={(text: string) => handleChange("username", text)}
-                autoCapitalize="none"
-                autoCorrect={false}
-              />
-            </View>
-
-            <View style={styles.inputContainer}>
-              <Text style={styles.label}>Email</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="your@email.com"
-                placeholderTextColor={
-                  isDark ? colors.dark.textTertiary : colors.textTertiary
-                }
-                value={formData.email}
-                onChangeText={(text: string) => handleChange("email", text)}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoCorrect={false}
-              />
-            </View>
-
-            <View style={styles.inputContainer}>
-              <Text style={styles.label}>Password</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Create a password"
-                placeholderTextColor={
-                  isDark ? colors.dark.textTertiary : colors.textTertiary
-                }
-                value={formData.password}
-                onChangeText={(text: string) => handleChange("password", text)}
-                secureTextEntry
-              />
-            </View>
-
-            <Pressable
-              style={[
-                styles.button,
-                (isLoading || isFormInvalid) && styles.buttonDisabled,
-              ]}
-              onPress={handleRegister}
-              disabled={isLoading || isFormInvalid}
-            >
-              <Text style={styles.buttonText}>
-                {isLoading ? "Creating account..." : "Create Account"}
-              </Text>
-            </Pressable>
-
-            <View style={styles.footer}>
-              <Text style={styles.footerText}>Already have an account? </Text>
-              <Link href="/(auth)/login" asChild>
-                <Pressable>
-                  <Text style={styles.linkText}>Sign In</Text>
-                </Pressable>
-              </Link>
-            </View>
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Username</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Choose a username"
+              placeholderTextColor={
+                isDark ? colors.dark.textTertiary : colors.textTertiary
+              }
+              value={formData.username}
+              onChangeText={(text: string) => handleChange("username", text)}
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
           </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Email</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="your@email.com"
+              placeholderTextColor={
+                isDark ? colors.dark.textTertiary : colors.textTertiary
+              }
+              value={formData.email}
+              onChangeText={(text: string) => handleChange("email", text)}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
+          </View>
+
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Password</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Create a password"
+              placeholderTextColor={
+                isDark ? colors.dark.textTertiary : colors.textTertiary
+              }
+              value={formData.password}
+              onChangeText={(text: string) => handleChange("password", text)}
+              secureTextEntry
+            />
+          </View>
+
+          <Pressable
+            style={[
+              styles.button,
+              (isLoading || isFormInvalid) && styles.buttonDisabled,
+            ]}
+            onPress={handleRegister}
+            disabled={isLoading || isFormInvalid}
+          >
+            <Text style={styles.buttonText}>
+              {isLoading ? "Creating account..." : "Create Account"}
+            </Text>
+          </Pressable>
+
+          <View style={styles.footer}>
+            <Text style={styles.footerText}>Already have an account? </Text>
+            <Link href="/(auth)/login" asChild>
+              <Pressable>
+                <Text style={styles.linkText}>Sign In</Text>
+              </Pressable>
+            </Link>
+          </View>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const createStyles = (isDark: boolean) =>
   StyleSheet.create({
-    safeArea: {
+    container: {
       flex: 1,
       backgroundColor: isDark ? colors.dark.background : colors.background,
     },
-    container: {
+    scrollView: {
       flex: 1,
     },
     content: {
       flexGrow: 1,
       justifyContent: "center",
       padding: spacing.lg,
+      paddingBottom: spacing.xl,
     },
     header: {
       alignItems: "center",

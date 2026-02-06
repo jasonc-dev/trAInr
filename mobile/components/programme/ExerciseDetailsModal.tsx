@@ -8,6 +8,10 @@ import { View, Text, useColorScheme, ActivityIndicator } from "react-native";
 import { useQuery } from "@tanstack/react-query";
 import { exercisesApi } from "../../lib/api/exercises";
 import type { WorkoutExerciseResponse } from "../../lib/types/programme";
+import {
+  getExerciseTypeLabel,
+  getMuscleGroupLabel,
+} from "../../lib/utils/exerciseLabels";
 import { colors } from "../../theme";
 import { Modal, Button, Badge } from "../ui";
 import { createStyles } from "./Styles";
@@ -76,10 +80,12 @@ export default function ExerciseDetailsModal({
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Exercise Information</Text>
             <View style={styles.badgeRow}>
-              <Badge>{details.type}</Badge>
-              <Badge>{details.primaryMuscleGroup}</Badge>
-              {details.secondaryMuscleGroup && (
-                <Badge variant="default">{details.secondaryMuscleGroup}</Badge>
+              <Badge>{getExerciseTypeLabel(details.type)}</Badge>
+              <Badge>{getMuscleGroupLabel(details.primaryMuscleGroup)}</Badge>
+              {details.secondaryMuscleGroup != null && (
+                <Badge variant="default">
+                  {getMuscleGroupLabel(details.secondaryMuscleGroup)}
+                </Badge>
               )}
             </View>
           </View>
