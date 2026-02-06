@@ -1,4 +1,5 @@
 using trAInr.Domain.Aggregates;
+using trAInr.Domain.Entities;
 
 namespace trAInr.Application.Interfaces.Repositories;
 
@@ -19,5 +20,10 @@ public interface IWorkoutSessionRepository
     Task AddAsync(WorkoutSession workoutSession, CancellationToken cancellationToken = default);
     Task UpdateAsync(WorkoutSession workoutSession, CancellationToken cancellationToken = default);
     Task DeleteAsync(WorkoutSession workoutSession, CancellationToken cancellationToken = default);
+
+    // Sync-related methods
+    Task<IEnumerable<WorkoutDay>> GetModifiedSinceAsync(Guid athleteId, DateTime since, CancellationToken cancellationToken = default);
+    Task<ExerciseSet?> GetExerciseSetByIdAsync(Guid id, CancellationToken cancellationToken = default);
+    Task UpdateExerciseSetAsync(ExerciseSet set, CancellationToken cancellationToken = default);
 }
 

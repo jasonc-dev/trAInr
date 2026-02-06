@@ -1,3 +1,4 @@
+using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
 using trAInr.Application.DTOs;
 using trAInr.Application.Interfaces.Services;
@@ -5,7 +6,8 @@ using trAInr.Application.Interfaces.Services;
 namespace trAInr.API.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[ApiVersion("1.0")]
+[Route("api/v{version:apiVersion}/[controller]")]
 public class DashboardController(IDashboardService dashboardService, IAthleteService athleteService)
     : ControllerBase
 {

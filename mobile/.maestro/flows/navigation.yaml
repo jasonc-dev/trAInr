@@ -1,0 +1,28 @@
+# Maestro E2E Test: Tab Navigation
+appId: com.trainr.app
+---
+- launchApp
+
+# Login first (assuming logged in state for this test)
+- tapOn: "Enter your username"
+- inputText: "testuser"
+- tapOn: "Enter your password"
+- inputText: "testpassword123"
+- tapOn: "Sign In"
+
+# Navigate through tabs
+- assertVisible: "Today's Workout"
+
+# Go to Programs tab
+- tapOn: "Programs"
+- assertVisible: "Programs"
+- assertVisible: "Manage your training programs"
+
+# Go to Profile tab
+- tapOn: "Profile"
+- assertVisible: "Settings"
+- assertVisible: "Sync"
+
+# Go back to Today tab
+- tapOn: "Today"
+- assertVisible: "Today's Workout"

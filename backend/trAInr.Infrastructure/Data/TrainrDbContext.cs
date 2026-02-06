@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-using System.Linq;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
@@ -20,6 +18,12 @@ public class TrainrDbContext(DbContextOptions<TrainrDbContext> options) : DbCont
             (a, b) => (a ?? new List<string>()).SequenceEqual(b ?? new List<string>()),
             v => v != null ? v.GetHashCode() : 0,
             v => v == null ? new List<string>() : v.ToList());
+
+    private static readonly ValueComparer<string[]> StringArrayComparer =
+        new(
+            (a, b) => (a ?? Array.Empty<string>()).SequenceEqual(b ?? Array.Empty<string>()),
+            v => v != null ? v.Aggregate(0, (acc, s) => HashCode.Combine(acc, s.GetHashCode())) : 0,
+            v => v == null ? Array.Empty<string>() : v.ToArray());
 
     private static readonly ValueComparer<List<EquipmentRequirement>> EquipmentRequirementListComparer =
         new(
@@ -45,6 +49,8 @@ public class TrainrDbContext(DbContextOptions<TrainrDbContext> options) : DbCont
     public DbSet<ExerciseSet> ExerciseSets => Set<ExerciseSet>();
     public DbSet<Exercise> Exercises => Set<Exercise>();
     public DbSet<AiGenerationJob> AiGenerationJobs => Set<AiGenerationJob>();
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+    public DbSet<IdempotencyRecord> IdempotencyRecords => Set<IdempotencyRecord>();
 
     // New normalized entities for RAG
     public DbSet<Equipment> Equipment => Set<Equipment>();
@@ -99,6 +105,8 @@ public class TrainrDbContext(DbContextOptions<TrainrDbContext> options) : DbCont
         ConfigureExerciseTag(modelBuilder);
         ConfigureExerciseVariant(modelBuilder);
         ConfigureExerciseEmbedding(modelBuilder);
+        ConfigureRefreshToken(modelBuilder);
+        ConfigureIdempotencyRecord(modelBuilder);
     }
 
     private static void ConfigureAthlete(ModelBuilder modelBuilder)
@@ -163,12 +171,13 @@ public class TrainrDbContext(DbContextOptions<TrainrDbContext> options) : DbCont
             entity.Property<List<EquipmentRequirement>>("_equipmentRequirements").Metadata
                 .SetValueComparer(EquipmentRequirementListComparer);
 
-            // Configure Aliases as array
+            // Configure Aliases as array with value comparer for change tracking
             entity.Property(e => e.Aliases)
                 .HasConversion(
                     v => string.Join(',', v),
                     v => v.Split(',', StringSplitOptions.RemoveEmptyEntries))
                 .HasColumnName("Aliases");
+            entity.Property(e => e.Aliases).Metadata.SetValueComparer(StringArrayComparer);
         });
     }
 
@@ -557,6 +566,39 @@ public class TrainrDbContext(DbContextOptions<TrainrDbContext> options) : DbCont
             entity.HasIndex(e => e.Embedding)
                 .HasMethod("hnsw")
                 .HasOperators("vector_cosine_ops");
+        });
+    }
+
+    private static void ConfigureRefreshToken(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<RefreshToken>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Token).HasMaxLength(256).IsRequired();
+            entity.Property(e => e.DeviceInfo).HasMaxLength(500);
+            entity.Property(e => e.ReplacedByTokenId).HasMaxLength(100);
+            entity.HasIndex(e => e.Token).IsUnique();
+            entity.HasIndex(e => e.AthleteId);
+            entity.HasIndex(e => e.ExpiresAt);
+            entity.Property(e => e.ExpiresAt).HasColumnType("timestamp with time zone");
+            entity.Property(e => e.CreatedAt).HasColumnType("timestamp with time zone");
+            entity.Property(e => e.RevokedAt).HasColumnType("timestamp with time zone");
+        });
+    }
+
+    private static void ConfigureIdempotencyRecord(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<IdempotencyRecord>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.IdempotencyKey).HasMaxLength(256).IsRequired();
+            entity.Property(e => e.EntityType).HasMaxLength(100).IsRequired();
+            entity.Property(e => e.EntityId).HasMaxLength(100).IsRequired();
+            entity.Property(e => e.Operation).HasMaxLength(50).IsRequired();
+            entity.HasIndex(e => new { e.IdempotencyKey, e.AthleteId }).IsUnique();
+            entity.HasIndex(e => e.AthleteId);
+            entity.HasIndex(e => e.ProcessedAt);
+            entity.Property(e => e.ProcessedAt).HasColumnType("timestamp with time zone");
         });
     }
 }

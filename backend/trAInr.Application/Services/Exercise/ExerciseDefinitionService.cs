@@ -26,6 +26,20 @@ public class ExerciseDefinitionService(
         return exerciseDefinitions.Select(MapToResponse);
     }
 
+    public async Task<PagedResponse<ExerciseResponse>> GetAllPagedAsync(PagedRequest request)
+    {
+        var allExercises = await exerciseDefinitionRepository.GetAllAsync();
+        var exerciseList = allExercises.ToList();
+        var totalCount = exerciseList.Count;
+
+        var pagedItems = exerciseList
+            .Skip(request.Skip)
+            .Take(request.PageSize)
+            .Select(MapToResponse);
+
+        return PagedResponse<ExerciseResponse>.Create(pagedItems, request.Page, request.PageSize, totalCount);
+    }
+
     public async Task<IEnumerable<ExerciseSummaryResponse>> SearchAsync(
         string? query,
         ExerciseType? type,
@@ -38,6 +52,29 @@ public class ExerciseDefinitionService(
             e.Type,
             e.PrimaryMuscleGroup,
             e.SecondaryMuscleGroup));
+    }
+
+    public async Task<PagedResponse<ExerciseSummaryResponse>> SearchPagedAsync(
+        string? query,
+        ExerciseType? type,
+        MuscleGroup? muscleGroup,
+        PagedRequest request)
+    {
+        var exerciseDefinitions = await exerciseDefinitionRepository.SearchAsync(query, type, muscleGroup);
+        var exerciseList = exerciseDefinitions.ToList();
+        var totalCount = exerciseList.Count;
+
+        var pagedItems = exerciseList
+            .Skip(request.Skip)
+            .Take(request.PageSize)
+            .Select(e => new ExerciseSummaryResponse(
+                e.Id,
+                e.Name,
+                e.Type,
+                e.PrimaryMuscleGroup,
+                e.SecondaryMuscleGroup));
+
+        return PagedResponse<ExerciseSummaryResponse>.Create(pagedItems, request.Page, request.PageSize, totalCount);
     }
 
     public async Task<ExerciseResponse> CreateAsync(CreateExerciseRequest request, Guid? userId = null)

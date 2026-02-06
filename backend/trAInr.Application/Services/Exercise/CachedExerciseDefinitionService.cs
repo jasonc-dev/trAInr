@@ -40,6 +40,16 @@ public class CachedExerciseDefinitionService(
         return result;
     }
 
+    public async Task<PagedResponse<ExerciseResponse>> GetAllPagedAsync(PagedRequest request)
+    {
+        // For paginated requests, we use a cache key that includes pagination parameters
+        var cacheKey = $"{CacheKeys.AllExercises}:page:{request.Page}:size:{request.PageSize}";
+
+        return await cacheProvider.GetOrSetAsync(
+            cacheKey,
+            async () => await innerService.GetAllPagedAsync(request));
+    }
+
     public async Task<IEnumerable<ExerciseSummaryResponse>> SearchAsync(
         string? query,
         ExerciseType? type,
@@ -59,6 +69,19 @@ public class CachedExerciseDefinitionService(
             });
 
         return result;
+    }
+
+    public async Task<PagedResponse<ExerciseSummaryResponse>> SearchPagedAsync(
+        string? query,
+        ExerciseType? type,
+        MuscleGroup? muscleGroup,
+        PagedRequest request)
+    {
+        var cacheKey = $"{CacheKeys.ExerciseSearch(query, type?.ToString(), muscleGroup?.ToString())}:page:{request.Page}:size:{request.PageSize}";
+
+        return await cacheProvider.GetOrSetAsync(
+            cacheKey,
+            async () => await innerService.SearchPagedAsync(query, type, muscleGroup, request));
     }
 
     public async Task<IEnumerable<ExerciseSummaryResponse>> GetByTypeAsync(ExerciseType type)

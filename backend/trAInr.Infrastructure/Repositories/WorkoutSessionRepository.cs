@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using trAInr.Application.Interfaces.Repositories;
 using trAInr.Domain.Aggregates;
+using trAInr.Domain.Entities;
 using trAInr.Infrastructure.Data;
 
 namespace trAInr.Infrastructure.Repositories;
@@ -76,6 +77,34 @@ public class WorkoutSessionRepository(TrainrDbContext context) : IWorkoutSession
     public async Task DeleteAsync(WorkoutSession workoutSession, CancellationToken cancellationToken = default)
     {
         context.WorkoutSessions.Remove(workoutSession);
+        await Task.CompletedTask;
+    }
+
+    // Sync-related methods
+    public async Task<IEnumerable<WorkoutDay>> GetModifiedSinceAsync(Guid athleteId, DateTime since, CancellationToken cancellationToken = default)
+    {
+        // Get workout days for the athlete's programmes that were modified since the given timestamp
+        return await context.WorkoutDays
+            .Include(wd => wd.Exercises)
+                .ThenInclude(we => we.Sets)
+            .Include(wd => wd.Exercises)
+                .ThenInclude(we => we.ExerciseDefinition)
+            .Where(wd => wd.ProgrammeWeek.AssignedProgram.AthleteId == athleteId &&
+                         wd.CreatedAt > since)
+            .OrderBy(wd => wd.CreatedAt)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<ExerciseSet?> GetExerciseSetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await context.ExerciseSets
+            .Include(es => es.WorkoutExercise)
+            .FirstOrDefaultAsync(es => es.Id == id, cancellationToken);
+    }
+
+    public async Task UpdateExerciseSetAsync(ExerciseSet set, CancellationToken cancellationToken = default)
+    {
+        context.ExerciseSets.Update(set);
         await Task.CompletedTask;
     }
 }

@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
 using trAInr.Application.DTOs.AI;
 using trAInr.Application.DTOs.ProgramTemplate;
@@ -9,7 +10,8 @@ using trAInr.Domain.Entities;
 namespace trAInr.API.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[ApiVersion("1.0")]
+[Route("api/v{version:apiVersion}/[controller]")]
 public class ProgramGeneratorController(IJobRepository jobRepository, IUnitOfWork unitOfWork) : ControllerBase
 {
     private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = false };

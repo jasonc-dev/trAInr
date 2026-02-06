@@ -18,6 +18,21 @@ public interface IAuthService
     Task<AuthResponse?> RegisterAsync(RegisterRequest request);
 
     /// <summary>
+    ///     Refresh access token using a valid refresh token
+    /// </summary>
+    Task<AuthResponse?> RefreshTokenAsync(RefreshTokenRequest request);
+
+    /// <summary>
+    ///     Revoke a refresh token
+    /// </summary>
+    Task<bool> RevokeTokenAsync(RevokeTokenRequest request);
+
+    /// <summary>
+    ///     Revoke all refresh tokens for a user (logout from all devices)
+    /// </summary>
+    Task<bool> RevokeAllTokensAsync(Guid athleteId);
+
+    /// <summary>
     ///     Validate a JWT token and return the user ID if valid
     /// </summary>
     Guid? ValidateToken(string token);

@@ -13,107 +13,160 @@ public class GlobalExceptionHandlerMiddleware(
     ILogger<GlobalExceptionHandlerMiddleware> logger,
     IWebHostEnvironment environment)
 {
-  private static readonly JsonSerializerOptions ProductionJsonOptions = new()
-  {
-    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-    WriteIndented = false
-  };
-
-  private static readonly JsonSerializerOptions DevelopmentJsonOptions = new()
-  {
-    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-    WriteIndented = true
-  };
-
-  public async Task InvokeAsync(HttpContext context)
-  {
-    try
+    private static readonly JsonSerializerOptions ProductionJsonOptions = new()
     {
-      await next(context);
-    }
-    catch (Exception ex)
-    {
-      logger.LogError(ex, "An unhandled exception occurred: {Message}", ex.Message);
-      await HandleExceptionAsync(context, ex);
-    }
-  }
-
-  private async Task HandleExceptionAsync(HttpContext context, Exception exception)
-  {
-    context.Response.ContentType = "application/json";
-    var response = context.Response;
-
-    var errorResponse = new ErrorResponse
-    {
-      StatusCode = GetStatusCode(exception),
-      Message = GetErrorMessage(exception),
-      Timestamp = DateTime.UtcNow
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        WriteIndented = false
     };
 
-    // Include detailed error information in development environment
-    if (environment.IsDevelopment())
+    private static readonly JsonSerializerOptions DevelopmentJsonOptions = new()
     {
-      errorResponse.Details = exception.ToString();
-      errorResponse.StackTrace = exception.StackTrace;
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        WriteIndented = true
+    };
+
+    public async Task InvokeAsync(HttpContext context)
+    {
+        // Generate a request ID for tracking
+        var requestId = context.TraceIdentifier;
+        context.Response.Headers["X-Request-Id"] = requestId;
+
+        try
+        {
+            await next(context);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Request {RequestId}: An unhandled exception occurred: {Message}", requestId, ex.Message);
+            await HandleExceptionAsync(context, ex, requestId);
+        }
     }
 
-    // Add validation errors if it's a validation exception
-    if (exception is ArgumentException or ArgumentNullException)
+    private async Task HandleExceptionAsync(HttpContext context, Exception exception, string requestId)
     {
-      errorResponse.Errors = new Dictionary<string, string[]>
+        context.Response.ContentType = "application/json";
+        var response = context.Response;
+
+        var (statusCode, errorCode) = GetStatusCodeAndErrorCode(exception);
+
+        var errorResponse = new ErrorResponse
         {
-            { "validation", new[] { exception.Message } }
+            Code = errorCode,
+            Message = GetErrorMessage(exception),
+            RequestId = requestId,
+            Timestamp = DateTime.UtcNow,
+            Retryable = IsRetryable(exception)
+        };
+
+        // Include detailed error information in development environment
+        if (environment.IsDevelopment())
+        {
+            errorResponse.Details = exception.ToString();
+            errorResponse.StackTrace = exception.StackTrace;
+        }
+
+        // Add validation errors if it's a validation exception
+        if (exception is ArgumentException or ArgumentNullException)
+        {
+            errorResponse.Errors = new Dictionary<string, string[]>
+            {
+                { "validation", new[] { exception.Message } }
+            };
+        }
+
+        response.StatusCode = (int)statusCode;
+
+        var options = environment.IsDevelopment() ? DevelopmentJsonOptions : ProductionJsonOptions;
+        var jsonResponse = JsonSerializer.Serialize(errorResponse, options);
+        await response.WriteAsync(jsonResponse);
+    }
+
+    private static (HttpStatusCode statusCode, string errorCode) GetStatusCodeAndErrorCode(Exception exception)
+    {
+        return exception switch
+        {
+            ArgumentException or ArgumentNullException => (HttpStatusCode.BadRequest, "VALIDATION_ERROR"),
+            UnauthorizedAccessException => (HttpStatusCode.Unauthorized, "UNAUTHORIZED"),
+            KeyNotFoundException => (HttpStatusCode.NotFound, "NOT_FOUND"),
+            InvalidOperationException => (HttpStatusCode.BadRequest, "INVALID_OPERATION"),
+            DbUpdateException => (HttpStatusCode.Conflict, "DATABASE_CONFLICT"),
+            TimeoutException => (HttpStatusCode.RequestTimeout, "TIMEOUT"),
+            NotSupportedException => (HttpStatusCode.NotImplemented, "NOT_SUPPORTED"),
+            _ => (HttpStatusCode.InternalServerError, "INTERNAL_ERROR")
         };
     }
 
-    response.StatusCode = (int)errorResponse.StatusCode;
-
-    var options = environment.IsDevelopment() ? DevelopmentJsonOptions : ProductionJsonOptions;
-    var jsonResponse = JsonSerializer.Serialize(errorResponse, options);
-    await response.WriteAsync(jsonResponse);
-  }
-
-  private static HttpStatusCode GetStatusCode(Exception exception)
-  {
-    return exception switch
+    private static string GetErrorMessage(Exception exception)
     {
-      ArgumentException or ArgumentNullException => HttpStatusCode.BadRequest,
-      UnauthorizedAccessException => HttpStatusCode.Unauthorized,
-      KeyNotFoundException or InvalidOperationException => HttpStatusCode.NotFound,
-      DbUpdateException => HttpStatusCode.Conflict,
-      TimeoutException => HttpStatusCode.RequestTimeout,
-      NotSupportedException => HttpStatusCode.NotImplemented,
-      _ => HttpStatusCode.InternalServerError
-    };
-  }
+        return exception switch
+        {
+            ArgumentException or ArgumentNullException => "Invalid request. Please check your input and try again.",
+            UnauthorizedAccessException => "You are not authorized to perform this action.",
+            KeyNotFoundException => "The requested resource was not found.",
+            InvalidOperationException => exception.Message,
+            DbUpdateException => "A database error occurred. Please try again later.",
+            TimeoutException => "The request timed out. Please try again.",
+            NotSupportedException => "This operation is not supported.",
+            _ => "An unexpected error occurred. Please try again later."
+        };
+    }
 
-  private static string GetErrorMessage(Exception exception)
-  {
-    return exception switch
+    private static bool IsRetryable(Exception exception)
     {
-      ArgumentException or ArgumentNullException => "Invalid request. Please check your input and try again.",
-      UnauthorizedAccessException => "You are not authorized to perform this action.",
-      KeyNotFoundException => "The requested resource was not found.",
-      InvalidOperationException => exception.Message,
-      DbUpdateException dbEx => "A database error occurred. Please try again later.",
-      TimeoutException => "The request timed out. Please try again.",
-      NotSupportedException => "This operation is not supported.",
-      _ => "An unexpected error occurred. Please try again later."
-    };
-  }
+        return exception switch
+        {
+            TimeoutException => true,
+            DbUpdateException => true,
+            _ when exception.Message.Contains("temporarily unavailable", StringComparison.OrdinalIgnoreCase) => true,
+            _ => false
+        };
+    }
 }
 
 /// <summary>
-///     Error response model for consistent API error responses
+///     Error response model for consistent API error responses (mobile-friendly)
 /// </summary>
 public class ErrorResponse
 {
-  public HttpStatusCode StatusCode { get; set; }
-  public string Message { get; set; } = string.Empty;
-  public DateTime Timestamp { get; set; }
-  public string? Details { get; set; }
-  public string? StackTrace { get; set; }
-  public Dictionary<string, string[]>? Errors { get; set; }
+    /// <summary>
+    ///     Machine-readable error code (e.g., VALIDATION_ERROR, NOT_FOUND)
+    /// </summary>
+    public string Code { get; set; } = string.Empty;
+
+    /// <summary>
+    ///     Human-readable error message
+    /// </summary>
+    public string Message { get; set; } = string.Empty;
+
+    /// <summary>
+    ///     Unique request ID for tracking and debugging
+    /// </summary>
+    public string RequestId { get; set; } = string.Empty;
+
+    /// <summary>
+    ///     Timestamp when the error occurred
+    /// </summary>
+    public DateTime Timestamp { get; set; }
+
+    /// <summary>
+    ///     Whether the operation can be retried
+    /// </summary>
+    public bool Retryable { get; set; }
+
+    /// <summary>
+    ///     Detailed error information (development only)
+    /// </summary>
+    public string? Details { get; set; }
+
+    /// <summary>
+    ///     Stack trace (development only)
+    /// </summary>
+    public string? StackTrace { get; set; }
+
+    /// <summary>
+    ///     Field-level validation errors
+    /// </summary>
+    public Dictionary<string, string[]>? Errors { get; set; }
 }
 
 /// <summary>
@@ -121,9 +174,9 @@ public class ErrorResponse
 /// </summary>
 public static class GlobalExceptionHandlerMiddlewareExtensions
 {
-  public static IApplicationBuilder UseGlobalExceptionHandler(this IApplicationBuilder builder)
-  {
-    return builder.UseMiddleware<GlobalExceptionHandlerMiddleware>();
-  }
+    public static IApplicationBuilder UseGlobalExceptionHandler(this IApplicationBuilder builder)
+    {
+        return builder.UseMiddleware<GlobalExceptionHandlerMiddleware>();
+    }
 }
 

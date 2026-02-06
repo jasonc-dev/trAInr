@@ -1,0 +1,51 @@
+{
+  "expo": {
+    "name": "trAInr",
+    "slug": "trainr",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "scheme": "trainr",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#6366F1"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.trainr.app",
+      "usesAppleSignIn": true,
+      "infoPlist": {
+        "UIViewControllerBasedStatusBarAppearance": true
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#6366F1"
+      },
+      "package": "com.trainr.app",
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "expo-sqlite",
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Allow trAInr to use Face ID for quick login"
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
